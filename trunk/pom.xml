@@ -4,7 +4,7 @@
   <artifactId>hotdeploy</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy</name>
-  <version>9.9.3.0</version>
+  <version>9.10.0.0</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
@@ -38,7 +38,7 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>polopoly</artifactId>
-      <version>9.9.3</version>
+      <version>9.10.0</version>
     </dependency>
     <dependency>
         <groupId>jboss</groupId>
