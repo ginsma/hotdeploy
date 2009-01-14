@@ -14,10 +14,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.polopoly.cm.client.impl.exceptions.PermissionDeniedException;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.xml.hotdeploy.DirectoryState;
 import com.polopoly.cm.xml.hotdeploy.FileSpec;
 import com.polopoly.cm.xml.hotdeploy.DirectoryState.CouldNotUpdateStateException;
-import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil.ApplicationNotInitializedException;
 
 /**
  * Imports changed content XML files in a directory. Uses the file
@@ -46,12 +46,12 @@ public class DefaultContentDeployer
         Logger.getLogger(DefaultContentDeployer.class.getName());
     private static final Set<FileSpec> NON_EXISTING_FILES = new HashSet<FileSpec>();
 
-    public DefaultContentDeployer() {
-        super();
+    public DefaultContentDeployer(PolicyCMServer server) {
+        super(server);
     }
 
-    public DefaultContentDeployer(boolean failFast) {
-        super(failFast);
+    public DefaultContentDeployer(PolicyCMServer server, boolean failFast) {
+        super(server, failFast);
     }
 
     /**
@@ -60,10 +60,8 @@ public class DefaultContentDeployer
     @Override
     public Set<FileSpec> deploy(File directory, DirectoryState directoryState)
         throws PermissionDeniedException,
-               CouldNotUpdateStateException,
-               ApplicationNotInitializedException
+               CouldNotUpdateStateException
     {
-        logger.log(Level.FINE, "ContentDeployerBySpecifiedOrder was here.");
         return super.deploy(directory, directoryState);
     }
 
@@ -80,7 +78,7 @@ public class DefaultContentDeployer
             return super.getFilesToImportOrdered(directory, directoryState);
         }
 
-        boolean anyFileChanged = false;
+        int filesChanged = 0;
 
         // Remove files not changed or failed.
         Iterator<FileSpec> i = importOrder.iterator();
@@ -92,13 +90,15 @@ public class DefaultContentDeployer
                 i.remove();
             }
             else {
-                anyFileChanged = true;
+                filesChanged++;
             }
         }
 
-        if (!anyFileChanged) {
+        if (filesChanged == 0) {
             importOrder.clear();
         }
+
+        logger.log(Level.FINER, filesChanged + " of the file(s) specified in _import_order_ had been modified since last import.");
 
         return importOrder;
     }
@@ -119,6 +119,8 @@ public class DefaultContentDeployer
 
             return null;
         }
+
+        logger.log(Level.FINE, "Reading import orer from " + importOrder.getAbsolutePath() + ".");
 
         ArrayList<FileSpec> list = new ArrayList<FileSpec>();
 
@@ -147,35 +149,51 @@ public class DefaultContentDeployer
         return list;
     }
 
-    private static void addDirectory(ArrayList<FileSpec> list, String line, File directory) {
-        logger.log(Level.FINEST, "Added directory '" + line + "'.");
-
+    private static int addDirectory(ArrayList<FileSpec> list, String line, File directory) {
         File[] files = directory.listFiles();
 
         Arrays.sort(files);
 
+        int fileCount = 0;
+
         for (File file : files) {
-            addFile(list, line + File.separator + file.getName(), file);
+            fileCount += addFile(list, line + File.separator + file.getName(), file);
         }
+
+        if (fileCount == 0) {
+            logger.log(Level.FINEST, "The directory " + line + " did not contain any importable files.");
+        }
+        else {
+            logger.log(Level.FINEST, "Added directory '" + line + "' with " + fileCount + " file(s).");
+        }
+
+        return fileCount;
     }
 
-    private static void addFile(ArrayList<FileSpec> list, String line, File file) {
+    private static int addFile(ArrayList<FileSpec> list, String line, File file) {
         FileSpec fileSpec =
             new FileSpec(file, line);
+
+        int result = 0;
 
         if (!file.exists() && NON_EXISTING_FILES.add(fileSpec)) {
             logger.log(Level.WARNING, "The file " + file.getAbsolutePath() + ", specified in _import_order, does not exist.");
         }
         else if (file.isDirectory()) {
-            addDirectory(list, line, file);
+            logger.log(Level.FINEST, "Adding whole directory " + file.getName() + ".");
+
+            result = addDirectory(list, line, file);
         }
         else if (file.isFile() &&
                 XMLFileNameFilter.xmlFileFilter.accept(file.getParentFile(),
                                                        file.getName())) {
             if (!list.contains(fileSpec)) {
                 list.add(fileSpec);
+                result++;
             }
         }
+
+        return result;
     }
 }
 

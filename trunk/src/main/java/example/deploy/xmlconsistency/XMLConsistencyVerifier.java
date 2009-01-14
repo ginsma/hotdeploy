@@ -25,9 +25,13 @@ import example.deploy.hotdeploy.DefaultContentDeployer;
  */
 @SuppressWarnings("deprecation")
 public class XMLConsistencyVerifier implements ParseCallback {
-    private static final Logger logger = 
+    private static final Logger logger =
         Logger.getLogger(XMLConsistencyVerifier.class.getName());
-       
+
+    private static String directoryName;
+
+    private static String classDirectoryName;
+
     private Set<String> inputTemplates = new HashSet<String>(100);
     private Map<String, String> contentTemplateByExternalId = new HashMap<String,String>(100);
 
@@ -47,7 +51,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
     XMLConsistencyVerifier(File xmlDirectory) {
         this.xmlDirectory = xmlDirectory;
     }
-    
+
     /**
      * Constructor.
      * @param verifier A verified from which to load present templates and
@@ -59,42 +63,42 @@ public class XMLConsistencyVerifier implements ParseCallback {
      */
     XMLConsistencyVerifier(XMLConsistencyVerifier verifier, File xmlDirectory, File classDirectory) {
         classDirectories = new ArrayList<File>();
-        
+
         if (verifier != null) {
             contentTemplateByExternalId.putAll(verifier.contentTemplateByExternalId);
             inputTemplates.addAll(verifier.inputTemplates);
             classDirectories.addAll(verifier.classDirectories);
         }
-        
+
         this.xmlDirectory = xmlDirectory;
-        
+
         classDirectories.add(classDirectory);
     }
 
     /**
      * Verify all XML files specified in the _import_order file in the specified directory.
-     * @return true if the XML is consistent, false if it is not. 
+     * @return true if the XML is consistent, false if it is not.
      */
     public boolean verify() {
         readPresent();
 
-        File file = new File(xmlDirectory, "_import_order");        
-        
+        File file = new File(xmlDirectory, "_import_order");
+
         if (!file.exists()) {
             logger.log(Level.WARNING, "The XML import order file " + file + " does not exist. Skipping XML verification.");
             return false;
         }
-        
+
         logger.log(Level.INFO, "Starting verification of content XML in " + xmlDirectory + ".");
 
         List<FileSpec> importOrder = DefaultContentDeployer.getImportOrder(xmlDirectory);
-        
+
         for (FileSpec fileSpec : importOrder) {
             logger.log(Level.FINE, "Parsing " + fileSpec + "...");
-                
+
             new XmlParser(fileSpec.getFile(), this);
         }
-        
+
         if (!nonFoundContent.isEmpty()) {
             logger.log(Level.WARNING, "The following content objects " +
                 "were referenced before they were declared: " + nonFoundContent + ".");
@@ -113,28 +117,28 @@ public class XMLConsistencyVerifier implements ParseCallback {
         if (!unusedTemplates.isEmpty()) {
             logger.log(Level.FINE, "The following templates are defined but never used: " + unusedTemplates);
         }
-        
+
         logger.log(Level.INFO, "Verification of " + importOrder.size() + " content XML files finished.");
-        
+
         return nonFoundContent.isEmpty() && nonFoundTemplates.isEmpty();
     }
 
     private void readPresent() {
         try {
             File presentContent = new File(xmlDirectory, "presentContent.txt");
-            
+
             if (presentContent.exists()) {
                 BufferedReader reader = new BufferedReader(
                     new FileReader(presentContent));
-                
+
                 String line = reader.readLine();
-    
+
                 while (line != null) {
                     contentTemplateByExternalId.put(line.trim(), null);
-                    
+
                     line = reader.readLine();
                 }
-    
+
                 reader.close();
             }
         } catch (IOException e) {
@@ -143,19 +147,19 @@ public class XMLConsistencyVerifier implements ParseCallback {
 
         try {
             File presentTemplates = new File(xmlDirectory, "presentTemplates.txt");
-            
+
             if (presentTemplates.exists()) {
                 BufferedReader reader = new BufferedReader(
                     new FileReader(presentTemplates));
-                
+
                 String line = reader.readLine();
-    
+
                 while (line != null) {
                     inputTemplates.add(line.trim());
-    
+
                     line = reader.readLine();
                 }
-    
+
                 reader.close();
             }
         } catch (IOException e) {
@@ -167,9 +171,9 @@ public class XMLConsistencyVerifier implements ParseCallback {
         if (inputTemplate != null) {
             templateReferenceFound(file, inputTemplate);
         }
-        
+
         logger.log(Level.FINE, "Found content " + externalId + " with input template " + inputTemplate + ".");
-        
+
         contentTemplateByExternalId.put(externalId, inputTemplate);
     }
 
@@ -199,50 +203,51 @@ public class XMLConsistencyVerifier implements ParseCallback {
 
         unusedTemplates.remove(inputTemplate);
     }
-    
+
     /**
      * Command-line interface. Specify the directory as the first parameter.
      */
     public static void main(String[] args) {
-        if (args.length == 0) {
-            System.err.println("Specify XML directory as first parameter.");
-            
+        parseParameters(args);
+
+        if (directoryName == null) {
+            System.err.println("The parameter --dir is required.");
             System.exit(1);
         }
-        
-        File xmlDirectory = new File(args[0]);
+
+        File xmlDirectory = new File(directoryName);
 
         if (!xmlDirectory.canRead()) {
-            logger.log(Level.WARNING, 
+            logger.log(Level.WARNING,
                 "The directory " + xmlDirectory.getAbsolutePath() + " does not exist.");
-            
+
             System.exit(1);
         }
 
         File classDirectory = null;
-        
-        if (args.length > 1) {
-            classDirectory = new File(args[1]);
+
+        if (classDirectoryName != null) {
+            classDirectory = new File(classDirectoryName);
 
             if (!classDirectory.canRead()) {
-                logger.log(Level.WARNING, 
+                logger.log(Level.WARNING,
                     "The class directory " + xmlDirectory.getAbsolutePath() + " does not exist.");
-                
+
                 System.exit(1);
             }
         }
-        
+
         XMLConsistencyVerifier verifier;
-        
+
         if (classDirectory != null) {
             verifier = new XMLConsistencyVerifier(null, xmlDirectory, classDirectory);
         }
         else {
             verifier = new XMLConsistencyVerifier(xmlDirectory);
         }
-        
+
         verifier.verify();
-        
+
         if (!verifier.nonFoundContent.isEmpty() ||
                 !verifier.nonFoundTemplates.isEmpty() ||
                 !verifier.nonFoundClasses.isEmpty()) {
@@ -254,12 +259,12 @@ public class XMLConsistencyVerifier implements ParseCallback {
         if (className.startsWith("com.polopoly")) {
             return;
         }
-        
+
         StringBuffer fileName = new StringBuffer(className.length() + 10);
-        
+
         for (int i = 0; i < className.length(); i++) {
             char ch = className.charAt(i);
-            
+
             if (ch == '.') {
                 fileName.append(File.separatorChar);
             }
@@ -267,23 +272,83 @@ public class XMLConsistencyVerifier implements ParseCallback {
                 fileName.append(ch);
             }
         }
-        
+
         fileName.append(".class");
-        
+
         if (classDirectories != null) {
             boolean found = false;
-            
+
             for (File classDirectory : classDirectories) {
                 if ((new File(classDirectory, fileName.toString())).exists()) {
-                    found = true; 
+                    found = true;
                     break;
                 }
             }
-            
+
             if (!found) {
                 logger.log(Level.WARNING, "Unknown class " + className + " was referenced in file " + file + ".");
                 nonFoundClasses.add(className);
             }
         }
+    }
+
+    private static void parseParameters(String[] args) {
+        String parameter = null;
+
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+
+            if (arg.startsWith("--")) {
+                if (parameter != null) {
+                    parameterFound(parameter, null);
+                }
+
+                parameter = arg.substring(2);
+
+                int eq;
+
+                if ((eq = parameter.indexOf('=')) != -1) {
+                    String value = parameter.substring(eq+1);
+                    parameter = parameter.substring(0, eq);
+                    parameterFound(parameter, value);
+
+                    parameter = null;
+                }
+            }
+            else if (parameter != null) {
+                parameterFound(parameter, arg);
+            }
+        }
+
+        if (parameter != null) {
+            parameterFound(parameter, null);
+        }
+    }
+
+    private static void parameterFound(String parameter, String value) {
+        if (value == null) {
+            System.err.println("Parmater " + parameter + " required a value. Provide it using --" + parameter + "=<value>.");
+            printParameterHelp();
+            System.exit(1);
+        }
+
+        if (parameter.equals("dir")) {
+            directoryName = value;
+        }
+        else if (parameter.equals("classdir")) {
+            classDirectoryName = value;
+        }
+        else {
+            System.err.println("Unknown parameter " + parameter + ".");
+            printParameterHelp();
+            System.exit(1);
+        }
+    }
+
+    private static void printParameterHelp() {
+        System.err.println();
+        System.err.println("Accepted parameters:");
+        System.err.println("  --dir The directory where the _import_order_ file or the content to import is located.");
+        System.err.println("  --classdir The directory where the project classes are built to (optional).");
     }
 }

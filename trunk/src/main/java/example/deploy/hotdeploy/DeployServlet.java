@@ -18,7 +18,6 @@ import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.xml.hotdeploy.AlwaysChangedDirectoryState;
 import com.polopoly.cm.xml.hotdeploy.DirectoryState.CouldNotUpdateStateException;
 import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil;
-import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil.ApplicationNotInitializedException;
 import com.polopoly.cm.xml.io.DispatchingDocumentImporter;
 
 /**
@@ -67,16 +66,13 @@ public class DeployServlet extends HttpServlet {
 
         if (paramCount == 0) {
             try {
-                (new DefaultContentDeployer()).deploy(
+                (new DefaultContentDeployer(server)).deploy(
                     DeployContentContextListener.getDirectory(getServletContext()),
                         new AlwaysChangedDirectoryState());
             } catch (PermissionDeniedException e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
                 throw new ServletException(e);
-            } catch (ApplicationNotInitializedException e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
-                throw new ServletException(e);
-            } catch (CouldNotUpdateStateException e) {
+             } catch (CouldNotUpdateStateException e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
                 throw new ServletException(e);
             }

@@ -6,37 +6,44 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 
+import com.polopoly.application.InternalApplicationUtil;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil;
+import com.polopoly.user.server.UserServer;
 
 /**
  * A {@link javax.servlet.ServletContextListener} that starts a thread
  * monitoring the META-INF/content directory for changes and automatically
  * imports any changed files.
- * 
+ *
  * @author AndreasE
  */
 @SuppressWarnings("deprecation")
 public class HotDeployContentContextListener extends DeployContentContextListener {
     private HotDeployContentThread thread;
-    
-    private static final Logger logger = 
+
+    private static final Logger logger =
         Logger.getLogger(HotDeployContentContextListener.class.getName());
 
+    @Override
     public void contextInitialized(ServletContextEvent event) {
         try {
             boolean logout = false;
             try {
-                logout = DeployContentUser.login();
+                PolicyCMServer server = InternalApplicationUtil.getPolicyCMServer(event.getServletContext());
+                UserServer userServer = InternalApplicationUtil.getUserServer(event.getServletContext());
+
+                logout = DeployContentUser.login(server, userServer);
 
                 File directory = getDirectory(event.getServletContext());
                 ContentDeployer contentDeployer =
-                    getContentDeployer(event.getServletContext());
+                    getContentDeployer(server, event.getServletContext());
 
-                doInitialDeploy(directory, contentDeployer);
+                Deploy.doInitialDeploy(server, userServer, directory, contentDeployer);
 
                 thread = new HotDeployContentThread
-                    (directory, 
-                     getDirectoryState(ApplicationUtil.getInitializedServer()),
+                    (server, userServer, directory,
+                    Deploy.getDirectoryState(ApplicationUtil.getInitializedServer()),
                      contentDeployer);
             }
             finally {
@@ -52,7 +59,8 @@ public class HotDeployContentContextListener extends DeployContentContextListene
             logger.log(Level.WARNING, t.getMessage(), t);
         }
     }
-    
+
+    @Override
     public void contextDestroyed(ServletContextEvent event) {
         try {
             if (thread != null) {
