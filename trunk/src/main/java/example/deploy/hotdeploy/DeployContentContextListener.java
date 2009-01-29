@@ -29,6 +29,7 @@ public class DeployContentContextListener implements ServletContextListener {
      */
     private static final String[] DIRECTORIES = {
         "/META-INF/content",
+        "/WEB-INF/classes/content",
         "/WEB-INF/content"
     };
 
@@ -91,10 +92,24 @@ public class DeployContentContextListener implements ServletContextListener {
    static File getDirectory(ServletContext context) {
        File directory = null;
 
+       if (new File(context.getRealPath("/")).getAbsolutePath().endsWith("src" + File.separator + "main" + File.separator + "webapp")) {
+           // oh, look, a maven project running in Jetty!
+           directory = new File(new File(context.getRealPath("/")).getParentFile().getAbsoluteFile() +
+                   File.separator + "resources" + File.separator + "content");
+
+           if (directory.exists() && directory.isDirectory()) {
+               return directory;
+           }
+           else {
+               logger.log(Level.FINE, "Could not find possible hotdeploy directory " +
+                       directory.getAbsolutePath() + ".");
+           }
+       }
+
        for (int i = 0; i < DIRECTORIES.length; i++) {
            directory = new File(context.getRealPath(DIRECTORIES[i]));
 
-           if (directory.exists() && !directory.isDirectory()) {
+           if (directory.exists() && directory.isDirectory()) {
                return directory;
            }
            else {
