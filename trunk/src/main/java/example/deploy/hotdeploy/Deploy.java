@@ -20,7 +20,6 @@ import com.polopoly.cm.xml.hotdeploy.DirectoryState;
 import com.polopoly.cm.xml.hotdeploy.DirectoryStatePolicy;
 import com.polopoly.cm.xml.hotdeploy.FileSpec;
 import com.polopoly.cm.xml.hotdeploy.DirectoryState.CouldNotUpdateStateException;
-import com.polopoly.cm.xml.hotdeploy.util.PolicySingletonUtil;
 import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil.ApplicationNotInitializedException;
 import com.polopoly.cm.xml.hotdeploy.util.UserUtil.LoginFailedException;
 import com.polopoly.management.ManagedBeanRegistry;
@@ -262,7 +261,10 @@ public class Deploy {
     protected static Set<FileSpec> doInitialDeploy(PolicyCMServer server, UserServer userServer, File directory, ContentDeployer contentDeployer)
             throws ApplicationNotInitializedException, PermissionDeniedException,
                 CouldNotUpdateStateException, LoginFailedException {
+        DeployContentUser.login(server, userServer);
+
         DirectoryState directoryState;
+
         try {
             directoryState = getDirectoryState(server);
         } catch (PermissionDeniedException pde) {
