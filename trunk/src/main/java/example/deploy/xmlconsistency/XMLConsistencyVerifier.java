@@ -30,7 +30,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
 
     private static String directoryName;
 
-    private static String classDirectoryName;
+    private static String classDirectoryNames;
 
     private Set<String> inputTemplates = new HashSet<String>(100);
     private Map<String, String> contentTemplateByExternalId = new HashMap<String,String>(100);
@@ -58,21 +58,23 @@ public class XMLConsistencyVerifier implements ParseCallback {
      *        content.
      * @param xmlDirectory The directory where the _import_order file is
      *        located.
-     * @param classDirectory The directory of java class files (note that jars
+     * @param classDirectories2 The directories of java class files (note that jars
      *        are not supported).
      */
-    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, File xmlDirectory, File classDirectory) {
-        classDirectories = new ArrayList<File>();
+    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, File xmlDirectory, File[] classDirectories) {
+        this.classDirectories = new ArrayList<File>();
 
         if (verifier != null) {
             contentTemplateByExternalId.putAll(verifier.contentTemplateByExternalId);
             inputTemplates.addAll(verifier.inputTemplates);
-            classDirectories.addAll(verifier.classDirectories);
+            this.classDirectories.addAll(verifier.classDirectories);
         }
 
         this.xmlDirectory = xmlDirectory;
 
-        classDirectories.add(classDirectory);
+        for (File classDirectory : classDirectories) {
+            this.classDirectories.add(classDirectory);
+        }
     }
 
     /**
@@ -224,23 +226,30 @@ public class XMLConsistencyVerifier implements ParseCallback {
             System.exit(1);
         }
 
-        File classDirectory = null;
+        File[] classDirectories = null;
 
-        if (classDirectoryName != null) {
-            classDirectory = new File(classDirectoryName);
+        if (classDirectoryNames != null) {
+            String[] classDirectoryNamesArray = classDirectoryNames.split(File.pathSeparator);
 
-            if (!classDirectory.canRead()) {
-                logger.log(Level.WARNING,
-                    "The class directory " + xmlDirectory.getAbsolutePath() + " does not exist.");
+            classDirectories = new File[classDirectoryNamesArray.length];
 
-                System.exit(1);
+            for (int i = 0; i < classDirectoryNamesArray.length; i++) {
+                classDirectories[i] = new File(classDirectoryNamesArray[i]);
+
+                if (!classDirectories[i].canRead()) {
+                    logger.log(Level.WARNING,
+                            "The class directory " + classDirectories[i].getAbsolutePath() +
+                            " (specified as \"" + classDirectoryNamesArray[i] + "\") could not be read.");
+
+                    System.exit(1);
+                }
             }
         }
 
         XMLConsistencyVerifier verifier;
 
-        if (classDirectory != null) {
-            verifier = new XMLConsistencyVerifier(null, xmlDirectory, classDirectory);
+        if (classDirectories != null) {
+            verifier = new XMLConsistencyVerifier(null, xmlDirectory, classDirectories);
         }
         else {
             verifier = new XMLConsistencyVerifier(xmlDirectory);
@@ -336,7 +345,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
             directoryName = value;
         }
         else if (parameter.equals("classdir")) {
-            classDirectoryName = value;
+            classDirectoryNames = value;
         }
         else {
             System.err.println("Unknown parameter " + parameter + ".");
