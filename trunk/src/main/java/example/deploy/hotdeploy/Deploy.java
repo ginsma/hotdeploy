@@ -22,6 +22,7 @@ import com.polopoly.cm.xml.hotdeploy.FileSpec;
 import com.polopoly.cm.xml.hotdeploy.DirectoryState.CouldNotUpdateStateException;
 import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil.ApplicationNotInitializedException;
 import com.polopoly.cm.xml.hotdeploy.util.UserUtil.LoginFailedException;
+import com.polopoly.community.client.CommunityClient;
 import com.polopoly.management.ManagedBeanRegistry;
 import com.polopoly.management.jmx.JMXManagedBeanRegistry;
 import com.polopoly.user.server.UserServer;
@@ -87,6 +88,8 @@ public class Deploy {
             // Read connection properties.
             app.readConnectionProperties(connectionProperties);
 
+            app.addApplicationComponent(new CommunityClient(cmClient));
+            
             // Init.
             app.init();
         } catch (Exception e) {
