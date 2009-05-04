@@ -1,30 +1,30 @@
 package example.deploy.xmlconsistency;
 
-import java.io.File;
+import example.deploy.hotdeploy.file.DeploymentFile;
 
 interface ParseCallback {
     /**
      * A content object with the specified external ID was defined.
      */
-    void contentFound(File file, String externalId, String inputTemplate);
+    void contentFound(DeploymentFile file, String externalId, String inputTemplate);
 
     /**
      * A template with the specified name (external ID) was defined.
      */
-    void templateFound(File file, String inputTemplate);
-    
+    void templateFound(DeploymentFile file, String inputTemplate);
+
     /**
      * A template was referenced.
      */
-    void templateReferenceFound(File file, String inputTemplate);
+    void templateReferenceFound(DeploymentFile file, String inputTemplate);
 
     /**
      * A content was referenced.
      */
-    void contentReferenceFound(File file, String externalId);
+    void contentReferenceFound(DeploymentFile file, String externalId);
 
     /**
      * A class was referenced.
      */
-    void classReferenceFound(File file, String string);
+    void classReferenceFound(DeploymentFile file, String string);
 }

@@ -1,14 +1,14 @@
 package example.deploy.xmlconsistency;
 
-import java.io.File;
-
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import example.deploy.hotdeploy.file.DeploymentFile;
+
 class TemplateDefinitionParser extends AbstractParser {
-    TemplateDefinitionParser(File file, Element root, ParseCallback callback) {
+    TemplateDefinitionParser(DeploymentFile file, Element root, ParseCallback callback) {
         super(file, callback);
 
         NodeList childList = root.getChildNodes();

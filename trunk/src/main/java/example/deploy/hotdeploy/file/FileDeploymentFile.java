@@ -1,0 +1,87 @@
+package example.deploy.hotdeploy.file;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.Adler32;
+
+public class FileDeploymentFile extends AbstractDeploymentObject implements DeploymentFile {
+    private static final int BUF_SIZE = 1024 * 64;
+    private static final Logger logger =
+        Logger.getLogger(FileDeploymentFile.class.getName());
+
+    protected File file;
+
+    public FileDeploymentFile(File file) {
+        this.file = file;
+    }
+
+    public InputStream getInputStream() throws FileNotFoundException {
+        return new FileInputStream(file);
+    }
+
+    public String getName() {
+        return file.getAbsolutePath();
+    }
+
+    public URL getBaseUrl() throws MalformedURLException {
+        File parentFile = file.getParentFile();
+
+        if (parentFile == null) {
+            parentFile = new File(".");
+        }
+
+        return parentFile.toURI().toURL();
+    }
+
+    public String getDirectory() {
+        return file.getParentFile().getAbsolutePath();
+    }
+
+    public long getQuickChecksum() {
+        return file.lastModified();
+    }
+
+    public long getSlowChecksum() {
+        Adler32 checksum = new Adler32();
+
+        byte[] buffer = new byte[BUF_SIZE];
+
+        try {
+            InputStream inputStream = getInputStream();
+
+            int readBytes;
+
+            do {
+                readBytes = inputStream.read(buffer);
+
+                if (readBytes > 0) {
+                    checksum.update(buffer, 0, readBytes);
+                }
+            }
+            while (readBytes == BUF_SIZE);
+
+            inputStream.close();
+
+            return checksum.getValue();
+        } catch (FileNotFoundException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+
+            return 0;
+        } catch (IOException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+
+            return 0;
+        }
+    }
+
+    public File getFile() {
+        return file;
+    }
+}

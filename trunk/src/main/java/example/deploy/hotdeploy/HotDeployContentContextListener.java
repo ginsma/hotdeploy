@@ -8,8 +8,11 @@ import javax.servlet.ServletContextEvent;
 
 import com.polopoly.application.InternalApplicationUtil;
 import com.polopoly.cm.policy.PolicyCMServer;
-import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil;
 import com.polopoly.user.server.UserServer;
+
+import example.deploy.hotdeploy.client.DeployContentUser;
+import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
+import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
 
 /**
  * A {@link javax.servlet.ServletContextListener} that starts a thread
@@ -18,7 +21,6 @@ import com.polopoly.user.server.UserServer;
  *
  * @author AndreasE
  */
-@SuppressWarnings("deprecation")
 public class HotDeployContentContextListener extends DeployContentContextListener {
     private HotDeployContentThread thread;
 
@@ -35,16 +37,14 @@ public class HotDeployContentContextListener extends DeployContentContextListene
 
                 logout = DeployContentUser.login(server, userServer);
 
-                File directory = getDirectory(event.getServletContext());
-                ContentDeployer contentDeployer =
-                    getContentDeployer(server, event.getServletContext());
+                File rootDirectory = new File(event.getServletContext().getRealPath("/"));
 
-                Deploy.doInitialDeploy(server, userServer, directory, contentDeployer);
+                MultipleFileDeployer contentDeployer =
+                    getContentDeployer(server, event.getServletContext(), rootDirectory);
 
-                thread = new HotDeployContentThread
-                    (server, userServer, directory,
-                    Deploy.getDirectoryState(ApplicationUtil.getInitializedServer()),
-                     contentDeployer);
+                contentDeployer.discoverAndDeploy(DefaultDiscoverers.getDiscoverers());
+
+                thread = new HotDeployContentThread(server, userServer, contentDeployer);
             }
             finally {
                 if (logout) {
@@ -54,7 +54,7 @@ public class HotDeployContentContextListener extends DeployContentContextListene
 
             thread.start();
         }
-        // don't ever throw an exception since it stops the deploy process.
+        // don't ever throw an exception since it stops the web application deployment.
         catch (Throwable t) {
             logger.log(Level.WARNING, t.getMessage(), t);
         }
@@ -70,8 +70,7 @@ public class HotDeployContentContextListener extends DeployContentContextListene
                 // contextDestroyed().
                 thread.join(5000);
                 if (thread.isAlive()) {
-                    logger.warning
-                        ("HotDeployContentThread could not be stopped");
+                    logger.warning("HotDeployContentThread could not be stopped");
                 }
                 thread = null;
             }

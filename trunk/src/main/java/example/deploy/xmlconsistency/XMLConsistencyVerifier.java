@@ -2,8 +2,9 @@ package example.deploy.xmlconsistency;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,17 +15,22 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.polopoly.cm.xml.hotdeploy.FileSpec;
-
-import example.deploy.hotdeploy.DefaultContentDeployer;
+import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
+import example.deploy.hotdeploy.discovery.NotApplicableException;
+import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 
 /**
  * Verifies that content XML is consistent and warns in
  * non-existing fields are referenced.
  * @author AndreasE
  */
-@SuppressWarnings("deprecation")
 public class XMLConsistencyVerifier implements ParseCallback {
+    private static final String PRESENT_CONTENT_FILE = "presentContent.txt";
+
+    private static final String PRESENT_TEMPLATES_FILE = "presentTemplates.txt";
+
     private static final Logger logger =
         Logger.getLogger(XMLConsistencyVerifier.class.getName());
 
@@ -41,16 +47,11 @@ public class XMLConsistencyVerifier implements ParseCallback {
 
     private Set<String> unusedTemplates = new HashSet<String>(100);
 
-    private File xmlDirectory;
     private Collection<File> classDirectories;
 
-    /**
-     * Constructor.
-     * @param xmlDirectory The directory where the _import_order file is located.
-     */
-    XMLConsistencyVerifier(File xmlDirectory) {
-        this.xmlDirectory = xmlDirectory;
-    }
+    private File rootDirectory;
+
+    private Collection<FileDiscoverer> discoverers;
 
     /**
      * Constructor.
@@ -61,7 +62,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
      * @param classDirectories2 The directories of java class files (note that jars
      *        are not supported).
      */
-    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, File xmlDirectory, File[] classDirectories) {
+    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, File rootDirectory, Collection<FileDiscoverer> discoverers, File[] classDirectories) {
         this.classDirectories = new ArrayList<File>();
 
         if (verifier != null) {
@@ -70,10 +71,13 @@ public class XMLConsistencyVerifier implements ParseCallback {
             this.classDirectories.addAll(verifier.classDirectories);
         }
 
-        this.xmlDirectory = xmlDirectory;
+        this.discoverers = discoverers;
+        this.rootDirectory = rootDirectory;
 
-        for (File classDirectory : classDirectories) {
-            this.classDirectories.add(classDirectory);
+        if (classDirectories != null) {
+            for (File classDirectory : classDirectories) {
+                this.classDirectories.add(classDirectory);
+            }
         }
     }
 
@@ -84,21 +88,32 @@ public class XMLConsistencyVerifier implements ParseCallback {
     public boolean verify() {
         readPresent();
 
-        File file = new File(xmlDirectory, "_import_order");
+        logger.log(Level.INFO, "Starting verification of content XML in " + rootDirectory + ".");
 
-        if (!file.exists()) {
-            logger.log(Level.WARNING, "The XML import order file " + file + " does not exist. Skipping XML verification.");
+        List<DeploymentFile> files = new ArrayList<DeploymentFile>();
+
+        for (FileDiscoverer discoverer : discoverers) {
+            try {
+                List<DeploymentFile> theseFiles = discoverer.getFilesToImport(rootDirectory);
+
+                logger.log(Level.WARNING, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
+
+                files.addAll(theseFiles);
+            } catch (NotApplicableException e) {
+                logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
+            }
+        }
+
+        if (files == null) {
+            logger.log(Level.WARNING, "Found no files to deploy in " + rootDirectory);
+
             return false;
         }
 
-        logger.log(Level.INFO, "Starting verification of content XML in " + xmlDirectory + ".");
+        for (DeploymentFile file : files) {
+            logger.log(Level.FINE, "Parsing " + files + "...");
 
-        List<FileSpec> importOrder = DefaultContentDeployer.getImportOrder(xmlDirectory);
-
-        for (FileSpec fileSpec : importOrder) {
-            logger.log(Level.FINE, "Parsing " + fileSpec + "...");
-
-            new XmlParser(fileSpec.getFile(), this);
+            new XmlParser(file, this);
         }
 
         if (!nonFoundContent.isEmpty()) {
@@ -120,56 +135,64 @@ public class XMLConsistencyVerifier implements ParseCallback {
             logger.log(Level.FINE, "The following templates are defined but never used: " + unusedTemplates);
         }
 
-        logger.log(Level.INFO, "Verification of " + importOrder.size() + " content XML files finished.");
+        logger.log(Level.INFO, "Verification of " + files.size() + " content XML files finished.");
 
         return nonFoundContent.isEmpty() && nonFoundTemplates.isEmpty();
     }
 
     private void readPresent() {
+        FileDeploymentDirectory directory = new FileDeploymentDirectory(rootDirectory);
+
         try {
-            File presentContent = new File(xmlDirectory, "presentContent.txt");
+            DeploymentFile presentContent =
+                CheckedCast.cast(directory.getFile(PRESENT_CONTENT_FILE), DeploymentFile.class);
 
-            if (presentContent.exists()) {
-                BufferedReader reader = new BufferedReader(
-                    new FileReader(presentContent));
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(presentContent.getInputStream()));
 
-                String line = reader.readLine();
+            String line = reader.readLine();
 
-                while (line != null) {
-                    contentTemplateByExternalId.put(line.trim(), null);
+            while (line != null) {
+                contentTemplateByExternalId.put(line.trim(), null);
 
-                    line = reader.readLine();
-                }
-
-                reader.close();
+                line = reader.readLine();
             }
+
+            reader.close();
+        } catch (FileNotFoundException e) {
+            // ignore
+        } catch (CheckedClassCastException e) {
+            logger.log(Level.WARNING, PRESENT_CONTENT_FILE + " in " + directory + " does not seem to be an ordinary file.");
         } catch (IOException e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
 
         try {
-            File presentTemplates = new File(xmlDirectory, "presentTemplates.txt");
+            DeploymentFile presentTemplates =
+                CheckedCast.cast(directory.getFile(PRESENT_TEMPLATES_FILE), DeploymentFile.class);
 
-            if (presentTemplates.exists()) {
-                BufferedReader reader = new BufferedReader(
-                    new FileReader(presentTemplates));
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(presentTemplates.getInputStream()));
 
-                String line = reader.readLine();
+            String line = reader.readLine();
 
-                while (line != null) {
-                    inputTemplates.add(line.trim());
+            while (line != null) {
+                inputTemplates.add(line.trim());
 
-                    line = reader.readLine();
-                }
-
-                reader.close();
+                line = reader.readLine();
             }
+
+            reader.close();
+        } catch (FileNotFoundException e) {
+            // ignore
+        } catch (CheckedClassCastException e) {
+            logger.log(Level.WARNING, PRESENT_TEMPLATES_FILE + " in " + directory + " does not seem to be an ordinary file.");
         } catch (IOException e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
-    public void contentFound(File file, String externalId, String inputTemplate) {
+    public void contentFound(DeploymentFile file, String externalId, String inputTemplate) {
         if (inputTemplate != null) {
             templateReferenceFound(file, inputTemplate);
         }
@@ -179,7 +202,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
         contentTemplateByExternalId.put(externalId, inputTemplate);
     }
 
-    public void contentReferenceFound(File file, String externalId) {
+    public void contentReferenceFound(DeploymentFile file, String externalId) {
         if (!contentTemplateByExternalId.containsKey(externalId)) {
             if (inputTemplates.contains(externalId)) {
                 unusedTemplates.remove(externalId);
@@ -191,13 +214,13 @@ public class XMLConsistencyVerifier implements ParseCallback {
         }
     }
 
-    public void templateFound(File file, String inputTemplate) {
+    public void templateFound(DeploymentFile file, String inputTemplate) {
         if (inputTemplates.add(inputTemplate)) {
             unusedTemplates.add(inputTemplate);
         }
     }
 
-    public void templateReferenceFound(File file, String inputTemplate) {
+    public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
         if (!inputTemplates.contains(inputTemplate)) {
             nonFoundTemplates.add(inputTemplate);
             logger.log(Level.WARNING, "Undefined template " + inputTemplate + " was referenced in " + file);
@@ -248,12 +271,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
 
         XMLConsistencyVerifier verifier;
 
-        if (classDirectories != null) {
-            verifier = new XMLConsistencyVerifier(null, xmlDirectory, classDirectories);
-        }
-        else {
-            verifier = new XMLConsistencyVerifier(xmlDirectory);
-        }
+        verifier = new XMLConsistencyVerifier(null, xmlDirectory, DefaultDiscoverers.getDiscoverers(), classDirectories);
 
         verifier.verify();
 
@@ -264,7 +282,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
         }
     }
 
-    public void classReferenceFound(File file, String className) {
+    public void classReferenceFound(DeploymentFile file, String className) {
         if (className.startsWith("com.polopoly")) {
             return;
         }

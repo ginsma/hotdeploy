@@ -1,7 +1,5 @@
 package example.deploy.xmlconsistency;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,17 +14,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import example.deploy.hotdeploy.file.DeploymentFile;
+
 class XmlParser {
-    private static final Logger logger = 
+    private static final Logger logger =
         Logger.getLogger(XmlParser.class.getName());
-    
-    XmlParser(File file, ParseCallback callback) {
+
+    XmlParser(DeploymentFile file, ParseCallback callback) {
+        InputStream inputStream = null;
+
         try {
-            InputStream is = new FileInputStream(file);
-            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(is);
+            inputStream = file.getInputStream();
+            Document document = builder.parse(inputStream);
 
             Element root = document.getDocumentElement();
 
@@ -49,10 +50,18 @@ class XmlParser {
             handleException(file, e);
         } catch (IOException e) {
             handleException(file, e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, e.getMessage(), e);
+                }
+            }
         }
     }
 
-    private void handleException(File file, Exception e) {
+    private void handleException(DeploymentFile file, Exception e) {
         logger.log(Level.WARNING, "While parsing " + file + ": " + e.getMessage(), e);
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<template-definition version="1.0" xmlns="http://www.polopoly.com/polopoly/cm/app/xml">
+  <input-template name="hotdeploy.FileChecksums">
+    <policy>example.deploy.hotdeploy.state.FileChecksumsPolicy</policy>
+  </input-template>
+</template-definition>

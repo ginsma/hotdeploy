@@ -5,6 +5,8 @@ import java.io.File;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+
 /**
  * Servlet listener that verifies that content XML is consistent and warns in
  * non-existing fields are referenced.
@@ -15,10 +17,7 @@ public class VerifyXMLConsistencyListener implements ServletContextListener {
 
     }
 
-    public void contextInitialized(ServletContextEvent event) {
-        final String directory = 
-            event.getServletContext().getRealPath("/META-INF/content");
-        
+    public void contextInitialized(final ServletContextEvent event) {
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -27,14 +26,16 @@ public class VerifyXMLConsistencyListener implements ServletContextListener {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                 }
-                
-                XMLConsistencyVerifier verifier = 
-                    new XMLConsistencyVerifier(new File(directory));
-                
+
+                XMLConsistencyVerifier verifier =
+                    new XMLConsistencyVerifier(null,
+                        new File(event.getServletContext().getRealPath("/")),
+                        DefaultDiscoverers.getDiscoverers(), null);
+
                 verifier.verify();
             }
         };
-        
+
         thread.run();
     }
 }
