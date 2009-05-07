@@ -1,4 +1,4 @@
-package example.deploy.xmlconsistency;
+package example.deploy.hotdeploy.util;
 
 /**
  * Methods performing casts throwing a checked exception rather than the

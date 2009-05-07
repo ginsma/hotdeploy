@@ -1,4 +1,4 @@
-package example.deploy.xmlconsistency;
+package example.deploy.xml.parser;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,11 +16,18 @@ import org.xml.sax.SAXException;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-class XmlParser {
+public class XmlParser implements DeploymentFileParser {
     private static final Logger logger =
         Logger.getLogger(XmlParser.class.getName());
 
-    XmlParser(DeploymentFile file, ParseCallback callback) {
+    public XmlParser() {
+    }
+
+    private void handleException(DeploymentFile file, Exception e) {
+        logger.log(Level.WARNING, "While parsing " + file + ": " + e.getMessage(), e);
+    }
+
+    public void parse(DeploymentFile file, ParseCallback callback) {
         InputStream inputStream = null;
 
         try {
@@ -59,9 +66,5 @@ class XmlParser {
                 }
             }
         }
-    }
-
-    private void handleException(DeploymentFile file, Exception e) {
-        logger.log(Level.WARNING, "While parsing " + file + ": " + e.getMessage(), e);
     }
 }

@@ -1,4 +1,4 @@
-package example.deploy.xmlconsistency;
+package example.deploy.hotdeploy.util;
 
 import com.polopoly.cm.policy.Policy;
 

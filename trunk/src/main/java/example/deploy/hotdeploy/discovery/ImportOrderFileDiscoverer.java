@@ -18,8 +18,8 @@ import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.DeploymentObject;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
-import example.deploy.xmlconsistency.CheckedCast;
-import example.deploy.xmlconsistency.CheckedClassCastException;
+import example.deploy.hotdeploy.util.CheckedCast;
+import example.deploy.hotdeploy.util.CheckedClassCastException;
 
 public class ImportOrderFileDiscoverer implements FileDiscoverer {
     private static final Logger logger =

@@ -1,43 +1,16 @@
 package example.deploy.hotdeploy;
 
-public class DeployParameterParser {
+import example.deploy.hotdeploy.client.ArgumentConsumer;
+import example.deploy.hotdeploy.client.ArgumentParser;
+
+public class DeployParameterParser implements ArgumentConsumer {
     private Deploy deploy;
 
     void parseParameters(Deploy deploy, String[] args) {
-        this.deploy = deploy;
-        String parameter = null;
-
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-
-            if (arg.startsWith("--")) {
-                if (parameter != null) {
-                    parameterFound(parameter, null);
-                }
-
-                parameter = arg.substring(2);
-
-                int eq;
-
-                if ((eq = parameter.indexOf('=')) != -1) {
-                    String value = parameter.substring(eq+1);
-                    parameter = parameter.substring(0, eq);
-                    parameterFound(parameter, value);
-
-                    parameter = null;
-                }
-            }
-            else if (parameter != null) {
-                parameterFound(parameter, arg);
-            }
-        }
-
-        if (parameter != null) {
-            parameterFound(parameter, null);
-        }
+        new ArgumentParser(this, args).parse();
     }
 
-    void parameterFound(String parameter, String value) {
+    public void argumentFound(String parameter, String value) {
         if (parameter.equals("force")) {
             deploy.setForce(true);
 

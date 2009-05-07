@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
+import example.deploy.hotdeploy.util.TopologicalSorter;
 
 public class ResourceFileDiscoverer implements FileDiscoverer {
     private static final String HOTDEPLOY_DEPENDENCY_NAME = "hotdeploy";
@@ -79,84 +80,74 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
         return importOrderFile.calculateDependencyName().equals(HOTDEPLOY_DEPENDENCY_NAME);
     }
 
-    @SuppressWarnings("unchecked")
     private void topologicalSort(List<ImportOrderFile> foundImportOrderFiles) {
-        List<Integer>[] vertexes = new List[foundImportOrderFiles.size()];
+        List<ImportOrderVertex> vertexes = new ArrayList<ImportOrderVertex>(foundImportOrderFiles.size());
 
-        for (int i = 0; i < vertexes.length; i++) {
-            vertexes[i] = new ArrayList<Integer>();
+        for (int i = 0; i < foundImportOrderFiles.size(); i++) {
+            vertexes.add(new ImportOrderVertex(foundImportOrderFiles.get(i)));
         }
 
-        for (int atIndex = 0; atIndex < foundImportOrderFiles.size(); atIndex++) {
-            ImportOrderFile importOrderFile = foundImportOrderFiles.get(atIndex);
+        for (int atIndex = 0; atIndex < vertexes.size(); atIndex++) {
+            ImportOrderVertex atVertex = vertexes.get(atIndex);
+            ImportOrderFile importOrderFile = atVertex.getImportOrderFile();
 
             // hotdeploy comes first
             if (isHotDeploy(importOrderFile)) {
-                int hotdeployIndex = atIndex;
+                ImportOrderVertex hotdeployVertex = atVertex;
 
-                for (int otherIndex = 0; otherIndex < vertexes.length; otherIndex++) {
-                    if (otherIndex != hotdeployIndex) {
-                        dependsOn(otherIndex, hotdeployIndex, vertexes);
+                for (ImportOrderVertex otherVertex : vertexes) {
+                    if (otherVertex != hotdeployVertex) {
+                        otherVertex.addDependency(hotdeployVertex);
                     }
                 }
             }
 
             // JAR files come before class directories
             if (isFileDirectory(importOrderFile)) {
-                int classDirectoryIndex = atIndex;
+                ImportOrderVertex classDirectoryVertex = atVertex;
 
-                for (int jarIndex = 0; jarIndex < vertexes.length; jarIndex++) {
-                    if (!isFileDirectory(foundImportOrderFiles.get(jarIndex))) {
-                        dependsOn(classDirectoryIndex, jarIndex, vertexes);
+                for (ImportOrderVertex otherVertex : vertexes) {
+                    if (!isFileDirectory(otherVertex.getImportOrderFile())) {
+                        classDirectoryVertex.addDependency(otherVertex);
                     }
                 }
             }
 
             for (String dependencyName : importOrderFile.getDependencies()) {
-                int dependencyIndex = indexOfDependencyWithName(foundImportOrderFiles, dependencyName);
+                ImportOrderVertex dependencyVertex = getVertexWithName(vertexes, dependencyName);
 
-                if (dependencyIndex == -1) {
+                if (dependencyVertex == null) {
                     logUnknownDependencyReferenced(foundImportOrderFiles, importOrderFile, dependencyName);
                 }
                 else {
-                    dependsOn(atIndex, dependencyIndex, vertexes);
+                    atVertex.addDependency(dependencyVertex);
                 }
             }
         }
 
-        int[] sortedOrder = new TopologicalSorter(vertexes).sort();
-
-        ImportOrderFile[] originalOrder =
-            foundImportOrderFiles.toArray(new ImportOrderFile[foundImportOrderFiles.size()]);
+        List<ImportOrderVertex> sortedOrder = new TopologicalSorter<ImportOrderVertex>(vertexes).sort();
 
         foundImportOrderFiles.clear();
 
-        for (int sortedIndex = 0; sortedIndex < originalOrder.length; sortedIndex++) {
-            ImportOrderFile importOrderFile = originalOrder[sortedOrder[sortedIndex]];
-
-            foundImportOrderFiles.add(importOrderFile);
+        for (ImportOrderVertex importOrderVertex : sortedOrder) {
+            foundImportOrderFiles.add(importOrderVertex.getImportOrderFile());
         }
 
-    }
-
-    private void dependsOn(int depender, int dependendency,
-            List<Integer>[] vertexes) {
-        vertexes[depender].add(dependendency);
     }
 
     private boolean isFileDirectory(ImportOrderFile importOrderFile) {
         return importOrderFile.getDirectory() instanceof FileDeploymentDirectory;
     }
 
-    private int indexOfDependencyWithName(
-            List<ImportOrderFile> foundImportOrderFiles, String dependencyName) {
-        for (int i = 0; i < foundImportOrderFiles.size(); i++) {
-            if (foundImportOrderFiles.get(i).calculateDependencyName().equals(dependencyName)) {
-                return i;
+    private ImportOrderVertex getVertexWithName(List<ImportOrderVertex> vertexes, String dependencyName) {
+        for (int i = 0; i < vertexes.size(); i++) {
+            ImportOrderVertex vertex = vertexes.get(i);
+            if (vertex.getImportOrderFile().calculateDependencyName().equals(dependencyName)) {
+                return vertex;
             }
         }
 
-        return -1;
+        return null;
     }
 
     private void logUnknownDependencyReferenced(

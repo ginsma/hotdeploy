@@ -1,4 +1,4 @@
-package example.deploy.xmlconsistency;
+package example.deploy.xml.consistency;
 
 import java.io.File;
 
@@ -28,9 +28,9 @@ public class VerifyXMLConsistencyListener implements ServletContextListener {
                 }
 
                 XMLConsistencyVerifier verifier =
-                    new XMLConsistencyVerifier(null,
-                        new File(event.getServletContext().getRealPath("/")),
-                        DefaultDiscoverers.getDiscoverers(), null);
+                    new XMLConsistencyVerifier(DefaultDiscoverers.getDiscoverers());
+
+                verifier.setRootDirectory(new File(event.getServletContext().getRealPath("/")));
 
                 verifier.verify();
             }

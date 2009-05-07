@@ -1,4 +1,4 @@
-package example.deploy.xmlconsistency;
+package example.deploy.xml.consistency;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,11 +15,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
+import example.deploy.hotdeploy.util.CheckedCast;
+import example.deploy.hotdeploy.util.CheckedClassCastException;
+import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.XmlParser;
 
 /**
  * Verifies that content XML is consistent and warns in
@@ -34,10 +38,6 @@ public class XMLConsistencyVerifier implements ParseCallback {
     private static final Logger logger =
         Logger.getLogger(XMLConsistencyVerifier.class.getName());
 
-    private static String directoryName;
-
-    private static String classDirectoryNames;
-
     private Set<String> inputTemplates = new HashSet<String>(100);
     private Map<String, String> contentTemplateByExternalId = new HashMap<String,String>(100);
 
@@ -47,38 +47,22 @@ public class XMLConsistencyVerifier implements ParseCallback {
 
     private Set<String> unusedTemplates = new HashSet<String>(100);
 
-    private Collection<File> classDirectories;
+    private Collection<File> classDirectories = new ArrayList<File>();
 
     private File rootDirectory;
 
     private Collection<FileDiscoverer> discoverers;
 
-    /**
-     * Constructor.
-     * @param verifier A verified from which to load present templates and
-     *        content.
-     * @param xmlDirectory The directory where the _import_order file is
-     *        located.
-     * @param classDirectories2 The directories of java class files (note that jars
-     *        are not supported).
-     */
-    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, File rootDirectory, Collection<FileDiscoverer> discoverers, File[] classDirectories) {
-        this.classDirectories = new ArrayList<File>();
+    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, Collection<FileDiscoverer> discoverers) {
+        this(discoverers);
 
-        if (verifier != null) {
-            contentTemplateByExternalId.putAll(verifier.contentTemplateByExternalId);
-            inputTemplates.addAll(verifier.inputTemplates);
-            this.classDirectories.addAll(verifier.classDirectories);
-        }
+        contentTemplateByExternalId.putAll(verifier.contentTemplateByExternalId);
+        inputTemplates.addAll(verifier.inputTemplates);
+        this.classDirectories.addAll(verifier.classDirectories);
+    }
 
+    public XMLConsistencyVerifier(Collection<FileDiscoverer> discoverers) {
         this.discoverers = discoverers;
-        this.rootDirectory = rootDirectory;
-
-        if (classDirectories != null) {
-            for (File classDirectory : classDirectories) {
-                this.classDirectories.add(classDirectory);
-            }
-        }
     }
 
     /**
@@ -105,7 +89,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
         }
 
         if (files == null) {
-            logger.log(Level.WARNING, "Found no files to deploy in " + rootDirectory);
+            logger.log(Level.WARNING, "Found no files to verify in " + rootDirectory);
 
             return false;
         }
@@ -113,7 +97,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
         for (DeploymentFile file : files) {
             logger.log(Level.FINE, "Parsing " + files + "...");
 
-            new XmlParser(file, this);
+            new XmlParser().parse(file, this);
         }
 
         if (!nonFoundContent.isEmpty()) {
@@ -192,7 +176,7 @@ public class XMLConsistencyVerifier implements ParseCallback {
         }
     }
 
-    public void contentFound(DeploymentFile file, String externalId, String inputTemplate) {
+    public void contentFound(DeploymentFile file, String externalId, Major major, String inputTemplate) {
         if (inputTemplate != null) {
             templateReferenceFound(file, inputTemplate);
         }
@@ -227,59 +211,6 @@ public class XMLConsistencyVerifier implements ParseCallback {
         }
 
         unusedTemplates.remove(inputTemplate);
-    }
-
-    /**
-     * Command-line interface. Specify the directory as the first parameter.
-     */
-    public static void main(String[] args) {
-        parseParameters(args);
-
-        if (directoryName == null) {
-            System.err.println("The parameter --dir is required.");
-            System.exit(1);
-        }
-
-        File xmlDirectory = new File(directoryName);
-
-        if (!xmlDirectory.canRead()) {
-            logger.log(Level.WARNING,
-                "The directory " + xmlDirectory.getAbsolutePath() + " does not exist.");
-
-            System.exit(1);
-        }
-
-        File[] classDirectories = null;
-
-        if (classDirectoryNames != null) {
-            String[] classDirectoryNamesArray = classDirectoryNames.split(File.pathSeparator);
-
-            classDirectories = new File[classDirectoryNamesArray.length];
-
-            for (int i = 0; i < classDirectoryNamesArray.length; i++) {
-                classDirectories[i] = new File(classDirectoryNamesArray[i]);
-
-                if (!classDirectories[i].canRead()) {
-                    logger.log(Level.WARNING,
-                            "The class directory " + classDirectories[i].getAbsolutePath() +
-                            " (specified as \"" + classDirectoryNamesArray[i] + "\") could not be read.");
-
-                    System.exit(1);
-                }
-            }
-        }
-
-        XMLConsistencyVerifier verifier;
-
-        verifier = new XMLConsistencyVerifier(null, xmlDirectory, DefaultDiscoverers.getDiscoverers(), classDirectories);
-
-        verifier.verify();
-
-        if (!verifier.nonFoundContent.isEmpty() ||
-                !verifier.nonFoundTemplates.isEmpty() ||
-                !verifier.nonFoundClasses.isEmpty()) {
-            System.exit(1);
-        }
     }
 
     public void classReferenceFound(DeploymentFile file, String className) {
@@ -319,63 +250,21 @@ public class XMLConsistencyVerifier implements ParseCallback {
         }
     }
 
-    private static void parseParameters(String[] args) {
-        String parameter = null;
-
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-
-            if (arg.startsWith("--")) {
-                if (parameter != null) {
-                    parameterFound(parameter, null);
-                }
-
-                parameter = arg.substring(2);
-
-                int eq;
-
-                if ((eq = parameter.indexOf('=')) != -1) {
-                    String value = parameter.substring(eq+1);
-                    parameter = parameter.substring(0, eq);
-                    parameterFound(parameter, value);
-
-                    parameter = null;
-                }
-            }
-            else if (parameter != null) {
-                parameterFound(parameter, arg);
-            }
-        }
-
-        if (parameter != null) {
-            parameterFound(parameter, null);
-        }
+    public File getRootDirectory() {
+        return rootDirectory;
     }
 
-    private static void parameterFound(String parameter, String value) {
-        if (value == null) {
-            System.err.println("Parmater " + parameter + " required a value. Provide it using --" + parameter + "=<value>.");
-            printParameterHelp();
-            System.exit(1);
-        }
-
-        if (parameter.equals("dir")) {
-            directoryName = value;
-        }
-        else if (parameter.equals("classdir")) {
-            classDirectoryNames = value;
-        }
-        else {
-            System.err.println("Unknown parameter " + parameter + ".");
-            printParameterHelp();
-            System.exit(1);
-        }
+    public void setRootDirectory(File rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 
-    private static void printParameterHelp() {
-        System.err.println();
-        System.err.println("Accepted parameters:");
-        System.err.println("  --dir The directory where the _import_order_ file or the content to import is located.");
-        System.err.println("  --classdir The directory where the project classes are built to (optional).");
+    public void addClassDirectory(File classDirectory) {
+        classDirectories.add(classDirectory);
+    }
+
+    public boolean areErrorsFound() {
+        return !nonFoundContent.isEmpty() ||
+            !nonFoundTemplates.isEmpty() ||
+            !nonFoundClasses.isEmpty();
     }
 }

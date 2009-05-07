@@ -1,12 +1,13 @@
-package example.deploy.xmlconsistency;
+package example.deploy.xml.parser;
 
+import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-interface ParseCallback {
+public interface ParseCallback {
     /**
      * A content object with the specified external ID was defined.
      */
-    void contentFound(DeploymentFile file, String externalId, String inputTemplate);
+    void contentFound(DeploymentFile file, String externalId, Major major, String inputTemplate);
 
     /**
      * A template with the specified name (external ID) was defined.
