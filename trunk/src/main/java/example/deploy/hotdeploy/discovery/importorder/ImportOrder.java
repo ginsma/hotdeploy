@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.discovery;
+package example.deploy.hotdeploy.discovery.importorder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,16 +9,17 @@ import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.file.JarDeploymentDirectory;
 
-public class ImportOrderFile extends ArrayList<DeploymentFile>{
+public class ImportOrder extends ArrayList<DeploymentFile>{
     private static final Logger logger =
-        Logger.getLogger(ImportOrderFile.class.getName());
+        Logger.getLogger(ImportOrder.class.getName());
 
     private List<String> dependencies = new ArrayList<String>();
     private DeploymentDirectory directory;
 
-    public ImportOrderFile(DeploymentDirectory directory) {
+    public ImportOrder(DeploymentDirectory directory) {
         this.directory = directory;
     }
 
@@ -32,6 +33,14 @@ public class ImportOrderFile extends ArrayList<DeploymentFile>{
 
     public DeploymentDirectory getDirectory() {
         return directory;
+    }
+
+    public void setDirectory(DeploymentDirectory directory) {
+        this.directory = directory;
+    }
+
+    public void setDirectory(File directory) {
+        this.directory = new FileDeploymentDirectory(directory);
     }
 
     public String calculateDependencyName() {
@@ -83,7 +92,7 @@ public class ImportOrderFile extends ArrayList<DeploymentFile>{
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ImportOrderFile && ((ImportOrderFile) o).getDirectory().equals(directory);
+        return o instanceof ImportOrder && ((ImportOrder) o).getDirectory().equals(directory);
     }
 
     @Override

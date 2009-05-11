@@ -26,4 +26,14 @@ public class JarDeploymentRoot extends JarDeploymentDirectory {
     public String getName() {
         return jarFile.getName();
     }
+
+    @Override
+    public String getRelativeName(DeploymentObject deploymentObject) {
+        if (deploymentObject instanceof JarDeploymentFile &&
+                ((JarDeploymentFile) deploymentObject).getJarFile().equals(getJarFile())) {
+            return ((JarDeploymentFile) deploymentObject).getNameWithinJar();
+        }
+
+        return deploymentObject.getName();
+    }
 }

@@ -29,13 +29,11 @@ public class TestFileChecksumsPolicy extends ManualTestCase {
 
     @Override
     public void setUp() {
-        aFile = new DummyDeploymentFile();
-        aFile.setName("a-test-file");
+        aFile = new DummyDeploymentFile("a-test-file");
         aFile.setQuickChecksum(4711);
         aFile.setSlowChecksum(4712);
 
-        anotherFile = new DummyDeploymentFile();
-        anotherFile.setName("another-test-file");
+        anotherFile = new DummyDeploymentFile("another-test-file");
         anotherFile.setQuickChecksum(4711);
         anotherFile.setSlowChecksum(4712);
     }

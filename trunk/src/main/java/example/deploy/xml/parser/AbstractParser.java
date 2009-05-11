@@ -1,17 +1,23 @@
 package example.deploy.xml.parser;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.polopoly.util.collection.FetchingIterator;
 
+import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
 
 class AbstractParser {
+    private static final Logger logger =
+        Logger.getLogger(AbstractParser.class.getName());
+
     protected ParseCallback callback;
     protected DeploymentFile file;
 
@@ -20,21 +26,44 @@ class AbstractParser {
         this.file = file;
     }
 
-    protected void findContentReferences(Element content) {
-        NodeList children = content.getChildNodes();
+    protected ParsedContentId parseContentId(Element contentIdElement) {
+        Major major = null;
+        String majorName = null;
+        String externalId = null;
 
-        for (int i = 0; i < children.getLength(); i++) {
-            try {
-                Element child =
-                    CheckedCast.cast(children.item(i), Element.class);
+        for (Element externalIdElement : children(contentIdElement)) {
+            if (externalIdElement.getNodeName().equals("major")) {
+                majorName = externalIdElement.getTextContent();
 
-                if (child.getNodeName().equals("externalid")) {
-                    callback.contentReferenceFound(file, child.getTextContent());
-                }
-
-                findContentReferences(child);
-            } catch (CheckedClassCastException e) {
+                major = Major.getMajor(majorName);
             }
+            else if (externalIdElement.getNodeName().equals("externalid")) {
+                externalId = externalIdElement.getTextContent().trim();
+            }
+        }
+
+        if (externalId != null) {
+            if (major == Major.UNKNOWN) {
+                logger.log(Level.WARNING, "The major \"" + majorName +
+                        "\" used to reference the object with external ID \"" + externalId + "\" in file " + file + " was unknown.");
+            }
+
+            return new ParsedContentId(major, externalId);
+        }
+        else {
+            return null;
+        }
+    }
+
+    protected void findContentReferences(Element content) {
+        for (Element child : children(content)) {
+            findContentReferences(child);
+        }
+
+        ParsedContentId contentReference = parseContentId(content);
+
+        if (contentReference != null) {
+            callback.contentReferenceFound(file, contentReference.getMajor(), contentReference.getExternalId());
         }
     }
 

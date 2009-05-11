@@ -34,10 +34,9 @@ class XmlIoParser extends AbstractParser {
     }
 
     private void parseMetadata(Element metadata) {
-        String externalId = null;
+        ParsedContentId contentId = null;
         String inputTemplate = null;
-
-        Major major = null;
+        ParsedContentId securityParentId = null;
 
         for (Element metadataChild : children(metadata)) {
             String nodeName = metadataChild.getNodeName();
@@ -50,34 +49,33 @@ class XmlIoParser extends AbstractParser {
                 }
             }
             else if (nodeName.equals("contentid")) {
-                for (Element externalIdElement : children(metadataChild)) {
-                    if (externalIdElement.getNodeName().equals("major")) {
-                        String majorName = externalIdElement.getTextContent();
-
-                        major = Major.getMajor(majorName);
-                    }
-                    else if (externalIdElement.getNodeName().equals("externalid")) {
-                        externalId = externalIdElement.getTextContent().trim();
-                    }
-                }
-
-                if (major == Major.UNKNOWN) {
-                    logger.log(Level.WARNING, "The major used to specify the object with external ID \"" + externalId + "\" in file " + file + " was unknown.");
-                }
+                contentId = parseContentId(metadataChild);
+            }
+            else if (nodeName.equals("security-parent")) {
+                securityParentId = parseContentId(metadataChild);
             }
         }
 
-        // objects can only be created if the major is specified.
-        if (major != null) {
+        if (contentId != null) {
+            Major major = contentId.getMajor();
+
             if (major == Major.INPUT_TEMPLATE) {
-                callback.templateFound(file, externalId);
+                callback.templateFound(file, contentId.getExternalId());
+            }
+            // objects can only be created if the major is specified.
+            else if (major == Major.UNKNOWN) {
+                callback.contentReferenceFound(file, contentId.getMajor(), contentId.getExternalId());
             }
             else {
-                callback.contentFound(file, externalId, major, inputTemplate);
+                callback.contentFound(file, contentId.getExternalId(), major, inputTemplate);
             }
         }
         else {
-            callback.contentReferenceFound(file, externalId);
+            logger.log(Level.WARNING, "There was a metadata definition in " + file + " that did not contain an external ID.");
+        }
+
+        if (securityParentId != null) {
+            callback.contentReferenceFound(file, securityParentId.getMajor(), securityParentId.getExternalId());
         }
 
         if (inputTemplate != null) {

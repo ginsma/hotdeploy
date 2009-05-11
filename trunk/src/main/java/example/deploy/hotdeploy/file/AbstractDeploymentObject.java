@@ -5,7 +5,7 @@ package example.deploy.hotdeploy.file;
  * A file with an unique name of that file to use as key when comparing file
  * properties. Platform issues makes it impossible to use the file name.
  */
-abstract class AbstractDeploymentObject implements DeploymentObject, Comparable<DeploymentObject>
+public abstract class AbstractDeploymentObject implements DeploymentObject, Comparable<DeploymentObject>
 {
     @Override
     public boolean equals(Object o) {

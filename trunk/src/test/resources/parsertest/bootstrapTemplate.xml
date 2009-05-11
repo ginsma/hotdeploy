@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<batch xmlns="http://www.polopoly.com/polopoly/cm/xmlio">
+  <!-- System templates -->
+  <content updateIfExists="false">
+    <metadata>
+      <contentid>
+        <major>InputTemplate</major>
+        <externalid>example.Template</externalid>
+      </contentid>
+    </metadata>
+  </content>
+</batch>

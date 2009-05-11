@@ -1,4 +1,4 @@
-package example.deploy.xml.parser.cache;
+package example.deploy.hotdeploy.util;
 
 
 public class SingleObjectHolder<T> {

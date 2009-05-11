@@ -112,8 +112,7 @@ public class TestFileChecksums extends ManualTestCase {
     }
 
     private static DummyDeploymentFile createAFile() {
-        DummyDeploymentFile aFile = new DummyDeploymentFile();
-        aFile.setName("a-test-file");
+        DummyDeploymentFile aFile = new DummyDeploymentFile("a-test-file");
         aFile.setQuickChecksum(4711);
         aFile.setSlowChecksum(4712);
 

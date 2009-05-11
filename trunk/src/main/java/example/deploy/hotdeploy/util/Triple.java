@@ -1,4 +1,4 @@
-package example.deploy.xml.parser.cache;
+package example.deploy.hotdeploy.util;
 
 public class Triple<S1, S2, S3> {
     private S1 object1;

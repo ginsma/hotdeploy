@@ -1,7 +1,22 @@
 package example.deploy.hotdeploy.client;
 
-public enum Major {
-    INPUT_TEMPLATE(14, "inputtemplate"), ARTICLE(1, "article"), DEPARTMENT(2, "department"), UNKNOWN(-1, "unknown");
+public enum Major implements Comparable<Major> {
+    UNKNOWN(-1, "unknown"),
+    MAJOR_CONFIG(0, "majorconfig"),
+    ARTICLE(1, "article"),
+    DEPARTMENT(2, "department"),
+    LAYOUT_ELEMENT(7, "layoutelement"),
+    WORKFLOW_TYPE(10, "workflowtype"),
+    WORKFLOW(11, "workflow"),
+    INPUT_TEMPLATE(14, "inputtemplate"),
+    OUTPUT_TEMPLATE(15, "outputtemplate"),
+    APP_CONFIG(17, "appconfig"),
+    USER(18, "userdata"),
+    COMMUNITY(19, "community");
+
+    static {
+        ALL_MAJORS = new Major[] {MAJOR_CONFIG, ARTICLE, DEPARTMENT, LAYOUT_ELEMENT, WORKFLOW, WORKFLOW_TYPE, INPUT_TEMPLATE, OUTPUT_TEMPLATE, APP_CONFIG, USER, COMMUNITY};
+    }
 
     private static Major[] ALL_MAJORS;
     private int integerMajor;
@@ -36,7 +51,7 @@ public enum Major {
         return getName();
     }
 
-    static {
-        ALL_MAJORS = new Major[] {Major.ARTICLE, DEPARTMENT, INPUT_TEMPLATE};
+    public int compare(Major major) {
+        return new Integer(getIntegerMajor()).compareTo(major.getIntegerMajor());
     }
 }

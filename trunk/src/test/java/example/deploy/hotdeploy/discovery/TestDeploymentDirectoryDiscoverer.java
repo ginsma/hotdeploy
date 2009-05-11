@@ -1,9 +1,9 @@
 package example.deploy.hotdeploy.discovery;
 
-import static example.deploy.hotdeploy.discovery.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 import static example.deploy.hotdeploy.discovery.PlatformNeutralPath.unixToPlatformSpecificPath;
 import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDED_TEST_JAR_PATH;
 import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDING_TEST_JAR_PATH;
+import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.jar.JarFile;
 
 import junit.framework.TestCase;
+import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;

@@ -5,19 +5,29 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import example.deploy.hotdeploy.file.AbstractDeploymentObject;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-public class DummyDeploymentFile implements DeploymentFile {
+public class DummyDeploymentFile extends AbstractDeploymentObject implements DeploymentFile {
     private long quickChecksum;
     private long slowChecksum;
     private String name;
+    private InputStream inputStream;
+
+    public DummyDeploymentFile(String name) {
+        setName(name);
+    }
 
     public URL getBaseUrl() throws MalformedURLException {
         throw new IllegalStateException("Not implemented.");
     }
 
     public InputStream getInputStream() throws FileNotFoundException {
-        throw new IllegalStateException("Not implemented.");
+        if (inputStream == null) {
+            throw new IllegalStateException("No input stream set.");
+        }
+
+        return inputStream;
     }
 
     public void setQuickChecksum(long quickChecksum) {
@@ -42,5 +52,14 @@ public class DummyDeploymentFile implements DeploymentFile {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    public void setInputStream(InputStream inputStream) {
+        this.inputStream = inputStream;
     }
 }

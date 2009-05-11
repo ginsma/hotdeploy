@@ -4,22 +4,39 @@ import java.util.HashSet;
 import java.util.Set;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.util.Vertex;
+import example.deploy.hotdeploy.topologicalsort.Edge;
+import example.deploy.hotdeploy.topologicalsort.MultipleEdge;
+import example.deploy.hotdeploy.topologicalsort.SingleEdge;
+import example.deploy.hotdeploy.topologicalsort.Vertex;
 
 public class DeploymentFileVertex implements Vertex<DeploymentFileVertex> {
-    private Set<Vertex<DeploymentFileVertex>> dependencies = new HashSet<Vertex<DeploymentFileVertex>>();
+    private Set<Edge<DeploymentFileVertex>> edges = new HashSet<Edge<DeploymentFileVertex>>();
     private DeploymentFile deploymentFile;
 
     public DeploymentFileVertex(DeploymentFile deploymentFile) {
         this.deploymentFile = deploymentFile;
     }
 
-    public Iterable<Vertex<DeploymentFileVertex>> getDependencies() {
-        return dependencies;
+    public Iterable<Edge<DeploymentFileVertex>> getEdges() {
+        return edges;
     }
 
-    public void addDependency(Vertex<DeploymentFileVertex> vertex) {
-        dependencies.add(vertex);
+    public void addDependency(String externalId, Vertex<DeploymentFileVertex> vertex) {
+        SingleEdge<DeploymentFileVertex> edge = new SingleEdge<DeploymentFileVertex>(vertex);
+        edge.setDescription(externalId);
+        edges.add(edge);
+    }
+
+    public void addDependencies(String externalId, Set<DeploymentFileVertex> vertexes) {
+        if (vertexes.size() == 1) {
+            addDependency(externalId, vertexes.iterator().next());
+        }
+        else {
+            MultipleEdge<DeploymentFileVertex> edge = new MultipleEdge<DeploymentFileVertex>(vertexes);
+
+            edge.setDescription(externalId);
+            edges.add(edge);
+        }
     }
 
     public DeploymentFile getDeploymentFile() {
@@ -40,6 +57,4 @@ public class DeploymentFileVertex implements Vertex<DeploymentFileVertex> {
     public int hashCode() {
         return deploymentFile.hashCode();
     }
-
-
 }

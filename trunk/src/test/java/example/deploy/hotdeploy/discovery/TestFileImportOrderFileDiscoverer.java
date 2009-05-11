@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import junit.framework.TestCase;
+import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
 

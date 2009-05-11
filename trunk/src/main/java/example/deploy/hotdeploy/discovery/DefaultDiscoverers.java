@@ -3,6 +3,8 @@ package example.deploy.hotdeploy.discovery;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
+
 public class DefaultDiscoverers {
     private static ArrayList<FileDiscoverer> discoverers;
 

@@ -10,4 +10,9 @@ public class Reference {
         this.refersTo = refersTo;
         this.inFile = file;
     }
+
+    @Override
+    public String toString() {
+        return refersTo + "<-" + inFile;
+    }
 }

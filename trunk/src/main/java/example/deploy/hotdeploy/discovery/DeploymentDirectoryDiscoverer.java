@@ -1,6 +1,6 @@
 package example.deploy.hotdeploy.discovery;
 
-import static example.deploy.hotdeploy.discovery.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
+import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;

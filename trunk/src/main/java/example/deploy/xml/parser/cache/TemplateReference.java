@@ -1,6 +1,7 @@
 package example.deploy.xml.parser.cache;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.util.SingleObjectHolder;
 import example.deploy.xml.parser.ParseCallback;
 
 public class TemplateReference extends SingleObjectHolder<String> implements SingleCallMemento {

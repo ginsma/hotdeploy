@@ -164,11 +164,11 @@ public class TestMultipleFileDeployer extends TestCase {
 
         singleFileDeployer = new DummySingleFileDeployer();
 
-        aFile = new DummyDeploymentFile();
+        aFile = new DummyDeploymentFile("afile");
         aFile.setQuickChecksum(4711);
         aFile.setSlowChecksum(4712);
 
-        anotherFile = new DummyDeploymentFile();
+        anotherFile = new DummyDeploymentFile("anotherfile");
         anotherFile.setQuickChecksum(4713);
         anotherFile.setSlowChecksum(4714);
 

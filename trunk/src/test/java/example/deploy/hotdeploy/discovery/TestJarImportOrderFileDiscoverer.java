@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.jar.JarFile;
 
 import junit.framework.TestCase;
+import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
+import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentRoot;
@@ -19,7 +21,7 @@ public class TestJarImportOrderFileDiscoverer extends TestCase {
         JarFile file = new JarFile(new File(fileName));
         DeploymentDirectory dir = new JarDeploymentRoot(file);
 
-        ImportOrderFile files = new ImportOrderFileDiscoverer().getFilesToImport(dir);
+        ImportOrder files = new ImportOrderFileDiscoverer().getFilesToImport(dir);
 
         assertEquals(new JarDeploymentFile(file, file.getEntry("b/c.xml")), files.get(0));
 
@@ -39,7 +41,7 @@ public class TestJarImportOrderFileDiscoverer extends TestCase {
         JarFile file = new JarFile(new File(fileName));
         DeploymentDirectory dir = new JarDeploymentRoot(file);
 
-        ImportOrderFile files = new ImportOrderFileDiscoverer().getFilesToImport(dir);
+        ImportOrder files = new ImportOrderFileDiscoverer().getFilesToImport(dir);
 
         String firstDependency = files.getDependencies().iterator().next();
 

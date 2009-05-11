@@ -67,7 +67,7 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements Deplo
         return file;
     }
 
-    public String getEntryName() {
+    public String getNameWithinJar() {
         if (entry != null) {
             return entry.getName();
         }

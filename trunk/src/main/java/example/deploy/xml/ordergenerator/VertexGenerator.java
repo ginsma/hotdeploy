@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,39 +26,75 @@ public class VertexGenerator {
     }
 
     public Collection<DeploymentFileVertex> generateVertexes() {
-        Map<String, DeploymentFile> definingFileByExternalId = definitionsAndReferences.definingFileByExternalId;
+        Map<String, Set<DeploymentFile>> definingFileByExternalId =
+            definitionsAndReferences.definingFilesByExternalId;
 
         List<Reference> references = definitionsAndReferences.references;
 
         addDependencies(references, definingFileByExternalId);
 
+        // add files that don't have any definitions.
+        for (Set<DeploymentFile> fileSet : definitionsAndReferences.definingFilesByExternalId.values()) {
+            for (DeploymentFile file : fileSet) {
+                getVertex(file);
+            }
+        }
+
         return vertexByFile.values();
     }
 
     private void addDependencies(List<Reference> references,
-            Map<String, DeploymentFile> definingFileByExternalId) {
-        for (Reference reference : references) {
-            DeploymentFile definingFile =
-                definingFileByExternalId.get(reference.refersTo);
+            Map<String, Set<DeploymentFile>> definingFilesByExternalId) {
+        for (final Reference reference : references) {
+            Set<DeploymentFile> definingFiles =
+                definingFilesByExternalId.get(reference.refersTo);
 
-            // do this first so the vertex is added to the list
-            DeploymentFileVertex referringFileVertex = getVertex(reference.inFile);
+            if (definingFiles != null) {
+                addDependencies(reference, definingFiles);
 
-            if (definingFile == null) {
-                if (missingDeclarations.add(reference.refersTo)) {
-//                    logger.log(Level.WARNING, "Cannot find any file defining \"" + reference.refersTo + "\".");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, definingFiles + " define \"" + reference.refersTo + "\".");
                 }
+            }
+            else {
+                // create the vertex
+                getVertex(reference.inFile);
+
+                if (missingDeclarations.add(reference.refersTo)) {
+                    logger.log(Level.FINE, "Cannot find any file defining \"" + reference.refersTo + "\".");
+                }
+            }
+        }
+    }
+
+    private void addDependencies(Reference reference, Set<DeploymentFile> definingFiles) {
+        DeploymentFile file = reference.inFile;
+        String externalId = reference.refersTo;
+
+        // do this first so the vertex is added to the list
+        DeploymentFileVertex referringFileVertex = getVertex(file);
+
+        Set<DeploymentFileVertex> referredVertexes =
+            toVertexSetExcludingFile(definingFiles, file);
+
+        if (!referredVertexes.isEmpty()) {
+            referringFileVertex.addDependencies(externalId, referredVertexes);
+        }
+    }
+
+    private Set<DeploymentFileVertex> toVertexSetExcludingFile(
+            Set<DeploymentFile> files, final DeploymentFile excludeFile) {
+        Set<DeploymentFileVertex> result = new HashSet<DeploymentFileVertex>();
+
+        for (DeploymentFile file : files) {
+            if (file.equals(excludeFile)) {
                 continue;
             }
 
-            DeploymentFileVertex definitionFileVertex = getVertex(definingFile);
-
-            if (!referringFileVertex.equals(definitionFileVertex)) {
-if (reference.refersTo.indexOf("mailte") != -1)
-                logger.log(Level.INFO, referringFileVertex + " depends on " + definitionFileVertex + " because it defines " + reference.refersTo + ".");
-                referringFileVertex.addDependency(definitionFileVertex);
-            }
+            result.add(getVertex(file));
         }
+
+        return result;
     }
 
     private DeploymentFileVertex getVertex(DeploymentFile file) {

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.TestCase;
+import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
@@ -42,7 +43,7 @@ public class TestResourceFileDiscoverer extends TestCase {
     private void assertContainsFileInJar(String fileNameInJar) {
         for (DeploymentFile foundFile : foundFiles) {
             if (foundFile instanceof JarDeploymentFile &&
-                    ((JarDeploymentFile) foundFile).getEntryName().equals(fileNameInJar)) {
+                    ((JarDeploymentFile) foundFile).getNameWithinJar().equals(fileNameInJar)) {
                 return;
             }
         }
@@ -55,13 +56,13 @@ public class TestResourceFileDiscoverer extends TestCase {
     }
 
     public void testOrder() {
-        List<ImportOrderFile> importOrderFiles =
+        List<ImportOrder> importOrderFiles =
             discoverer.getImportOrderFiles(getClass().getClassLoader());
 
-        Iterator<ImportOrderFile> importOrderFileIterator = importOrderFiles.iterator();
+        Iterator<ImportOrder> importOrderFileIterator = importOrderFiles.iterator();
 
-        ImportOrderFile firstImportOrderFile = importOrderFileIterator.next();
-        ImportOrderFile secondImportOrderFile = importOrderFileIterator.next();
+        ImportOrder firstImportOrderFile = importOrderFileIterator.next();
+        ImportOrder secondImportOrderFile = importOrderFileIterator.next();
 
         assertEquals(TestFileConstants.DEPENDED_TEST_JAR_DEPENDENCY_NAME, firstImportOrderFile.calculateDependencyName());
         assertEquals(TestFileConstants.DEPENDING_TEST_JAR_DEPENDENCY_NAME, secondImportOrderFile.calculateDependencyName());

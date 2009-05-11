@@ -22,7 +22,7 @@ public interface ParseCallback {
     /**
      * A content was referenced.
      */
-    void contentReferenceFound(DeploymentFile file, String externalId);
+    void contentReferenceFound(DeploymentFile file, Major major, String externalId);
 
     /**
      * A class was referenced.

@@ -49,7 +49,7 @@ public class TestDirectoryState extends TestCase {
     public void setUp() {
         directoryState = new DefaultDirectoryState(new NonPersistedFileChecksums());
 
-        file = new DummyDeploymentFile();
+        file = new DummyDeploymentFile("any");
         file.setQuickChecksum(4711);
         file.setSlowChecksum(4712);
     }

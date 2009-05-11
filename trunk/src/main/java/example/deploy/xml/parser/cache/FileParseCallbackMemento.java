@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.util.SingleObjectHolder;
 import example.deploy.xml.parser.ParseCallback;
 
 public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCallMemento>> implements ParseCallback {
@@ -29,8 +30,8 @@ public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCall
         createMemento(foundInFile, new ContentMemento(externalId, major, inputTemplate));
     }
 
-    public void contentReferenceFound(DeploymentFile foundInFile, String externalId) {
-        createMemento(foundInFile, new ContentReferenceMemento(externalId));
+    public void contentReferenceFound(DeploymentFile foundInFile, Major major, String externalId) {
+        createMemento(foundInFile, new ContentReferenceMemento(major, externalId));
     }
 
     public void templateFound(DeploymentFile foundInFile, String inputTemplate) {

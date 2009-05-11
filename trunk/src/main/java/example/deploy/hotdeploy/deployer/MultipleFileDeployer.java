@@ -114,13 +114,21 @@ public class MultipleFileDeployer
             throw new FatalDeployException("Could not record deployment state after deploy: " + e.getMessage(), e);
         }
 
-        int unmodifiedFiles = filesToImport.size() - successfulFiles.size() - failedFiles.size();
-
-        logger.log(Level.INFO, "Imported " + successfulFiles.size() + " file(s) successfully. " +
-                unmodifiedFiles + " file(s) had not been modified. " +
-    		"Import failed for " + failedFiles.size() + " file(s)");
+        logResult(filesToImport);
 
         return failedFiles;
+    }
+
+    private void logResult(Collection<DeploymentFile> filesToImport) {
+        logger.log(Level.INFO, getResultMessage(filesToImport));
+    }
+
+    public String getResultMessage(Collection<DeploymentFile> filesToImport) {
+        int unmodifiedFiles = filesToImport.size() - successfulFiles.size() - failedFiles.size();
+
+        return "Imported " + successfulFiles.size() + " file(s) successfully. " +
+                unmodifiedFiles + " file(s) had not been modified. " +
+    		"Import failed for " + failedFiles.size() + " file(s)";
     }
 
     public Set<DeploymentFile> discoverAndDeploy(Collection<FileDiscoverer> discoverers)

@@ -34,6 +34,14 @@ public class TestFileDeploymentFile extends TestCase {
         assertEquals("file:" + new File(".").getAbsolutePath() + "/", file2.getBaseUrl().toString());
     }
 
+    public void testRelativePath() {
+        FileDeploymentDirectory grandParent = new FileDeploymentDirectory(new File(file1.getName()).getParentFile().getParentFile());
+        FileDeploymentDirectory parent = new FileDeploymentDirectory(new File(file1.getName()).getParentFile());
+
+        assertEquals("resources/a.xml", grandParent.getRelativeName(file1));
+        assertEquals("resources", grandParent.getRelativeName(parent));
+    }
+
     @Override
     public void setUp() {
         file1 = new FileDeploymentFile(

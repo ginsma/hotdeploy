@@ -42,9 +42,9 @@ public class BootstrapGenerator {
             resolveMajor(externalId, major);
         }
 
-        public void contentReferenceFound(DeploymentFile file, String externalId) {
+        public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
             if (isNotYetDefined(externalId)) {
-                bootstrap(null, externalId);
+                bootstrap(major, externalId);
             }
         }
 
@@ -63,10 +63,10 @@ public class BootstrapGenerator {
 
             if (existingBootstrap != null) {
                 if (isDisagreeing(major, existingBootstrap)) {
-                    logger.log(Level.WARNING, "The major of " + externalId + " is unclear: it might " + existingBootstrap.getMajor() + " or " + major + ".");
+                    logger.log(Level.WARNING, "The major of " + externalId + " is unclear: it might be " + existingBootstrap.getMajor() + " or " + major + ".");
                 }
 
-                if (existingBootstrap.getMajor() == null) {
+                if (existingBootstrap.getMajor() == Major.UNKNOWN) {
                     existingBootstrap.setMajor(major);
                 }
             }
@@ -78,8 +78,8 @@ public class BootstrapGenerator {
         private boolean isDisagreeing(Major aMajor,
                 BootstrapContent anotherMajor) {
             return anotherMajor.getMajor() != aMajor &&
-                    aMajor != null &&
-                    anotherMajor.getMajor() != null;
+                    aMajor != Major.UNKNOWN &&
+                    anotherMajor.getMajor() != Major.UNKNOWN;
         }
 
         private boolean isNotYetDefined(String externalId) {
@@ -107,6 +107,9 @@ public class BootstrapGenerator {
             // or errors), so remove those from the bootstrap.
             if (definedExternalIds.contains(bootstrapContent.getExternalId())) {
                 result.add(bootstrapContent);
+            }
+            else {
+                result.addNeverCreatedButReferenced(bootstrapContent);
             }
         }
 

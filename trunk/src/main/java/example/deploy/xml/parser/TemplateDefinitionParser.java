@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
@@ -15,15 +16,28 @@ class TemplateDefinitionParser extends AbstractParser {
 
         for (Element inputTemplate : children(root)) {
             if (inputTemplate.getNodeName().equals("input-template")) {
-                parseTemplate(inputTemplate);
+                parseInputTemplate(inputTemplate);
             }
             else if (inputTemplate.getNodeName().equals("output-template")) {
-                callback.templateFound(file, inputTemplate.getAttribute("name"));
+                parseOutputTemplate(file, callback, inputTemplate);
             }
         }
     }
 
-    private void parseTemplate(Element inputTemplate) {
+    private void parseOutputTemplate(DeploymentFile file,
+            ParseCallback callback, Element outputTemplate) {
+        String outputTemplatesInputTemplate =
+            outputTemplate.getAttribute("input-template");
+
+        String outputTemplateName = outputTemplate.getAttribute("name");
+
+        callback.contentFound(file,
+                outputTemplateName, Major.OUTPUT_TEMPLATE,
+                outputTemplatesInputTemplate);
+        callback.templateReferenceFound(file, outputTemplatesInputTemplate);
+    }
+
+    private void parseInputTemplate(Element inputTemplate) {
         String name = inputTemplate.getAttribute("name");
 
         callback.templateFound(file, name);
@@ -48,6 +62,13 @@ class TemplateDefinitionParser extends AbstractParser {
                 String wrapperClass = field.getTextContent().trim();
 
                 callback.classReferenceFound(file, wrapperClass);
+            }
+            else if (nodeName.equals("output-templates")) {
+                for (Element templateId : children(field)) {
+                    if (templateId.getNodeName().equals("id")) {
+                        callback.contentReferenceFound(file, Major.OUTPUT_TEMPLATE, templateId.getTextContent().trim());
+                    }
+                }
             }
         }
     }
@@ -74,14 +95,14 @@ class TemplateDefinitionParser extends AbstractParser {
                     try {
                         Element id = CheckedCast.cast(ids.item(k), Element.class);
 
-                        parseContentId(id);
+                        parseContentIdReference(id);
                     }
                     catch (CheckedClassCastException e) {
                     }
                 }
             }
             else if (param.getNodeName().equals("idparam")) {
-                parseContentId(param);
+                parseContentIdReference(param);
             }
         }
 
@@ -104,28 +125,18 @@ class TemplateDefinitionParser extends AbstractParser {
         }
     }
 
-    private void parseContentId(Element param) {
-        String externalId = null;
-        boolean isTemplate = false;
+    private void parseContentIdReference(Element param) {
+        ParsedContentId contentId = parseContentId(param);
 
-        for (Element id : children(param)) {
-            if (id.getNodeName().equals("externalid")) {
-                externalId = id.getTextContent().trim();
-            }
-            else if (id.getNodeName().equals("major")) {
-                isTemplate = isMajorInputTemplate(id.getTextContent().trim());
-            }
-        }
-
-        if (externalId == null) {
+        if (contentId == null) {
             return;
         }
 
-        if (isTemplate) {
-            callback.templateReferenceFound(file, externalId);
+        if (contentId.getMajor() == Major.INPUT_TEMPLATE) {
+            callback.templateReferenceFound(file, contentId.getExternalId());
         }
         else {
-            callback.contentReferenceFound(file, externalId);
+            callback.contentReferenceFound(file, contentId.getMajor(), contentId.getExternalId());
         }
     }
 }

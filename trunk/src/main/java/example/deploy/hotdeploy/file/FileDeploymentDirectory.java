@@ -14,14 +14,21 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
 
     public FileDeploymentDirectory(File file) {
         this.file = file;
-   }
+    }
 
     public boolean exists() {
         return file.exists() && file.canRead();
     }
 
     public DeploymentObject getFile(String fileName) throws FileNotFoundException {
-        File newFile = new File(file, fileName);
+        File newFile;
+
+        if (new File(fileName).isAbsolute()) {
+            newFile = new File(fileName);
+        }
+        else {
+            newFile = new File(file, fileName);
+        }
 
         if (!newFile.exists()) {
             throw new FileNotFoundException("File " + newFile.getAbsolutePath() + " does not exist.");
@@ -61,5 +68,18 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
 
     public String getName() {
         return file.getAbsolutePath();
+    }
+
+    public String getRelativeName(DeploymentObject deploymentObject) {
+        if (deploymentObject instanceof FileDeploymentFile || deploymentObject instanceof FileDeploymentDirectory) {
+            String fileName = deploymentObject.getName();
+            String directoryName = getName();
+
+            if (fileName.startsWith(directoryName + File.separator)) {
+                return fileName.substring(directoryName.length() + 1);
+            }
+        }
+
+        return deploymentObject.getName();
     }
 }

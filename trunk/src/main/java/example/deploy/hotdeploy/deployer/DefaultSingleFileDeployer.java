@@ -63,7 +63,7 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
             importer.importXML(
                 xmlDocument,
                 ((JarDeploymentFile) fileToImport).getJarFile(),
-                ((JarDeploymentFile) fileToImport).getEntryName());
+                ((JarDeploymentFile) fileToImport).getNameWithinJar());
         }
         else {
             importer.importXML(

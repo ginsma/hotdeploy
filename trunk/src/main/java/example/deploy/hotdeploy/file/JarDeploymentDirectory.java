@@ -30,7 +30,7 @@ public class JarDeploymentDirectory extends AbstractDeploymentObject implements 
             if (!entry.isDirectory()) {
                 throw new RuntimeException("Attempt to get subdirectory " + fileName + " from file " + this + ".");
             }
-            fileName = entry.getName() + fileName;
+            fileName = getNameWithinJar() + fileName;
         }
 
         ZipEntry newEntry = jarFile.getEntry(fileName + '/');
@@ -70,12 +70,12 @@ public class JarDeploymentDirectory extends AbstractDeploymentObject implements 
     }
 
     protected boolean isInThisDir(JarEntry resultEntry) {
-        return resultEntry.getName().startsWith(entry.getName()) &&
-            !resultEntry.getName().equals(entry.getName());
+        return resultEntry.getName().startsWith(getNameWithinJar()) &&
+            !resultEntry.getName().equals(getNameWithinJar());
     }
 
     public String getName() {
-        String nameWithinJar = entry.getName();
+        String nameWithinJar = getNameWithinJar();
 
         if (nameWithinJar.endsWith("/")) {
             nameWithinJar = nameWithinJar.substring(0, nameWithinJar.length()-1);
@@ -84,7 +84,29 @@ public class JarDeploymentDirectory extends AbstractDeploymentObject implements 
         return jarFile.getName() + "!" + nameWithinJar;
     }
 
+    private String getNameWithinJar() {
+        return entry.getName();
+    }
+
     public String getJarFileName() {
         return jarFile.getName();
+    }
+
+    public String getRelativeName(DeploymentObject deploymentObject) {
+        if (deploymentObject instanceof JarDeploymentFile &&
+                ((JarDeploymentFile) deploymentObject).getJarFile().equals(getJarFile())) {
+            String fileName = ((JarDeploymentFile) deploymentObject).getNameWithinJar();
+            String directoryName = getNameWithinJar();
+
+            if (fileName.startsWith(directoryName)) {
+                return fileName.substring(directoryName.length());
+            }
+        }
+
+        return deploymentObject.getName();
+    }
+
+    protected JarFile getJarFile() {
+        return jarFile;
     }
 }

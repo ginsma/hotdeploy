@@ -2,6 +2,8 @@ package example.deploy.xml.parser.cache;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.util.SingleObjectHolder;
+import example.deploy.hotdeploy.util.Triple;
 import example.deploy.xml.parser.ParseCallback;
 
 public class ContentMemento extends SingleObjectHolder<Triple<String, Major, String>> implements SingleCallMemento {
