@@ -15,7 +15,6 @@ import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileParser;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
 import example.deploy.xml.bootstrap.Bootstrap;
 import example.deploy.xml.bootstrap.BootstrapContent;
@@ -56,42 +55,28 @@ public class HotdeployGenerateBootstrapTool implements Tool<BootstrapParameters>
     }
 
     private ImportOrderFile readImportOrder(
-            FileDeploymentFile importOrderFileAsDeploymentFile,
-            FileDeploymentDirectory directory) throws IOException {
-        ImportOrderFile importOrder = new ImportOrderFileParser(directory, importOrderFileAsDeploymentFile).parse();
+            File importOrderFile) throws IOException {
+        ImportOrderFile importOrder =
+            new ImportOrderFileParser(importOrderFile).parse();
+
         return importOrder;
     }
 
-    private void writeImportOrder(File importOrderFile, ImportOrderFile importOrder)
+    private void writeImportOrder(ImportOrderFile importOrderFile)
             throws IOException {
-        FileDeploymentDirectory directory = new FileDeploymentDirectory(importOrderFile.getParentFile());
-
-        FileWriter fileWriter = new FileWriter(importOrderFile);
-
-        try {
-            new ImportOrderFileWriter(directory, importOrder).write(fileWriter);
-        }
-        finally {
-            fileWriter.close();
-        }
+        new ImportOrderFileWriter(importOrderFile).write();
     }
 
     private void addBootstrapToImportOrder(File importOrderFile, File bootstrapFile) {
         try {
-            FileDeploymentFile importOrderFileAsDeploymentFile = new FileDeploymentFile(importOrderFile);
-
-            FileDeploymentDirectory directory =
-                new FileDeploymentDirectory(importOrderFile.getParentFile());
-
-            ImportOrderFile importOrder = readImportOrder(
-                    importOrderFileAsDeploymentFile, directory);
+            ImportOrderFile importOrder = readImportOrder(importOrderFile);
 
             FileDeploymentFile bootstrapFileAsDeploymentFile = new FileDeploymentFile(bootstrapFile);
 
             importOrder.removeDeploymentObject(bootstrapFileAsDeploymentFile);
             importOrder.addDeploymentObject(0, bootstrapFileAsDeploymentFile);
 
-            writeImportOrder(importOrderFile, importOrder);
+            writeImportOrder(importOrder);
 
             System.out.println("Added bootstrap file to import order " + importOrderFile + ".");
         } catch (IOException e) {
@@ -140,10 +125,13 @@ public class HotdeployGenerateBootstrapTool implements Tool<BootstrapParameters>
         Bootstrap bootstrap =
             new BootstrapGenerator(new XmlParser()).generateBootstrap(deploymentFiles);
 
+        // eliminate present files.
+        new PresentFileReader(parameters.getDirectory(), bootstrap).read();
+
         List<BootstrapContent> notBootstrapped = bootstrap.getNeverCreatedButReferenced();
 
         if (parameters.isBootstrapNonCreated()) {
-            bootstrapNonCreated(parameters.getDirectory(), bootstrap, notBootstrapped);
+            bootstrapNonCreated(bootstrap, notBootstrapped);
         }
         else {
             if (!notBootstrapped.isEmpty()) {
@@ -166,11 +154,7 @@ public class HotdeployGenerateBootstrapTool implements Tool<BootstrapParameters>
         }
     }
 
-    private void bootstrapNonCreated(File directory,
-            Bootstrap bootstrap, List<BootstrapContent> notBootstrapped) {
-        // elemininate present files.
-        new PresentFileReader(directory, bootstrap).read();
-
+    private void bootstrapNonCreated(Bootstrap bootstrap, List<BootstrapContent> notBootstrapped) {
         for (BootstrapContent bootstrapContent : notBootstrapped) {
             bootstrap.add(bootstrapContent);
         }
