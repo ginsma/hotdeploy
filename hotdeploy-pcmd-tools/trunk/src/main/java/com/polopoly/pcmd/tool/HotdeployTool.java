@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.pcmd.bootstrap.BootstrapFileGenerator;
+import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
@@ -28,19 +29,37 @@ import example.deploy.xml.parser.XmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
 
 public class HotdeployTool implements Tool<HotdeployParameters> {
-    private final class LoggingSingleFileDeployer extends
-    DefaultSingleFileDeployer {
-        private LoggingSingleFileDeployer(PolicyCMServer server) {
+    private final class LoggingSingleFileDeployer extends DefaultSingleFileDeployer {
+        private int fileCount;
+        private int imported;
+
+        private LoggingSingleFileDeployer(PolicyCMServer server, int fileCount) {
             super(server);
+
+            this.fileCount = fileCount;
         }
 
         @Override
         public boolean importAndHandleException(
-                DeploymentFile fileToImport)
-        throws FatalDeployException {
-            System.out.println("Importing " + fileToImport + "...");
+                DeploymentFile fileToImport) throws FatalDeployException {
+            StringBuffer message = new StringBuffer(100);
+
+            message.append("Importing ");
+            message.append(fileToImport);
+
+            if (fileCount > 10) {
+                message.append(" (" + getPercentage(imported++) + "%)");
+            }
+
+            message.append("...");
+
+            System.out.println(message);
 
             return super.importAndHandleException(fileToImport);
+        }
+
+        private String getPercentage(int i) {
+            return Integer.toString(100 * imported / fileCount);
         }
     }
 
@@ -136,7 +155,7 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
                     " found in " + parameters.getFileOrDirectory().getAbsolutePath() + "...");
 
             MultipleFileDeployer deployer =
-                createDeployer(context, parameters.getDirectory());
+                createDeployer(context, parameters.getDirectory(), files.size());
 
             deployer.deploy(files);
 
@@ -148,9 +167,9 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
         }
     }
 
-    private MultipleFileDeployer createDeployer(PolopolyContext context, File directory) {
+    private MultipleFileDeployer createDeployer(PolopolyContext context, File directory, int fileCount) {
         MultipleFileDeployer deployer = new MultipleFileDeployer(
-                new LoggingSingleFileDeployer(context.getPolicyCMServer()),
+                new LoggingSingleFileDeployer(context.getPolicyCMServer(), fileCount),
                 directory,
                 directoryState);
 
@@ -167,7 +186,7 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
             }
 
             MultipleFileDeployer deployer =
-                createDeployer(context, new File("."));
+                createDeployer(context, new File("."), resourceFiles.size());
 
             deployer.deploy(resourceFiles);
 

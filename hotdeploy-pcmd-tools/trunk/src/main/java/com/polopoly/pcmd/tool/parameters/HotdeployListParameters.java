@@ -1,4 +1,4 @@
-package com.polopoly.pcmd.tool;
+package com.polopoly.pcmd.tool.parameters;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
@@ -9,7 +9,7 @@ import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.client.Major;
 
-public class ListParameters extends FilesToDeployParameters {
+public class HotdeployListParameters extends FilesToDeployParameters {
     private static final String MAJOR_OPTION = "major";
     private Major major;
 

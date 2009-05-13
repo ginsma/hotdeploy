@@ -1,11 +1,11 @@
-package com.polopoly.pcmd.tool;
+package com.polopoly.pcmd.tool.parameters;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
 import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.util.client.PolopolyContext;
 
-public class FindParameters extends FilesToDeployParameters {
+public class HotdeployFindParameters extends FilesToDeployParameters {
     private String externalId;
 
     @Override

@@ -1,14 +1,15 @@
 package com.polopoly.pcmd.tool;
 
 import static com.polopoly.pcmd.bootstrap.BootstrapFileGenerator.BOOTSTRAP_FILE_NAME;
-import static com.polopoly.pcmd.tool.BootstrapParameters.BOOTSTRAP_NON_CREATED_PARAMETER;
-import static com.polopoly.pcmd.tool.BootstrapParameters.IGNORE_PRESENT;
+import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.BOOTSTRAP_NON_CREATED_PARAMETER;
+import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.IGNORE_PRESENT;
 import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
 import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.pcmd.parser.BooleanParser;
+import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 public class HotdeployParameters extends FilesToDeployParameters {

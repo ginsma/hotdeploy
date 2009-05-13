@@ -1,6 +1,6 @@
-package com.polopoly.pcmd.tool;
+package com.polopoly.pcmd.tool.parameters;
 
-import static com.polopoly.pcmd.tool.BootstrapParameters.IGNORE_PRESENT;
+import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.IGNORE_PRESENT;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
@@ -8,7 +8,7 @@ import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.util.client.PolopolyContext;
 
-public class ValidateParameters extends FilesToDeployParameters {
+public class HotdeployValidateParameters extends FilesToDeployParameters {
     private boolean ignorePresent = false;
 
     @Override

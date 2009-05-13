@@ -2,48 +2,29 @@ package com.polopoly.pcmd.tool;
 
 import java.util.List;
 
+import com.polopoly.pcmd.tool.parameters.HotdeployFindParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.XmlParser;
 
-public class HotdeployFindTool implements Tool<FindParameters> {
+public class HotdeployFindTool implements Tool<HotdeployFindParameters> {
 
-    public class FindCallback implements ParseCallback {
+    public class ReferenceGatherer implements ParseCallback {
         private static final String DECLARATION_PREFIX = "";
         private static final String REFERENCE_PREFIX = "<- ";
 
         private String searchForExternalId;
         private DeploymentFile lastFile;
 
-        public FindCallback(String searchForExternalId) {
+        public ReferenceGatherer(String searchForExternalId) {
             this.searchForExternalId = searchForExternalId;
         }
 
         public void classReferenceFound(DeploymentFile file, String klass) {
-        }
-
-        public void contentFound(DeploymentFile file, String externalId,
-                Major major, String inputTemplate) {
-            declarationFound(file, externalId);
-        }
-
-        public void templateFound(DeploymentFile file, String inputTemplate) {
-            declarationFound(file, inputTemplate);
-        }
-
-        private void declarationFound(DeploymentFile file, String externalId) {
-            if (searchForExternalId.equals(externalId)) {
-                printFile(DECLARATION_PREFIX, file);
-            }
-        }
-
-        private void referenceFound(DeploymentFile file, String externalId) {
-            if (searchForExternalId.equals(externalId)) {
-                printFile(REFERENCE_PREFIX, file);
-            }
         }
 
         private void printFile(String prefix, DeploymentFile file) {
@@ -57,26 +38,31 @@ public class HotdeployFindTool implements Tool<FindParameters> {
             lastFile = file;
         }
 
-        public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
-            referenceFound(file, externalId);
+        public void contentFound(ParseContext context, String externalId,
+                Major major, String inputTemplate) {
+            if (searchForExternalId.equals(externalId)) {
+                printFile(DECLARATION_PREFIX, context.getFile());
+            }
         }
 
-        public void templateReferenceFound(DeploymentFile file,
-                String inputTemplate) {
-            referenceFound(file, inputTemplate);
+        public void contentReferenceFound(ParseContext context, Major major,
+                String externalId) {
+            if (searchForExternalId.equals(externalId)) {
+                printFile(REFERENCE_PREFIX, context.getFile());
+            }
         }
     }
 
-    public FindParameters createParameters() {
-        return new FindParameters();
+    public HotdeployFindParameters createParameters() {
+        return new HotdeployFindParameters();
     }
 
-    public void execute(PolopolyContext context, FindParameters parameters) {
+    public void execute(PolopolyContext context, HotdeployFindParameters parameters) {
         List<DeploymentFile> files = parameters.discoverFiles();
 
         XmlParser parser = new XmlParser();
 
-        ParseCallback callback = new FindCallback(parameters.getExternalId());
+        ParseCallback callback = new ReferenceGatherer(parameters.getExternalId());
 
         for (DeploymentFile file : files) {
             parser.parse(file, callback);

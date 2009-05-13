@@ -1,4 +1,4 @@
-package com.polopoly.pcmd.tool;
+package com.polopoly.pcmd.tool.parameters;
 
 import java.io.File;
 import java.util.Collections;

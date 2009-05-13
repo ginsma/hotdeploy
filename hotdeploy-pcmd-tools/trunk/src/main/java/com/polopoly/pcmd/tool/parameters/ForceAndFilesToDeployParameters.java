@@ -1,4 +1,4 @@
-package com.polopoly.pcmd.tool;
+package com.polopoly.pcmd.tool.parameters;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
@@ -12,7 +12,7 @@ public class ForceAndFilesToDeployParameters extends FilesToDeployParameters {
 
     public static final String BOOTSTRAP_NON_CREATED_PARAMETER = "includenotcreated";
     public static final String IGNORE_PRESENT = "ignorepresent";
-    static final String FORCE_PARAMETER = "force";
+    public static final String FORCE_PARAMETER = "force";
 
     @Override
     public void getHelp(ParameterHelp help) {

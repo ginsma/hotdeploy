@@ -2,6 +2,7 @@ package com.polopoly.pcmd.tool;
 
 import java.util.List;
 
+import com.polopoly.pcmd.tool.parameters.HotdeployValidateParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
@@ -10,13 +11,13 @@ import example.deploy.xml.consistency.PresentFileReader;
 import example.deploy.xml.consistency.VerifyResult;
 import example.deploy.xml.consistency.XMLConsistencyVerifier;
 
-public class HotdeployValidateTool implements Tool<ValidateParameters> {
+public class HotdeployValidateTool implements Tool<HotdeployValidateParameters> {
 
-    public ValidateParameters createParameters() {
-        return new ValidateParameters();
+    public HotdeployValidateParameters createParameters() {
+        return new HotdeployValidateParameters();
     }
 
-    public void execute(PolopolyContext context, ValidateParameters parameters) {
+    public void execute(PolopolyContext context, HotdeployValidateParameters parameters) {
         List<DeploymentFile> files = parameters.discoverFiles();
 
         System.out.println("Validating " + Plural.count(files, "file") + "...");

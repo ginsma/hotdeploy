@@ -3,16 +3,17 @@ package com.polopoly.pcmd.tool;
 import java.util.List;
 
 import com.polopoly.pcmd.bootstrap.BootstrapFileGenerator;
+import com.polopoly.pcmd.tool.parameters.HotdeployBootstrapParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-public class HotdeployGenerateBootstrapTool implements Tool<BootstrapParameters> {
-    public BootstrapParameters createParameters() {
-        return new BootstrapParameters();
+public class HotdeployGenerateBootstrapTool implements Tool<HotdeployBootstrapParameters> {
+    public HotdeployBootstrapParameters createParameters() {
+        return new HotdeployBootstrapParameters();
     }
 
-    public void execute(PolopolyContext context, BootstrapParameters parameters) {
+    public void execute(PolopolyContext context, HotdeployBootstrapParameters parameters) {
         List<DeploymentFile> deploymentFiles = parameters.discoverFiles();
 
         if (deploymentFiles.size() == 0) {

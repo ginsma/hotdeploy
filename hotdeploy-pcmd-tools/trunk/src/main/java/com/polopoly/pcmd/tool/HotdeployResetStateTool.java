@@ -1,5 +1,6 @@
 package com.polopoly.pcmd.tool;
 
+import com.polopoly.pcmd.tool.parameters.EmptyParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.state.CouldNotFetchChecksumsException;

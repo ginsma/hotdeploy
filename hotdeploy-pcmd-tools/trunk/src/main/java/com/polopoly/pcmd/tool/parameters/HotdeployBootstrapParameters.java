@@ -1,4 +1,4 @@
-package com.polopoly.pcmd.tool;
+package com.polopoly.pcmd.tool.parameters;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
@@ -6,7 +6,7 @@ import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.util.client.PolopolyContext;
 
-public class BootstrapParameters extends ForceAndFilesToDeployParameters {
+public class HotdeployBootstrapParameters extends ForceAndFilesToDeployParameters {
     private boolean force = false;
     private boolean bootstrapNonCreated = false;
 

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import com.polopoly.pcmd.tool.BootstrapParameters;
+import com.polopoly.pcmd.tool.parameters.HotdeployBootstrapParameters;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
@@ -55,7 +55,7 @@ public class BootstrapFileGenerator {
 
     void logReferencedButNotCreated(List<BootstrapContent> notBootstrapped) {
         System.out.println(notBootstrapped.size() + " content object" + plural(notBootstrapped.size()) +
-                " were referenced but never created within the files to deploy. Use --" + BootstrapParameters.BOOTSTRAP_NON_CREATED_PARAMETER +
+                " were referenced but never created within the files to deploy. Use --" + HotdeployBootstrapParameters.BOOTSTRAP_NON_CREATED_PARAMETER +
                 " to bootstrap these objects too.");
 
         if (notBootstrapped.size() < 10) {
@@ -75,7 +75,7 @@ public class BootstrapFileGenerator {
     private void checkFileDoesNotExist(File bootstrapFile) {
         if (bootstrapFile.exists()) {
             System.err.println("The bootstrap file " + bootstrapFile.getAbsolutePath() + " already exists. " +
-                "Use --" + BootstrapParameters.FORCE_PARAMETER + " to overwrite.");
+                "Use --" + HotdeployBootstrapParameters.FORCE_PARAMETER + " to overwrite.");
             System.exit(1);
         }
     }

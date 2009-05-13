@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
+import com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
