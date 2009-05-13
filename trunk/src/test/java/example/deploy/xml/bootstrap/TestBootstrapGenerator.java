@@ -37,8 +37,8 @@ public class TestBootstrapGenerator extends TestCase {
     public void testSimplestCase() {
         DeploymentFile file1 = createFile();
 
-        register(file1).contentReferenceFound(file1, Major.ARTICLE, CONTENT1);
-        register(file1).contentFound(file1, CONTENT1, ARTICLE, INPUT_TEMPLATE1);
+        register(file1).contentReferenceFound(Major.ARTICLE, CONTENT1);
+        register(file1).contentFound(CONTENT1, ARTICLE, INPUT_TEMPLATE1);
 
         generateBootstrap(file1);
 
@@ -49,10 +49,10 @@ public class TestBootstrapGenerator extends TestCase {
     public void testSingleFile() {
         DeploymentFile file1 = createFile();
 
-        register(file1).contentFound(file1, CONTENT1, ARTICLE, INPUT_TEMPLATE1);
-        register(file1).contentReferenceFound(file1, Major.ARTICLE, CONTENT1);
-        register(file1).contentReferenceFound(file1, Major.ARTICLE, CONTENT2);
-        register(file1).contentFound(file1, CONTENT2, DEPARTMENT, INPUT_TEMPLATE1);
+        register(file1).contentFound(CONTENT1, ARTICLE, INPUT_TEMPLATE1);
+        register(file1).contentReferenceFound(Major.ARTICLE, CONTENT1);
+        register(file1).contentReferenceFound(Major.ARTICLE, CONTENT2);
+        register(file1).contentFound(CONTENT2, DEPARTMENT, INPUT_TEMPLATE1);
 
         generateBootstrap(file1);
 
@@ -64,12 +64,12 @@ public class TestBootstrapGenerator extends TestCase {
         DeploymentFile file1 = createFile();
         DeploymentFile file2 = createFile();
 
-        register(file1).templateFound(file1, CONTENT1);
-        register(file1).templateReferenceFound(file1, CONTENT1);
-        register(file2).templateReferenceFound(file2, CONTENT1);
-        register(file2).templateReferenceFound(file2, CONTENT2);
-        register(file2).templateFound(file2, CONTENT2);
-        register(file2).templateReferenceFound(file2, CONTENT3);
+        register(file1).templateFound(CONTENT1);
+        register(file1).templateReferenceFound(CONTENT1);
+        register(file2).templateReferenceFound(CONTENT1);
+        register(file2).templateReferenceFound(CONTENT2);
+        register(file2).templateFound(CONTENT2);
+        register(file2).templateReferenceFound(CONTENT3);
 
         generateBootstrap(file1, file2);
 
@@ -99,8 +99,8 @@ public class TestBootstrapGenerator extends TestCase {
         bootstrapIterator = bootstrap.iterator();
     }
 
-    private ParseCallback register(DeploymentFile file) {
-        return mementosByFile.get(file);
+    private ParseCallbackAddedContext register(DeploymentFile file) {
+        return new ParseCallbackAddedContext(file, mementosByFile.get(file));
     }
 
     private DeploymentFile createFile() {

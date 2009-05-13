@@ -1,5 +1,7 @@
 package example.deploy.xml.parser;
 
+import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,20 +50,22 @@ public class ParserAsserts implements ParseCallback {
         foundClassReferences.add(string);
     }
 
-    public void contentFound(DeploymentFile file, String externalId,
+    public void contentFound(ParseContext context, String externalId,
             Major major, String inputTemplate) {
-        foundContent.add(externalId);
+        if (major == INPUT_TEMPLATE) {
+            foundTemplates.add(externalId);
+        }
+        else {
+            foundContent.add(externalId);
+        }
     }
 
-    public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
-        foundContentReferences.add(new ParsedContentId(major, externalId));
-    }
-
-    public void templateFound(DeploymentFile file, String inputTemplate) {
-        foundTemplates.add(inputTemplate);
-    }
-
-    public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
-        foundTemplateReferences.add(inputTemplate);
+    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
+        if (major == INPUT_TEMPLATE) {
+            foundTemplateReferences.add(externalId);
+        }
+        else {
+            foundContentReferences.add(new ParsedContentId(major, externalId));
+        }
     }
 }

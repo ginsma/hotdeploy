@@ -9,6 +9,7 @@ import org.apache.tools.ant.util.ReaderInputStream;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.state.DummyDeploymentFile;
+import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.XmlParser;
 import example.deploy.xml.parser.cache.FileParseCallbackMemento;
 
@@ -66,8 +67,9 @@ public class TestBootstrapFileWriter extends TestCase {
     private FileParseCallbackMemento getExpectedParseResult(
             DummyDeploymentFile file) {
         FileParseCallbackMemento expectedParseResult = new FileParseCallbackMemento(file);
-        expectedParseResult.contentFound(file, ARTICLE_EXTERNAL_ID, Major.ARTICLE, null);
-        expectedParseResult.contentFound(file, DEPARTMENT_EXTERNAL_ID, Major.DEPARTMENT, null);
+        ParseContext context = new ParseContext(file);
+        expectedParseResult.contentFound(context, ARTICLE_EXTERNAL_ID, Major.ARTICLE, null);
+        expectedParseResult.contentFound(context, DEPARTMENT_EXTERNAL_ID, Major.DEPARTMENT, null);
         return expectedParseResult;
     }
 

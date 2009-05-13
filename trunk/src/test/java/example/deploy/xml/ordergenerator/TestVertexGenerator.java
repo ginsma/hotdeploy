@@ -8,6 +8,7 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.state.DummyDeploymentFile;
 import example.deploy.hotdeploy.topologicalsort.Edge;
+import example.deploy.xml.parser.ParseContext;
 
 public class TestVertexGenerator extends TestCase {
     private DefinitionsAndReferences definitionsAndReferences;
@@ -114,11 +115,11 @@ public class TestVertexGenerator extends TestCase {
     }
 
     private void defines(DummyDeploymentFile file, String externalId) {
-        parseCallback.contentFound(file, externalId, Major.ARTICLE, "anytemplate");
+        parseCallback.contentFound(new ParseContext(file), externalId, Major.ARTICLE, "anytemplate");
     }
 
     private void refers(DeploymentFile file, String externalId) {
-        parseCallback.contentReferenceFound(file, Major.ARTICLE, externalId);
+        parseCallback.contentReferenceFound(new ParseContext(file), Major.ARTICLE, externalId);
     }
 
     @Override

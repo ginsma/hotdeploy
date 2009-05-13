@@ -37,7 +37,7 @@ public class TestResourceFileDiscoverer extends TestCase {
     }
 
     public void testFoundClassPathFiles() {
-        assertContainsFile("target/classes/templates.xml");
+        assertContainsFile("target/classes/content/templates.xml");
     }
 
     private void assertContainsFileInJar(String fileNameInJar) {
