@@ -10,14 +10,13 @@ public class BootstrapParameters extends ForceAndFilesToDeployParameters {
     private boolean force = false;
     private boolean bootstrapNonCreated = false;
 
-    static final String FORCE_PARAMETER = "force";
-    public static final String BOOTSTRAP_NON_CREATED_PARAMETER = "includenotcreated";
+    public static final String FORCE_PARAMETER = "force";
 
     @Override
     public void getHelp(ParameterHelp help) {
         super.getHelp(help);
         help.addOption(FORCE_PARAMETER, new BooleanParser(), "Whether to overwrite any existing bootstrap file.");
-        help.addOption(BOOTSTRAP_NON_CREATED_PARAMETER, null, "Whether to bootstrap content objects that are never created in the files " +
+        help.addOption(BOOTSTRAP_NON_CREATED_PARAMETER, new BooleanParser(), "Whether to bootstrap content objects that are never created in the files " +
     		"(these are likely to be misspellings if you specifying the full set of files to import).");
     }
 

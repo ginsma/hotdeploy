@@ -5,22 +5,28 @@ import java.util.List;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.util.Plural;
 import example.deploy.xml.consistency.PresentFileReader;
+import example.deploy.xml.consistency.VerifyResult;
 import example.deploy.xml.consistency.XMLConsistencyVerifier;
 
-public class HotdeployValidateTool implements Tool<FilesToDeployParameters> {
+public class HotdeployValidateTool implements Tool<ValidateParameters> {
 
-    public FilesToDeployParameters createParameters() {
-        return new FilesToDeployParameters();
+    public ValidateParameters createParameters() {
+        return new ValidateParameters();
     }
 
-    public void execute(PolopolyContext context, FilesToDeployParameters parameters) {
+    public void execute(PolopolyContext context, ValidateParameters parameters) {
         List<DeploymentFile> files = parameters.discoverFiles();
+
+        System.out.println("Validating " + Plural.count(files, "file") + "...");
 
         XMLConsistencyVerifier verifier =
             new XMLConsistencyVerifier(files);
 
-        new PresentFileReader(verifier.getRootDirectory(), verifier).read();
+        if (!parameters.isIgnorePresent()) {
+            new PresentFileReader(verifier.getRootDirectory(), verifier).read();
+        }
 
         verifier.setValidateClassReferences(parameters.isValidateClasses());
 
@@ -28,7 +34,14 @@ public class HotdeployValidateTool implements Tool<FilesToDeployParameters> {
             verifier.addClassDirectory(parameters.getClassDirectory());
         }
 
-        verifier.verify().reportUsingLogging();
+        VerifyResult verifyResult = verifier.verify();
+
+        if (verifyResult.isEverythingOk()) {
+            System.out.println("The files are in consistent order and do not reference non-existing content.");
+        }
+        else {
+            verifyResult.reportUsingLogging();
+        }
     }
 
     public String getHelp() {

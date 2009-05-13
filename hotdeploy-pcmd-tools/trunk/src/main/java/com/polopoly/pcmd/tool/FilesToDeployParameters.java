@@ -27,6 +27,7 @@ public class FilesToDeployParameters implements Parameters {
     private File directoryOrFile;
     private boolean validateClasses;
     private File classDirectory;
+    private List<DeploymentFile> cachedDiscoveredFiles;
 
     public boolean isValidateClasses() {
         return validateClasses;
@@ -50,7 +51,7 @@ public class FilesToDeployParameters implements Parameters {
 
     public void parseParameters(Arguments args, PolopolyContext context)
             throws ArgumentException {
-        setFile(args.getArgument(0, new ExistingFileParser()));
+        setFileOrDirectory(args.getArgument(0, new ExistingFileParser()));
         setValidateClasses(args.getFlag(VALIDATE_CLASSES_PARAMETER, false));
 
         try {
@@ -61,8 +62,9 @@ public class FilesToDeployParameters implements Parameters {
         }
     }
 
-    private void setFile(File directoryOrFile) {
+    public void setFileOrDirectory(File directoryOrFile) {
         this.directoryOrFile = directoryOrFile;
+        cachedDiscoveredFiles = null;
     }
 
     public File getFileOrDirectory() {
@@ -70,14 +72,24 @@ public class FilesToDeployParameters implements Parameters {
     }
 
     public List<DeploymentFile> discoverFiles() {
+        if (cachedDiscoveredFiles != null) {
+            return cachedDiscoveredFiles;
+        }
+
         File fileOrDirectory = getFileOrDirectory();
 
+        List<DeploymentFile> result;
+
         if (fileOrDirectory.isDirectory()) {
-            return discoverFilesInDirectory(fileOrDirectory);
+            result = discoverFilesInDirectory(fileOrDirectory);
         }
         else {
-            return discoverSingleFile(fileOrDirectory);
+            result = discoverSingleFile(fileOrDirectory);
         }
+
+        cachedDiscoveredFiles = result;
+
+        return result;
     }
 
     private List<DeploymentFile> discoverSingleFile(File file) {

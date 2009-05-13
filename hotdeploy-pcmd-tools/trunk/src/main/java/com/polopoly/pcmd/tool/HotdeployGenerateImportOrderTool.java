@@ -1,17 +1,22 @@
 package com.polopoly.pcmd.tool;
 
 import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
+import static example.deploy.hotdeploy.util.Plural.count;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
+import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.consistency.PresentFileReader;
 import example.deploy.xml.ordergenerator.ImportOrderGenerator;
+import example.deploy.xml.parser.DeploymentFileParser;
+import example.deploy.xml.parser.XmlParser;
 
 public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDeployParameters> {
     public ForceAndFilesToDeployParameters createParameters() {
@@ -20,7 +25,7 @@ public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDep
 
     public void execute(PolopolyContext context,
             ForceAndFilesToDeployParameters parameters) {
-        ImportOrder importOrder = generateImportOrder(parameters);
+        ImportOrder importOrder = generateImportOrder(new XmlParser(), parameters, parameters.isIgnorePresent());
 
         ImportOrderFile importOrderFile = new ImportOrderFile(importOrder);
 
@@ -29,20 +34,28 @@ public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDep
         writeFile(importOrderFile);
     }
 
-    static ImportOrder generateImportOrder(
-            FilesToDeployParameters parameters) {
-        ImportOrderGenerator importOrderGenerator = new
-                    ImportOrderGenerator();
+    static ImportOrder generateImportOrder(DeploymentFileParser parser, FilesToDeployParameters parameters, boolean ignorePresent) {
+        ImportOrderGenerator importOrderGenerator = new ImportOrderGenerator(parser);
 
         File directory = parameters.getDirectory();
 
-        new PresentFileReader(directory, importOrderGenerator).read();
+        if (!ignorePresent) {
+            new PresentFileReader(directory, importOrderGenerator).read();
+        }
 
-        ImportOrder importOrder = importOrderGenerator.generate(parameters.discoverFiles());
+        List<DeploymentFile> deploymentFiles = parameters.discoverFiles();
+
+        System.out.println("Calculating import order for " + count(deploymentFiles, "file") + "...");
+
+        ImportOrder importOrder = importOrderGenerator.generate(deploymentFiles);
 
         importOrder.setDirectory(directory);
 
         return importOrder;
+    }
+
+    static void writeFile(ImportOrder importOrder) {
+        writeFile(new ImportOrderFile(importOrder));
     }
 
     static void writeFile(ImportOrderFile importOrderFile) {
