@@ -11,6 +11,7 @@ import example.deploy.hotdeploy.discovery.PlatformNeutralPath;
 public class TestFileDeploymentFile extends TestCase {
     private FileDeploymentFile file1;
     private FileDeploymentFile file2;
+    private File javaIoFile2;
 
     public void testEquality() {
         assertFalse(file1.equals(file2));
@@ -30,8 +31,17 @@ public class TestFileDeploymentFile extends TestCase {
         file2.toString();
     }
 
+    public void testParentFile() {
+        assertEquals(PlatformNeutralPath.unixToPlatformSpecificPath("src/test/resources"),
+                file1.getParentFile().getPath());
+
+        assertEquals(javaIoFile2.getAbsoluteFile().getParentFile().getAbsolutePath(),
+                file2.getParentFile().getAbsolutePath());
+    }
+
     public void testGetBaseURL() throws MalformedURLException {
-        assertEquals("file:" + new File(".").getAbsolutePath() + "/", file2.getBaseUrl().toString());
+        assertEquals("file:" + new File("foo").getAbsoluteFile().
+            getParentFile().getAbsolutePath() + "/", file2.getBaseUrl().toString());
     }
 
     public void testRelativePath() {
@@ -46,6 +56,7 @@ public class TestFileDeploymentFile extends TestCase {
     public void setUp() {
         file1 = new FileDeploymentFile(
             new File(PlatformNeutralPath.unixToPlatformSpecificPath("src/test/resources/a.xml")));
-        file2 = new FileDeploymentFile(new File("pom.xml"));
+        javaIoFile2 = new File("pom.xml");
+        file2 = new FileDeploymentFile(javaIoFile2);
     }
 }

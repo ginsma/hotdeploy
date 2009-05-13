@@ -50,6 +50,38 @@ public class DefaultFileChecksums implements FileChecksums {
         checksumsPolicy = getLatestChecksumsPolicy(server);
     }
 
+    public void clear() {
+        try {
+            VersionedContentId checksumsId = getLatestChecksumVersion();
+            checksumsPolicy = getLatestChecksumsPolicy(server);
+
+            try {
+                checksumsPolicy = (FileChecksumsPolicy) server.createContentVersion(checksumsId);
+
+                changes.clear();
+                checksumsPolicy.clear();
+
+                checksumsPolicy.commit();
+            }
+            catch (RuntimeException e) {
+                failPersisting(e);
+            }
+            catch (LockException e) {
+                handleSingletonLocked(checksumsId);
+
+                // retry
+                persist();
+            }
+            catch (CMException e) {
+                failPersisting(e);
+            }
+        } catch (CouldNotUpdateStateException e) {
+            logger.log(Level.WARNING, "While deleting file checksums: " + e.getMessage(), e);
+        } catch (CouldNotFetchChecksumsException e) {
+            logger.log(Level.WARNING, "While deleting file checksums: " + e.getMessage(), e);
+        }
+    }
+
     public long getQuickChecksum(DeploymentFile file) {
         Checksums changedChecksum = changes.get(file);
 
@@ -100,7 +132,8 @@ public class DefaultFileChecksums implements FileChecksums {
 
     private void handleSingletonLocked(VersionedContentId checksumsId) throws CouldNotUpdateStateException {
         try {
-            logger.log(Level.WARNING, "The checksum singleton " + checksumsId.getContentId().getContentIdString() + " was locked. Forcing an unlock.");
+            logger.log(Level.WARNING,
+                    "The checksum singleton " + checksumsId.getContentId().getContentIdString() + " was locked. Forcing an unlock.");
 
             Content checksumContent = (Content)
                 server.getContent(checksumsId);
@@ -128,7 +161,7 @@ public class DefaultFileChecksums implements FileChecksums {
                 Checksums changedChecksums = change.getValue();
 
                 checksumsPolicy.setChecksums(changedFile,
-                        changedChecksums.quickChecksum, changedChecksums.slowChecksum);
+                    changedChecksums.quickChecksum, changedChecksums.slowChecksum);
             }
 
             changes.clear();

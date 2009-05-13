@@ -1,5 +1,7 @@
 package example.deploy.hotdeploy.deployer;
 
+import static example.deploy.hotdeploy.util.Plural.count;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -126,9 +128,21 @@ public class MultipleFileDeployer
     public String getResultMessage(Collection<DeploymentFile> filesToImport) {
         int unmodifiedFiles = filesToImport.size() - successfulFiles.size() - failedFiles.size();
 
-        return "Imported " + successfulFiles.size() + " file(s) successfully. " +
-                unmodifiedFiles + " file(s) had not been modified. " +
-    		"Import failed for " + failedFiles.size() + " file(s)";
+        StringBuffer result = new StringBuffer(100);
+
+        if (!successfulFiles.isEmpty()) {
+            result.append(count(successfulFiles, "file") + " imported successfully. ");
+        }
+
+        if (unmodifiedFiles > 0) {
+            result.append(count(unmodifiedFiles, "file") + " had not been modified and was not imported. ");
+        }
+
+        if (!failedFiles.isEmpty()) {
+            result.append(count(failedFiles, "file") + " failed during import.");
+        }
+
+        return result.toString();
     }
 
     public Set<DeploymentFile> discoverAndDeploy(Collection<FileDiscoverer> discoverers)

@@ -37,28 +37,34 @@ public class BootstrapGenerator {
                 Major major, String inputTemplate) {
             definedExternalIds.add(externalId);
 
-            // this content was referenced before, so we will need to bootstrap it.
+            // this content might have referenced before, so we will need to bootstrap it.
             // however, we might not have known the major before, but now we do.
             resolveMajor(externalId, major);
         }
 
         public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
             if (isNotYetDefined(externalId)) {
-                bootstrap(major, externalId);
+                bootstrap(file, major, externalId);
             }
         }
 
         public void templateFound(DeploymentFile file, String inputTemplate) {
             definedExternalIds.add(inputTemplate);
+            resolveMajor(inputTemplate, Major.INPUT_TEMPLATE);
         }
 
         public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
             if (isNotYetDefined(inputTemplate)) {
-                bootstrap(Major.INPUT_TEMPLATE, inputTemplate);
+                bootstrap(file, Major.INPUT_TEMPLATE, inputTemplate);
             }
         }
 
-        private void bootstrap(Major major, String externalId) {
+        private void bootstrap(DeploymentFile file, Major major, String externalId) {
+            if (externalId.equals("")) {
+                logger.log(Level.WARNING, "Attempt to bootstrap an empty external ID (major " + major + ") in file " + file + ".");
+                return;
+            }
+
             BootstrapContent existingBootstrap = bootstrapByExternalId.get(externalId);
 
             if (existingBootstrap != null) {

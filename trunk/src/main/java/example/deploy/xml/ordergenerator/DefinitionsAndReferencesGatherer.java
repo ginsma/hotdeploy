@@ -9,7 +9,7 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.consistency.PresentFilesAware;
 import example.deploy.xml.parser.ParseCallback;
 
-public class ImportOrderGeneratorParserCallback implements ParseCallback, PresentFilesAware {
+public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentFilesAware {
     private DefinitionsAndReferences definitionsAndReferences = new DefinitionsAndReferences();
     private Set<String> alreadyPresentContent = new HashSet<String>();
 

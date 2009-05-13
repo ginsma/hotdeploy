@@ -25,7 +25,7 @@ public class ParseCallbackMultiplexer implements ParseCallback {
     public void contentFound(DeploymentFile file, String externalId,
             Major major, String inputTemplate) {
         for (ParseCallback callback : callbacks) {
-            callback.contentFound(file, externalId, null, inputTemplate);
+            callback.contentFound(file, externalId, major, inputTemplate);
         }
     }
 

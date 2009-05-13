@@ -31,17 +31,23 @@ public class FileDeploymentFile extends AbstractDeploymentObject implements Depl
     }
 
     public URL getBaseUrl() throws MalformedURLException {
-        File parentFile = file.getParentFile();
-
-        if (parentFile == null) {
-            parentFile = new File(".");
-        }
+        File parentFile = getParentFile();
 
         return parentFile.toURI().toURL();
     }
 
+    File getParentFile() {
+        File result = file.getParentFile();
+
+        if (result == null) {
+            result = file.getAbsoluteFile().getParentFile();
+        }
+
+        return result;
+    }
+
     public String getDirectory() {
-        return file.getParentFile().getAbsolutePath();
+        return getParentFile().getAbsolutePath();
     }
 
     public long getQuickChecksum() {

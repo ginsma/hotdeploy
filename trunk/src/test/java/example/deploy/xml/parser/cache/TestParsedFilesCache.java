@@ -12,6 +12,15 @@ public class TestParsedFilesCache extends TestCase {
     protected static final String INPUT_TEMPLATE = "inputtemplate";
 
     public void testCache() {
+        DummyDeploymentFile file = new DummyDeploymentFile("file");
+        final FileParseCallbackMemento originalMemento = new FileParseCallbackMemento(file);
+
+        originalMemento.contentFound(file, CONTENT, Major.ARTICLE, INPUT_TEMPLATE);
+        originalMemento.contentReferenceFound(file, Major.ARTICLE, CONTENT);
+        originalMemento.contentReferenceFound(file, Major.ARTICLE, CONTENT + "1");
+        originalMemento.templateFound(file, INPUT_TEMPLATE);
+        originalMemento.templateReferenceFound(file, INPUT_TEMPLATE);
+
         DeploymentFileParser parser = new DeploymentFileParser() {
             boolean called = false;
 
@@ -20,11 +29,7 @@ public class TestParsedFilesCache extends TestCase {
                     fail("Parser called though parse result should have been cached.");
                 }
 
-                callback.contentFound(file, CONTENT, Major.ARTICLE, INPUT_TEMPLATE);
-                callback.contentReferenceFound(file, Major.ARTICLE, CONTENT);
-                callback.contentReferenceFound(file, Major.ARTICLE, CONTENT + "1");
-                callback.templateFound(file, INPUT_TEMPLATE);
-                callback.templateReferenceFound(file, INPUT_TEMPLATE);
+                originalMemento.replay(callback);
 
                 called = true;
             }
@@ -32,7 +37,6 @@ public class TestParsedFilesCache extends TestCase {
 
         ParsedFilesCache cache = new ParsedFilesCache(parser);
 
-        DummyDeploymentFile file = new DummyDeploymentFile("file");
 
         FileParseCallbackMemento mementoFirstParse = new FileParseCallbackMemento(file);
         cache.parse(file, mementoFirstParse);
@@ -41,6 +45,8 @@ public class TestParsedFilesCache extends TestCase {
         cache.parse(file, mementoSecondParse);
 
         assertEquals(mementoSecondParse, mementoFirstParse);
+        assertEquals(mementoFirstParse, originalMemento);
+        assertEquals(mementoSecondParse, originalMemento);
         assertEquals(5, mementoSecondParse.getMementos().size());
     }
 }

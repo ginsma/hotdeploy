@@ -101,7 +101,7 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentFilesAware 
     }
 
     public void contentFound(DeploymentFile file, String externalId, Major major, String inputTemplate) {
-        if (inputTemplate != null) {
+        if (inputTemplate != null && !inputTemplate.equals("")) {
             templateReferenceFound(file, inputTemplate);
         }
 

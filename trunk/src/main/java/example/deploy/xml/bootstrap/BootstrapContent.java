@@ -12,7 +12,7 @@ public class BootstrapContent extends SingleObjectHolder<Tuple<Major, String>> i
         super(new Tuple<Major, String>(major, externalId));
 
         this.externalId = externalId;
-        this.major = (major == null ? Major.UNKNOWN : major);
+        setMajor(major);
     }
 
     public String getExternalId() {
@@ -21,7 +21,7 @@ public class BootstrapContent extends SingleObjectHolder<Tuple<Major, String>> i
 
     public void setMajor(Major major) {
         setHeldObject(new Tuple<Major, String>(major, externalId));
-        this.major = major;
+        this.major = (major == null ? Major.UNKNOWN : major);
     }
 
     public Major getMajor() {

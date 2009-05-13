@@ -82,7 +82,10 @@ public class TestBootstrapGenerator extends TestCase {
     }
 
     private void assertBootstrap(BootstrapContent bootstrapContent) {
-        assertEquals(bootstrapContent, bootstrapIterator.next());
+        BootstrapContent next = bootstrapIterator.next();
+        assertEquals(bootstrapContent, next);
+        // major is not part of bootstrapcontent's equals
+        assertEquals(bootstrapContent.getMajor(), next.getMajor());
     }
 
     private void generateBootstrap(DeploymentFile... files) {

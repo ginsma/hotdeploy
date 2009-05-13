@@ -1,5 +1,8 @@
 package example.deploy.hotdeploy.state;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.policy.ContentPolicy;
 import com.polopoly.cm.server.ServerNames;
@@ -9,6 +12,9 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 
 @SuppressWarnings("deprecation")
 public class FileChecksumsPolicy extends ContentPolicy {
+    private static final Logger logger =
+        Logger.getLogger(FileChecksumsPolicy.class.getName());
+
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
     private static final String SLOW_CHECKSUM_COMPONENT = "slow";
 
@@ -49,6 +55,21 @@ public class FileChecksumsPolicy extends ContentPolicy {
             getSlowChecksumComponent(file).setLongValue(this, slowChecksum);
         } catch (CMException e) {
             throw new CouldNotUpdateStateException("While saving deployment state of " + file + ": " + e, e);
+        }
+    }
+
+    public void clear() {
+        try {
+            for (String componentGroup : getComponentGroupNames()) {
+                for (String component : getComponentNames(componentGroup)) {
+                    if (component.equals(QUICK_CHECKSUM_COMPONENT) ||
+                            component.equals(SLOW_CHECKSUM_COMPONENT)) {
+                        setComponent(componentGroup, component, null);
+                    }
+                }
+            }
+        } catch (CMException e) {
+            logger.log(Level.WARNING, "While clearing file checksums: " + e.getMessage(), e);
         }
     }
 }

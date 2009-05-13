@@ -11,7 +11,7 @@ import example.deploy.hotdeploy.topologicalsort.Edge;
 
 public class TestVertexGenerator extends TestCase {
     private DefinitionsAndReferences definitionsAndReferences;
-    private ImportOrderGeneratorParserCallback parseCallback;
+    private DefinitionsAndReferencesGatherer parseCallback;
 
     public void testEmpty() {
         Collection<DeploymentFileVertex> result =
@@ -123,7 +123,7 @@ public class TestVertexGenerator extends TestCase {
 
     @Override
     public void setUp() {
-        parseCallback = new ImportOrderGeneratorParserCallback();
+        parseCallback = new DefinitionsAndReferencesGatherer();
         definitionsAndReferences = parseCallback.getDefinitionsAndReferences();
     }
 

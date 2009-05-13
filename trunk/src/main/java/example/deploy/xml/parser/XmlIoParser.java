@@ -1,17 +1,11 @@
 package example.deploy.xml.parser;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.w3c.dom.Element;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
 class XmlIoParser extends AbstractParser {
-    private static final Logger logger =
-        Logger.getLogger(XmlIoParser.class.getName());
-
     XmlIoParser(DeploymentFile file, Element root, ParseCallback callback) {
         super(file, callback);
 
@@ -69,9 +63,6 @@ class XmlIoParser extends AbstractParser {
             else {
                 callback.contentFound(file, contentId.getExternalId(), major, inputTemplate);
             }
-        }
-        else {
-            logger.log(Level.WARNING, "There was a metadata definition in " + file + " that did not contain an external ID.");
         }
 
         if (securityParentId != null) {

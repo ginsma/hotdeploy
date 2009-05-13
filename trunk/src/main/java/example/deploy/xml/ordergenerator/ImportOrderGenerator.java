@@ -14,22 +14,29 @@ import example.deploy.hotdeploy.topologicalsort.TopologicalSorter;
 import example.deploy.hotdeploy.util.MapList;
 import example.deploy.hotdeploy.util.Mapping;
 import example.deploy.xml.consistency.PresentFilesAware;
+import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.parser.XmlParser;
 
 public class ImportOrderGenerator implements PresentFilesAware {
     private static final Logger logger =
         Logger.getLogger(ImportOrderGenerator.class.getName());
-    private ImportOrderGeneratorParserCallback callback;
+    private DefinitionsAndReferencesGatherer callback;
+    private DeploymentFileParser parser;
 
     public ImportOrderGenerator() {
-        callback = new ImportOrderGeneratorParserCallback();
+        this(new XmlParser());
+    }
+
+    public ImportOrderGenerator(DeploymentFileParser parser) {
+        callback = new DefinitionsAndReferencesGatherer();
+        this.parser = parser;
     }
 
     private DefinitionsAndReferences parse(Collection<DeploymentFile> files) {
         for (DeploymentFile file : files) {
             logger.log(Level.FINE, "Parsing " + files + "...");
 
-            new XmlParser().parse(file, callback);
+            parser.parse(file, callback);
         }
 
         DefinitionsAndReferences definitionsAndReferences = callback.getDefinitionsAndReferences();

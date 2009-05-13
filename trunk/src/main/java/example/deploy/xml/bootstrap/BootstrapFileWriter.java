@@ -52,6 +52,7 @@ public class BootstrapFileWriter {
     private void write(Formatter formatter, BootstrapContent content) {
         if (content.getMajor() == Major.UNKNOWN) {
             logger.log(Level.WARNING, "Could not write bootstrap XML for content with \"" + content.getExternalId() + "\" since the major was uknown.");
+            return;
         }
 
         formatter.format(SINGLE_CONTENT_XML,

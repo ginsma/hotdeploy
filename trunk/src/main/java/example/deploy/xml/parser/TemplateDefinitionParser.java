@@ -1,5 +1,8 @@
 package example.deploy.xml.parser;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -11,6 +14,9 @@ import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
 
 class TemplateDefinitionParser extends AbstractParser {
+    private static final Logger logger =
+        Logger.getLogger(TemplateDefinitionParser.class.getName());
+
     TemplateDefinitionParser(DeploymentFile file, Element root, ParseCallback callback) {
         super(file, callback);
 
@@ -27,14 +33,24 @@ class TemplateDefinitionParser extends AbstractParser {
     private void parseOutputTemplate(DeploymentFile file,
             ParseCallback callback, Element outputTemplate) {
         String outputTemplatesInputTemplate =
-            outputTemplate.getAttribute("input-template");
+            outputTemplate.getAttribute("input-template").trim();
 
-        String outputTemplateName = outputTemplate.getAttribute("name");
+        String outputTemplateName = outputTemplate.getAttribute("name").trim();
 
         callback.contentFound(file,
                 outputTemplateName, Major.OUTPUT_TEMPLATE,
                 outputTemplatesInputTemplate);
-        callback.templateReferenceFound(file, outputTemplatesInputTemplate);
+
+        String policy = outputTemplate.getAttribute("policy").trim();
+
+        if (!policy.equals("")) {
+            callback.classReferenceFound(file, policy);
+        }
+
+        // it is apparently possible and legal for output templates not to have an input template.
+        if (!outputTemplatesInputTemplate.equals("")) {
+            callback.templateReferenceFound(file, outputTemplatesInputTemplate);
+        }
     }
 
     private void parseInputTemplate(Element inputTemplate) {
@@ -75,7 +91,14 @@ class TemplateDefinitionParser extends AbstractParser {
 
     private void parseFieldOrLayout(String name, Element field) {
         String fieldTemplate = field.getAttribute("input-template");
-        callback.templateReferenceFound(file, fieldTemplate);
+
+        if (fieldTemplate.equals("")) {
+            logger.log(Level.WARNING, "The field " + field.getAttribute("name") +
+                    " in " + file + " has no input template.");
+        }
+        else {
+            callback.templateReferenceFound(file, fieldTemplate);
+        }
 
         for (Element param : children(field)) {
             if (param.getNodeName().equals("param")) {

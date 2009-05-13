@@ -14,7 +14,7 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
 
-class AbstractParser {
+abstract class AbstractParser {
     private static final Logger logger =
         Logger.getLogger(AbstractParser.class.getName());
 
@@ -33,7 +33,7 @@ class AbstractParser {
 
         for (Element externalIdElement : children(contentIdElement)) {
             if (externalIdElement.getNodeName().equals("major")) {
-                majorName = externalIdElement.getTextContent();
+                majorName = externalIdElement.getTextContent().trim();
 
                 major = Major.getMajor(majorName);
             }
@@ -42,7 +42,7 @@ class AbstractParser {
             }
         }
 
-        if (externalId != null) {
+        if (externalId != null && !externalId.equals("")) {
             if (major == Major.UNKNOWN) {
                 logger.log(Level.WARNING, "The major \"" + majorName +
                         "\" used to reference the object with external ID \"" + externalId + "\" in file " + file + " was unknown.");
