@@ -16,18 +16,33 @@ class XmlIoParser extends AbstractParser {
         }
     }
 
-    private void parseContent(Element content) {
-        for (Element element : children(content)) {
+    protected void findContentReferences(ParseContext context, Element content) {
+        for (Element child : children(content)) {
+            findContentReferences(context, child);
+        }
+
+        ParsedContentId contentReference = parseContentId(content);
+
+        if (contentReference != null) {
+            callback.contentReferenceFound(context,
+                contentReference.getMajor(), contentReference.getExternalId());
+        }
+    }
+
+    private void parseContent(Element contentElement) {
+        ParseContext context = new ParseContext(file, contentElement);
+
+        for (Element element : children(contentElement)) {
             if (element.getNodeName().equals("metadata")) {
-                parseMetadata(element);
+                parseMetadata(context, element);
             }
             else {
-                findContentReferences(element);
+                findContentReferences(context, element);
             }
         }
     }
 
-    private void parseMetadata(Element metadata) {
+    private void parseMetadata(ParseContext context, Element metadata) {
         ParsedContentId contentId = null;
         String inputTemplate = null;
         ParsedContentId securityParentId = null;
@@ -53,24 +68,22 @@ class XmlIoParser extends AbstractParser {
         if (contentId != null) {
             Major major = contentId.getMajor();
 
-            if (major == Major.INPUT_TEMPLATE) {
-                callback.templateFound(file, contentId.getExternalId());
-            }
             // objects can only be created if the major is specified.
-            else if (major == Major.UNKNOWN) {
-                callback.contentReferenceFound(file, contentId.getMajor(), contentId.getExternalId());
+            if (major == Major.UNKNOWN) {
+                callback.contentReferenceFound(context, contentId.getMajor(), contentId.getExternalId());
             }
             else {
-                callback.contentFound(file, contentId.getExternalId(), major, inputTemplate);
+                callback.contentFound(context,
+                        contentId.getExternalId(), major, inputTemplate);
             }
         }
 
         if (securityParentId != null) {
-            callback.contentReferenceFound(file, securityParentId.getMajor(), securityParentId.getExternalId());
+            callback.contentReferenceFound(context, securityParentId.getMajor(), securityParentId.getExternalId());
         }
 
         if (inputTemplate != null) {
-            callback.templateReferenceFound(file, inputTemplate);
+            callback.contentReferenceFound(context, Major.INPUT_TEMPLATE, inputTemplate);
         }
     }
 }

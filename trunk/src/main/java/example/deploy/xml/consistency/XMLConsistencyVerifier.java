@@ -1,5 +1,7 @@
 package example.deploy.xml.consistency;
 
+import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +18,7 @@ import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.XmlParser;
 
 /**
@@ -100,41 +103,40 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentFilesAware 
         return result;
     }
 
-    public void contentFound(DeploymentFile file, String externalId, Major major, String inputTemplate) {
-        if (inputTemplate != null && !inputTemplate.equals("")) {
-            templateReferenceFound(file, inputTemplate);
+    public void contentFound(ParseContext context, String externalId, Major major, String inputTemplate) {
+        if (major == INPUT_TEMPLATE) {
+            if (inputTemplates.add(externalId)) {
+                unusedTemplates.add(externalId);
+            }
         }
+        else {
+            if (inputTemplate != null && !inputTemplate.equals("")) {
+                contentReferenceFound(context, INPUT_TEMPLATE, inputTemplate);
+            }
 
-        logger.log(Level.FINE, "Found content " + externalId + " with input template " + inputTemplate + ".");
+            logger.log(Level.FINE, "Found content " + externalId + " with input template " + inputTemplate + ".");
 
-        contentTemplateByExternalId.put(externalId, inputTemplate);
+            contentTemplateByExternalId.put(externalId, inputTemplate);
+        }
     }
 
-    public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
-        if (!contentTemplateByExternalId.containsKey(externalId)) {
+    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
+        if (major == INPUT_TEMPLATE) {
+            if (!inputTemplates.contains(externalId)) {
+                nonFoundTemplates.add(externalId);
+                logger.log(Level.WARNING, "Undefined template " + externalId + " was referenced in " + context.getFile());
+            }
+            unusedTemplates.remove(externalId);
+        }
+        else if (!contentTemplateByExternalId.containsKey(externalId)) {
             if (inputTemplates.contains(externalId)) {
                 unusedTemplates.remove(externalId);
             }
             else {
                 nonFoundContent.add(externalId);
-                logger.log(Level.WARNING, "Undefined content " + externalId + " was referenced in " + file);
+                logger.log(Level.WARNING, "Undefined content " + externalId + " was referenced in " + context.getFile());
             }
         }
-    }
-
-    public void templateFound(DeploymentFile file, String inputTemplate) {
-        if (inputTemplates.add(inputTemplate)) {
-            unusedTemplates.add(inputTemplate);
-        }
-    }
-
-    public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
-        if (!inputTemplates.contains(inputTemplate)) {
-            nonFoundTemplates.add(inputTemplate);
-            logger.log(Level.WARNING, "Undefined template " + inputTemplate + " was referenced in " + file);
-        }
-
-        unusedTemplates.remove(inputTemplate);
     }
 
     public void classReferenceFound(DeploymentFile file, String className) {

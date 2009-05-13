@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 
 public class BootstrapGatherer implements ParseCallback {
     private Set<String> definedExternalIds = new HashSet<String>();
@@ -25,7 +26,7 @@ public class BootstrapGatherer implements ParseCallback {
         }
     }
 
-    public void contentFound(DeploymentFile file, String externalId,
+    public void contentFound(ParseContext context, String externalId,
             Major major, String inputTemplate) {
         definedExternalIds.add(externalId);
 
@@ -34,20 +35,9 @@ public class BootstrapGatherer implements ParseCallback {
         resolveMajor(externalId, major);
     }
 
-    public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
+    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
         if (isNotYetDefined(externalId)) {
-            bootstrap(file, major, externalId);
-        }
-    }
-
-    public void templateFound(DeploymentFile file, String inputTemplate) {
-        definedExternalIds.add(inputTemplate);
-        resolveMajor(inputTemplate, Major.INPUT_TEMPLATE);
-    }
-
-    public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
-        if (isNotYetDefined(inputTemplate)) {
-            bootstrap(file, Major.INPUT_TEMPLATE, inputTemplate);
+            bootstrap(context.getFile(), major, externalId);
         }
     }
 

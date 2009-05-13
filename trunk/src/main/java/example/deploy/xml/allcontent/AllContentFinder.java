@@ -6,6 +6,7 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.XmlParser;
 
 public class AllContentFinder {
@@ -13,20 +14,12 @@ public class AllContentFinder {
         public void classReferenceFound(DeploymentFile file, String string) {
         }
 
-        public void contentFound(DeploymentFile file, String externalId,
+        public void contentFound(ParseContext context, String externalId,
                 Major major, String inputTemplate) {
             result.add(major, externalId);
         }
 
-        public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
-        }
-
-        public void templateFound(DeploymentFile file, String inputTemplate) {
-            result.add(Major.INPUT_TEMPLATE, inputTemplate);
-        }
-
-        public void templateReferenceFound(DeploymentFile file,
-                String inputTemplate) {
+        public void contentReferenceFound(ParseContext context, Major major, String externalId) {
         }
     }
 

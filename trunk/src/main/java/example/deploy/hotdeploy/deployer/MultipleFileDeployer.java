@@ -171,7 +171,7 @@ public class MultipleFileDeployer
     }
 
     public boolean isAllFilesUnchanged() {
-        return !(successfulFiles.isEmpty() && failedFiles.isEmpty());
+        return successfulFiles.isEmpty() && failedFiles.isEmpty();
     }
 }
 

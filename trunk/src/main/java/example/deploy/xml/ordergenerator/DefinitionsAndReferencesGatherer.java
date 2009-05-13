@@ -8,6 +8,7 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.consistency.PresentFilesAware;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 
 public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentFilesAware {
     private DefinitionsAndReferences definitionsAndReferences = new DefinitionsAndReferences();
@@ -16,8 +17,9 @@ public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentF
     public void classReferenceFound(DeploymentFile file, String string) {
     }
 
-    public void contentFound(DeploymentFile file, String externalId, Major major, String inputTemplate) {
-        Map<String, Set<DeploymentFile>> definingFilesById = definitionsAndReferences.definingFilesByExternalId;
+    public void contentFound(ParseContext context, String externalId, Major major, String inputTemplate) {
+        Map<String, Set<DeploymentFile>> definingFilesById =
+            definitionsAndReferences.definingFilesByExternalId;
         Set<DeploymentFile> definingFiles = definingFilesById.get(externalId);
 
         if (definingFiles == null) {
@@ -26,26 +28,23 @@ public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentF
             definingFilesById.put(externalId, definingFiles);
         }
 
-        definingFiles.add(file);
+        definingFiles.add(context.getFile());
     }
 
-    public void templateFound(DeploymentFile file, String inputTemplate) {
-        contentFound(file, inputTemplate, Major.INPUT_TEMPLATE, null);
-    }
-
-    public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
+    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
         if (alreadyPresentContent.contains(externalId)) {
             return;
         }
 
-        boolean referenceWithinFile = isAlreadyDefinedInFile(file, externalId);
+        DeploymentFile referringFile = context.getFile();
+        boolean referenceWithinFile = isAlreadyDefinedInFile(referringFile, externalId);
 
         // references within a file are not relevant to the order.
         if (referenceWithinFile) {
             return;
         }
 
-        definitionsAndReferences.references.add(new Reference(externalId, file));
+        definitionsAndReferences.references.add(new Reference(externalId, referringFile));
     }
 
     private boolean isAlreadyDefinedInFile(DeploymentFile file, String externalId) {
@@ -57,10 +56,6 @@ public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentF
         }
 
         return definingFiles.contains(file);
-    }
-
-    public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
-        contentReferenceFound(file, Major.INPUT_TEMPLATE, inputTemplate);
     }
 
     public DefinitionsAndReferences getDefinitionsAndReferences() {

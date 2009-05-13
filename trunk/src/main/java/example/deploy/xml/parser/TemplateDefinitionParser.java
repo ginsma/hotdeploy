@@ -1,5 +1,7 @@
 package example.deploy.xml.parser;
 
+import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +39,9 @@ class TemplateDefinitionParser extends AbstractParser {
 
         String outputTemplateName = outputTemplate.getAttribute("name").trim();
 
-        callback.contentFound(file,
+        ParseContext context = new ParseContext(file, outputTemplate);
+
+        callback.contentFound(context,
                 outputTemplateName, Major.OUTPUT_TEMPLATE,
                 outputTemplatesInputTemplate);
 
@@ -49,30 +53,32 @@ class TemplateDefinitionParser extends AbstractParser {
 
         // it is apparently possible and legal for output templates not to have an input template.
         if (!outputTemplatesInputTemplate.equals("")) {
-            callback.templateReferenceFound(file, outputTemplatesInputTemplate);
+            callback.contentReferenceFound(context, INPUT_TEMPLATE, outputTemplatesInputTemplate);
         }
     }
 
     private void parseInputTemplate(Element inputTemplate) {
         String name = inputTemplate.getAttribute("name");
 
-        callback.templateFound(file, name);
+        ParseContext context = new ParseContext(file, inputTemplate);
 
-        parseTemplate(inputTemplate, name);
+        callback.contentFound(context, name, INPUT_TEMPLATE, null);
+
+        parseTemplate(context, inputTemplate, name);
     }
 
-    private void parseTemplate(Element inputTemplate, String name) {
+    private void parseTemplate(ParseContext context, Element inputTemplate, String name) {
         for (Element field : children(inputTemplate)) {
             String nodeName = field.getNodeName();
 
             if (nodeName.equals("content-list")) {
-                parseContentList(field);
+                parseContentList(context, field);
             }
             else if (nodeName.equals("policy") || nodeName.equals("viewer") || nodeName.equals("editor")) {
                 callback.classReferenceFound(file, field.getTextContent().trim());
             }
             else if (nodeName.equals("layout") || nodeName.equals("field")) {
-                parseFieldOrLayout(name, field);
+                parseFieldOrLayout(context, name, field);
             }
             else if (nodeName.equals("content-list-wrapper")) {
                 String wrapperClass = field.getTextContent().trim();
@@ -82,14 +88,14 @@ class TemplateDefinitionParser extends AbstractParser {
             else if (nodeName.equals("output-templates")) {
                 for (Element templateId : children(field)) {
                     if (templateId.getNodeName().equals("id")) {
-                        callback.contentReferenceFound(file, Major.OUTPUT_TEMPLATE, templateId.getTextContent().trim());
+                        callback.contentReferenceFound(context, Major.OUTPUT_TEMPLATE, templateId.getTextContent().trim());
                     }
                 }
             }
         }
     }
 
-    private void parseFieldOrLayout(String name, Element field) {
+    private void parseFieldOrLayout(ParseContext context, String name, Element field) {
         String fieldTemplate = field.getAttribute("input-template");
 
         if (fieldTemplate.equals("")) {
@@ -97,7 +103,7 @@ class TemplateDefinitionParser extends AbstractParser {
                     " in " + file + " has no input template.");
         }
         else {
-            callback.templateReferenceFound(file, fieldTemplate);
+            callback.contentReferenceFound(context, INPUT_TEMPLATE, fieldTemplate);
         }
 
         for (Element param : children(field)) {
@@ -105,7 +111,7 @@ class TemplateDefinitionParser extends AbstractParser {
                 String paramName = param.getAttribute("name");
 
                 if (paramName.equals("inputTemplateId")) {
-                    callback.templateReferenceFound(file, param.getTextContent().trim());
+                    callback.contentReferenceFound(context, INPUT_TEMPLATE, param.getTextContent().trim());
                 }
                 else if (paramName.endsWith(".class")) {
                     callback.classReferenceFound(file, param.getTextContent().trim());
@@ -118,21 +124,21 @@ class TemplateDefinitionParser extends AbstractParser {
                     try {
                         Element id = CheckedCast.cast(ids.item(k), Element.class);
 
-                        parseContentIdReference(id);
+                        parseContentIdReference(context, id);
                     }
                     catch (CheckedClassCastException e) {
                     }
                 }
             }
             else if (param.getNodeName().equals("idparam")) {
-                parseContentIdReference(param);
+                parseContentIdReference(context, param);
             }
         }
 
-        parseTemplate(field, name);
+        parseTemplate(context, field, name);
     }
 
-    private void parseContentList(Element field) {
+    private void parseContentList(ParseContext context, Element field) {
         try {
             Node namedItem = field.getAttributes().
                 getNamedItem("input-template");
@@ -141,25 +147,20 @@ class TemplateDefinitionParser extends AbstractParser {
                 String templateName = namedItem.getNodeValue();
 
                 if (templateName != null && !templateName.equals("")) {
-                    callback.templateReferenceFound(file, templateName);
+                    callback.contentReferenceFound(context, INPUT_TEMPLATE, templateName);
                 }
             }
         } catch (DOMException e) {
         }
     }
 
-    private void parseContentIdReference(Element param) {
+    private void parseContentIdReference(ParseContext context, Element param) {
         ParsedContentId contentId = parseContentId(param);
 
         if (contentId == null) {
             return;
         }
 
-        if (contentId.getMajor() == Major.INPUT_TEMPLATE) {
-            callback.templateReferenceFound(file, contentId.getExternalId());
-        }
-        else {
-            callback.contentReferenceFound(file, contentId.getMajor(), contentId.getExternalId());
-        }
+        callback.contentReferenceFound(context, contentId.getMajor(), contentId.getExternalId());
     }
 }

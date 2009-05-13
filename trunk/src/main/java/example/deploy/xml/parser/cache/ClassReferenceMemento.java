@@ -1,12 +1,11 @@
 package example.deploy.xml.parser.cache;
 
-import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.SingleObjectHolder;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 
 
 public class ClassReferenceMemento extends SingleObjectHolder<String> implements SingleCallMemento {
-
     private String klass;
 
     public ClassReferenceMemento(String klass) {
@@ -14,8 +13,8 @@ public class ClassReferenceMemento extends SingleObjectHolder<String> implements
         this.klass = klass;
     }
 
-    public void replay(DeploymentFile file, SingleCallMemento memento,
+    public void replay(ParseContext context, SingleCallMemento memento,
             ParseCallback parseCallback) {
-        parseCallback.classReferenceFound(file, klass);
+        parseCallback.classReferenceFound(context.getFile(), klass);
     }
 }

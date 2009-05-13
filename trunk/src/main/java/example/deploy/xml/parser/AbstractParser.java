@@ -54,18 +54,6 @@ abstract class AbstractParser {
         }
     }
 
-    protected void findContentReferences(Element content) {
-        for (Element child : children(content)) {
-            findContentReferences(child);
-        }
-
-        ParsedContentId contentReference = parseContentId(content);
-
-        if (contentReference != null) {
-            callback.contentReferenceFound(file, contentReference.getMajor(), contentReference.getExternalId());
-        }
-    }
-
     protected Iterable<Element> children(Element element) {
         final NodeList metadataChildren = element.getChildNodes();
 

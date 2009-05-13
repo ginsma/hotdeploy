@@ -7,6 +7,7 @@ import java.util.List;
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 
 public class ParseCallbackMultiplexer implements ParseCallback {
     private List<ParseCallback> callbacks;
@@ -22,29 +23,17 @@ public class ParseCallbackMultiplexer implements ParseCallback {
         }
     }
 
-    public void contentFound(DeploymentFile file, String externalId,
+    public void contentFound(ParseContext context, String externalId,
             Major major, String inputTemplate) {
         for (ParseCallback callback : callbacks) {
-            callback.contentFound(file, externalId, major, inputTemplate);
+            callback.contentFound(context, externalId, major, inputTemplate);
         }
     }
 
-    public void contentReferenceFound(DeploymentFile file, Major major, String externalId) {
+    public void contentReferenceFound(ParseContext context, Major major,
+            String externalId) {
         for (ParseCallback callback : callbacks) {
-            callback.contentReferenceFound(file, major, externalId);
+            callback.contentReferenceFound(context, major, externalId);
         }
     }
-
-    public void templateFound(DeploymentFile file, String inputTemplate) {
-        for (ParseCallback callback : callbacks) {
-            callback.templateFound(file, inputTemplate);
-        }
-    }
-
-    public void templateReferenceFound(DeploymentFile file, String inputTemplate) {
-        for (ParseCallback callback : callbacks) {
-            callback.templateReferenceFound(file, inputTemplate);
-        }
-    }
-
 }

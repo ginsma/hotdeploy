@@ -7,22 +7,12 @@ public interface ParseCallback {
     /**
      * A content object with the specified external ID was defined.
      */
-    void contentFound(DeploymentFile file, String externalId, Major major, String inputTemplate);
-
-    /**
-     * A template with the specified name (external ID) was defined.
-     */
-    void templateFound(DeploymentFile file, String inputTemplate);
-
-    /**
-     * A template was referenced.
-     */
-    void templateReferenceFound(DeploymentFile file, String inputTemplate);
+    void contentFound(ParseContext context, String externalId, Major major, String inputTemplate);
 
     /**
      * A content was referenced.
      */
-    void contentReferenceFound(DeploymentFile file, Major major, String externalId);
+    void contentReferenceFound(ParseContext context, Major major, String externalId);
 
     /**
      * A class was referenced.

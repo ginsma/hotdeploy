@@ -1,10 +1,10 @@
 package example.deploy.xml.parser.cache;
 
 import example.deploy.hotdeploy.client.Major;
-import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.SingleObjectHolder;
 import example.deploy.hotdeploy.util.Tuple;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 
 public class ContentReferenceMemento extends SingleObjectHolder<Tuple<Major, String>> implements SingleCallMemento {
     private String externalId;
@@ -17,8 +17,8 @@ public class ContentReferenceMemento extends SingleObjectHolder<Tuple<Major, Str
         this.externalId = externalId;
     }
 
-    public void replay(DeploymentFile file, SingleCallMemento memento,
+    public void replay(ParseContext context, SingleCallMemento memento,
             ParseCallback parseCallback) {
-         parseCallback.contentReferenceFound(file, major, externalId);
+         parseCallback.contentReferenceFound(context, major, externalId);
     }
 }

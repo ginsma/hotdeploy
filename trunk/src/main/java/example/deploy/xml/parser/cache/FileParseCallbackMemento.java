@@ -9,6 +9,7 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.SingleObjectHolder;
 import example.deploy.xml.parser.ParseCallback;
+import example.deploy.xml.parser.ParseContext;
 
 public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCallMemento>> implements ParseCallback {
     private static final Logger logger = Logger.getLogger(FileParseCallbackMemento.class.getName());
@@ -26,20 +27,12 @@ public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCall
         createMemento(foundInFile, new ClassReferenceMemento(klass));
     }
 
-    public void contentFound(DeploymentFile foundInFile, String externalId, Major major, String inputTemplate) {
-        createMemento(foundInFile, new ContentMemento(externalId, major, inputTemplate));
+    public void contentFound(ParseContext context, String externalId, Major major, String inputTemplate) {
+        createMemento(context.getFile(), new ContentMemento(externalId, major, inputTemplate));
     }
 
-    public void contentReferenceFound(DeploymentFile foundInFile, Major major, String externalId) {
-        createMemento(foundInFile, new ContentReferenceMemento(major, externalId));
-    }
-
-    public void templateFound(DeploymentFile foundInFile, String inputTemplate) {
-        createMemento(foundInFile, new TemplateMemento(inputTemplate));
-    }
-
-    public void templateReferenceFound(DeploymentFile foundInFile, String inputTemplate) {
-        createMemento(foundInFile, new TemplateReference(inputTemplate));
+    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
+        createMemento(context.getFile(), new ContentReferenceMemento(major, externalId));
     }
 
     private void createMemento(DeploymentFile foundInFile,
@@ -53,8 +46,10 @@ public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCall
     }
 
     public void replay(ParseCallback parseCallback) {
+        ParseContext context = new ParseContext(file);
+
         for (SingleCallMemento memento : mementos) {
-            memento.replay(file, memento, parseCallback);
+            memento.replay(context, memento, parseCallback);
         }
     }
 
