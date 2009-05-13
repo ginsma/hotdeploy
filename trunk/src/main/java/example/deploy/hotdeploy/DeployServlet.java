@@ -27,7 +27,7 @@ import example.deploy.hotdeploy.discovery.DefaultDiscoveryDirectories;
 import example.deploy.hotdeploy.discovery.DeploymentDirectoryDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
-import example.deploy.hotdeploy.state.AlwaysChangedDirectoryState;
+import example.deploy.hotdeploy.state.NoFilesImportedDirectoryState;
 
 /**
  * A servlet that deploys the file(s) specified as parameters (e.g.
@@ -80,7 +80,7 @@ public class DeployServlet extends HttpServlet {
                 SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(server);
 
                 (new MultipleFileDeployer(singleFileDeployer, rootDirectory,
-                    new AlwaysChangedDirectoryState())).discoverAndDeploy(
+                    new NoFilesImportedDirectoryState())).discoverAndDeploy(
                             DefaultDiscoverers.getDiscoverers());
              } catch (FatalDeployException e) {
                 logger.log(Level.WARNING, e.getMessage(), e);

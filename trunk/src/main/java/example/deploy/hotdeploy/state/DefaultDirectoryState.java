@@ -1,7 +1,9 @@
 package example.deploy.hotdeploy.state;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import example.deploy.hotdeploy.HotDeployContentContextListener;
 import example.deploy.hotdeploy.file.DeploymentFile;
@@ -15,6 +17,8 @@ public class DefaultDirectoryState implements DirectoryState {
      */
     private Map<DeploymentFile, FileState> failedFileStateByFile =
         new HashMap<DeploymentFile, FileState>();
+
+    private Set<DeploymentFile> successfulResets = new HashSet<DeploymentFile>();
 
     public DefaultDirectoryState(FileChecksums checksums) {
         this.fileChecksums = checksums;
@@ -46,10 +50,11 @@ public class DefaultDirectoryState implements DirectoryState {
         if (failed) {
             failedFileStateByFile.put(file,
                 new FileState(file.getQuickChecksum(), file.getSlowChecksum()));
+            successfulResets.remove(file);
         }
         else {
             failedFileStateByFile.remove(file);
-
+            successfulResets.add(file);
             fileChecksums.setChecksums(file, file.getQuickChecksum(), file.getSlowChecksum());
         }
     }
@@ -68,5 +73,13 @@ public class DefaultDirectoryState implements DirectoryState {
 
     public FileChecksums getFileChecksums() {
         return fileChecksums;
+    }
+
+    public Set<DeploymentFile> getSuccessfulResets() {
+        return successfulResets;
+    }
+
+    public Set<DeploymentFile> getFailedResets() {
+        return failedFileStateByFile.keySet();
     }
 }

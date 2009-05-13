@@ -16,7 +16,7 @@ public interface DirectoryState {
     boolean hasFileChanged(DeploymentFile file);
 
     /**
-     * The the file's current state as reference for whether it has changed.
+     * Store the file's current state as reference for whether it has changed.
      * Immediately after the call, {@link #hasFileChanged(DeploymentFile)} will return
      * false.
      */

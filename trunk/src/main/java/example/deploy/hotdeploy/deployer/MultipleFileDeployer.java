@@ -169,5 +169,9 @@ public class MultipleFileDeployer
     public void setFailFast(boolean failFast) {
         this.failFast = failFast;
     }
+
+    public boolean isAllFilesUnchanged() {
+        return !(successfulFiles.isEmpty() && failedFiles.isEmpty());
+    }
 }
 

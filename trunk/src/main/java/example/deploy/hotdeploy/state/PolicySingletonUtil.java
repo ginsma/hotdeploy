@@ -3,15 +3,16 @@ package example.deploy.hotdeploy.state;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.polopoly.cm.ContentId;
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.VersionedContentId;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.ContentOperationFailedException;
 import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
-import com.polopoly.cm.xml.hotdeploy.util.CheckedCast;
-import com.polopoly.cm.xml.hotdeploy.util.CheckedClassCastException;
-import com.polopoly.cm.xml.hotdeploy.util.TemplateGetter;
+
+import example.deploy.hotdeploy.util.CheckedCast;
+import example.deploy.hotdeploy.util.CheckedClassCastException;
 
 /**
  * Class for retrieving an (unversioned) singleton, i.e. a policy of which only
@@ -19,7 +20,6 @@ import com.polopoly.cm.xml.hotdeploy.util.TemplateGetter;
  *
  * @author AndreasE
  */
-@SuppressWarnings("deprecation")
 public class PolicySingletonUtil {
     private static final Logger logger =
         Logger.getLogger(PolicySingletonUtil.class.getName());
@@ -43,16 +43,17 @@ public class PolicySingletonUtil {
             try {
                 Policy policy = server.getPolicy(id);
 
-                return (Policy) CheckedCast.cast(policy, klass);
+                return (Policy) CheckedCast.cast(policy, klass, "Policy of " + externalId);
             }
             catch (ContentOperationFailedException e) {
                 logger.log(Level.INFO, "Singleton " + externalId +
-                    " could not be retrieved. Trying to recreate it: " + e.getMessage(), e);
+                    " could not be retrieved. Trying to recreate it: " + e.getMessage());
 
                 try {
                     return createSingleton(server, major, externalId, inputTemplateName, klass);
-                } catch (CMException e2) {
-                    logger.log(Level.WARNING, "Recreating singleton " + externalId + " failed: " + e.getMessage(), e);
+                } catch (CMException recreatingException) {
+                    logger.log(Level.WARNING, "Recreating singleton " + externalId + " failed: " +
+                            recreatingException.getMessage());
 
                     // intentionally throwing original exception. this is the real error, not the exception
                     // from trying to recover.
@@ -67,9 +68,16 @@ public class PolicySingletonUtil {
     private static Policy createSingleton(PolicyCMServer server, int major,
             String externalId, String inputTemplateName, Class<?> klass)
             throws CheckedClassCastException, CMException {
+        ContentId inputTemplate =
+            server.findContentIdByExternalId(new ExternalContentId(inputTemplateName));
+
+        if (inputTemplate == null) {
+            throw new CMException("The template " + inputTemplateName + " did not exist.");
+        }
+
         Policy result = (Policy) CheckedCast.cast(
             server.createContent(major,
-                TemplateGetter.getInputTemplate(server, inputTemplateName)),
+                inputTemplate),
                     klass);
 
         result.getContent().setExternalId(externalId);

@@ -30,4 +30,9 @@ public class ImportOrderVertex implements Vertex<ImportOrderVertex> {
     public void addDependency(ImportOrderVertex hotdeployVertex) {
         addEdge(new SingleEdge<ImportOrderVertex>(hotdeployVertex));
     }
+
+    @Override
+    public String toString() {
+        return importOrderFile.toString();
+    }
 }

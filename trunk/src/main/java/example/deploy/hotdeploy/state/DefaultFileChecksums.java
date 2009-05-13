@@ -40,7 +40,7 @@ public class DefaultFileChecksums implements FileChecksums {
                     CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME, FILE_CHECKSUMS_INPUT_TEMPLATE_NAME,
                     FileChecksumsPolicy.class);
         } catch (CMException e) {
-            throw new CouldNotFetchChecksumsException(e);
+            throw new CouldNotFetchChecksumsException(e.getMessage(), e);
         }
     }
 

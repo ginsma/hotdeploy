@@ -7,12 +7,11 @@ import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.polopoly.util.collection.FetchingIterator;
-
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
+import example.deploy.hotdeploy.util.FetchingIterator;
 
 abstract class AbstractParser {
     private static final Logger logger =
