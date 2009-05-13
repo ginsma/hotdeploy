@@ -4,6 +4,7 @@ import static com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool.generateIm
 import static com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool.writeFile;
 import static example.deploy.hotdeploy.util.Plural.plural;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -14,13 +15,15 @@ import com.polopoly.util.client.PolopolyContext;
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
 import example.deploy.hotdeploy.deployer.FatalDeployException;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
+import example.deploy.hotdeploy.discovery.NotApplicableException;
+import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.state.AlwaysChangedDirectoryState;
 import example.deploy.hotdeploy.state.CouldNotUpdateStateException;
 import example.deploy.hotdeploy.state.DirectoryState;
 import example.deploy.hotdeploy.state.DirectoryStateFetcher;
+import example.deploy.hotdeploy.state.NoFilesImportedDirectoryState;
 import example.deploy.xml.parser.XmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
 
@@ -42,6 +45,8 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
     }
 
     private CachingDeploymentFileParser cachingParser;
+    private DirectoryState directoryState;
+    private DirectoryStateFetcher directoryStateFetcher;
 
     public HotdeployTool() {
         cachingParser = new CachingDeploymentFileParser(new XmlParser());
@@ -94,18 +99,23 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
 
     private DirectoryState getDirectoryState(PolopolyContext context, HotdeployParameters parameters) {
         if (parameters.isForce()) {
-            return new AlwaysChangedDirectoryState();
+            return new NoFilesImportedDirectoryState();
         }
         else {
-            return new DirectoryStateFetcher(context.getPolicyCMServer()).getDirectoryState();
+            directoryStateFetcher =
+                new DirectoryStateFetcher(context.getPolicyCMServer());
+
+            return directoryStateFetcher.getDirectoryState();
         }
     }
 
     public void execute(PolopolyContext context,
             HotdeployParameters parameters) {
-        DirectoryState directoryState = getDirectoryState(context, parameters);
+        directoryState = getDirectoryState(context, parameters);
 
         try {
+            deployResourceContent(context);
+
             List<DeploymentFile> files = parameters.discoverFiles();
 
             boolean createImportOrder =
@@ -122,12 +132,11 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
                 createBootstrap(parameters, files);
             }
 
-            System.out.println(files.size() + " content file" + plural(files.size()) + " found...");
+            System.out.println(files.size() + " content file" + plural(files.size()) +
+                    " found in " + parameters.getFileOrDirectory().getAbsolutePath() + "...");
 
-            MultipleFileDeployer deployer = new MultipleFileDeployer(
-                    new LoggingSingleFileDeployer(context.getPolicyCMServer()),
-                    parameters.getDirectory(),
-                    directoryState);
+            MultipleFileDeployer deployer =
+                createDeployer(context, parameters.getDirectory());
 
             deployer.deploy(files);
 
@@ -136,6 +145,44 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
             System.err.println("Deployment could not be performed: " + e.getMessage());
         } finally {
             persistState(directoryState);
+        }
+    }
+
+    private MultipleFileDeployer createDeployer(PolopolyContext context, File directory) {
+        MultipleFileDeployer deployer = new MultipleFileDeployer(
+                new LoggingSingleFileDeployer(context.getPolicyCMServer()),
+                directory,
+                directoryState);
+
+        return deployer;
+    }
+
+    private void deployResourceContent(PolopolyContext context) throws FatalDeployException {
+        try {
+            List<DeploymentFile> resourceFiles =
+                new ResourceFileDiscoverer().getFilesToImport(getClass().getClassLoader());
+
+            if (resourceFiles.isEmpty()) {
+                return;
+            }
+
+            MultipleFileDeployer deployer =
+                createDeployer(context, new File("."));
+
+            deployer.deploy(resourceFiles);
+
+            if (!deployer.isAllFilesUnchanged()) {
+                System.out.println("Content in the classpath: " +
+                        deployer.getResultMessage(resourceFiles));
+            }
+
+            // we might have deployed the hotdeploy templates here. if that is the
+            // case we can now (and only now) fetch the directory state.
+            if (directoryStateFetcher != null) {
+                directoryState = directoryStateFetcher.refreshAfterFailingToFetch();
+            }
+        } catch (NotApplicableException e) {
+            // no resource content. fine.
         }
     }
 
