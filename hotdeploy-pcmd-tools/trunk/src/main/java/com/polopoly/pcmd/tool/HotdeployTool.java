@@ -25,7 +25,7 @@ import example.deploy.hotdeploy.state.CouldNotUpdateStateException;
 import example.deploy.hotdeploy.state.DirectoryState;
 import example.deploy.hotdeploy.state.DirectoryStateFetcher;
 import example.deploy.hotdeploy.state.NoFilesImportedDirectoryState;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
 
 public class HotdeployTool implements Tool<HotdeployParameters> {
@@ -68,7 +68,7 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
     private DirectoryStateFetcher directoryStateFetcher;
 
     public HotdeployTool() {
-        cachingParser = new CachingDeploymentFileParser(new XmlParser());
+        cachingParser = new CachingDeploymentFileParser(new ContentXmlParser());
     }
 
     public HotdeployParameters createParameters() {

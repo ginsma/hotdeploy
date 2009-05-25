@@ -9,7 +9,7 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
 
 public class HotdeployFindTool implements Tool<HotdeployFindParameters> {
 
@@ -60,7 +60,7 @@ public class HotdeployFindTool implements Tool<HotdeployFindParameters> {
     public void execute(PolopolyContext context, HotdeployFindParameters parameters) {
         List<DeploymentFile> files = parameters.discoverFiles();
 
-        XmlParser parser = new XmlParser();
+        ContentXmlParser parser = new ContentXmlParser();
 
         ParseCallback callback = new ReferenceGatherer(parameters.getExternalId());
 

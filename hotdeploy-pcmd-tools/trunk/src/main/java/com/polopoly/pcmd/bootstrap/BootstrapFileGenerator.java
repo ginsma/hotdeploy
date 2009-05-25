@@ -16,9 +16,9 @@ import example.deploy.xml.bootstrap.Bootstrap;
 import example.deploy.xml.bootstrap.BootstrapContent;
 import example.deploy.xml.bootstrap.BootstrapFileWriter;
 import example.deploy.xml.bootstrap.BootstrapGenerator;
-import example.deploy.xml.consistency.PresentFileReader;
 import example.deploy.xml.parser.DeploymentFileParser;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.present.PresentFileReader;
 
 public class BootstrapFileGenerator {
     public static final String BOOTSTRAP_FILE_NAME = "bootstrap.xml";
@@ -26,7 +26,7 @@ public class BootstrapFileGenerator {
     private boolean force = false;
     private boolean bootstrapNonCreated = false;
     private boolean ignorePresent = false;
-    private DeploymentFileParser parser = new XmlParser();
+    private DeploymentFileParser parser = new ContentXmlParser();
 
     static void bootstrapNonCreated(Bootstrap bootstrap, List<BootstrapContent> notBootstrapped) {
         for (BootstrapContent bootstrapContent : notBootstrapped) {
@@ -60,11 +60,11 @@ public class BootstrapFileGenerator {
 
         if (notBootstrapped.size() < 10) {
             System.out.println("These are the objects: " + notBootstrapped);
-            System.out.println("Use the validate tool to find out where they are referenced.");
+            System.out.println("Use the hotdeploy-find tool to find out where they are referenced.");
         }
         else {
             System.out.println("Some of these objects are " + notBootstrapped.subList(0, 9));
-            System.out.println("Use the validate tool to see the full list and find out where they are referenced.");
+            System.out.println("Use the hotdeploy-validate tool to see the full list and find out where they are referenced.");
         }
     }
 

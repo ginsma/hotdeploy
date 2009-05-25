@@ -15,10 +15,10 @@ import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.xml.consistency.PresentFileReader;
 import example.deploy.xml.ordergenerator.ImportOrderGenerator;
 import example.deploy.xml.parser.DeploymentFileParser;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.present.PresentFileReader;
 
 public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDeployParameters> {
     public ForceAndFilesToDeployParameters createParameters() {
@@ -27,7 +27,7 @@ public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDep
 
     public void execute(PolopolyContext context,
             ForceAndFilesToDeployParameters parameters) {
-        ImportOrder importOrder = generateImportOrder(new XmlParser(), parameters, parameters.isIgnorePresent());
+        ImportOrder importOrder = generateImportOrder(new ContentXmlParser(), parameters, parameters.isIgnorePresent());
 
         ImportOrderFile importOrderFile = new ImportOrderFile(importOrder);
 

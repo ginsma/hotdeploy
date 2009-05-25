@@ -6,3 +6,6 @@ com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool
 com.polopoly.pcmd.tool.HotdeployFindTool
 com.polopoly.pcmd.tool.HotdeployResetStateTool
 com.polopoly.pcmd.tool.HotdeployNormalizeTool
+com.polopoly.pcmd.tool.ExportTool
+com.polopoly.pcmd.tool.ListExportableTool
+com.polopoly.pcmd.tool.HotdeployListTool

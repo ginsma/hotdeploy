@@ -31,8 +31,10 @@ public class HotdeployListTool implements Tool<HotdeployListParameters> {
             Collections.sort(majors);
 
             for (Major major : majors) {
-                System.out.println();
-                System.out.println("Major " + major.toString().toUpperCase());
+                if (parameters.isVerbose()) {
+                    System.out.println();
+                    System.out.println("Major " + major.toString().toUpperCase());
+                }
 
                 printMajor(allContent, major);
             }

@@ -4,6 +4,7 @@ import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
 import com.polopoly.pcmd.argument.NotProvidedException;
 import com.polopoly.pcmd.argument.ParameterHelp;
+import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.pcmd.parser.MajorParser;
 import com.polopoly.util.client.PolopolyContext;
 
@@ -11,7 +12,9 @@ import example.deploy.hotdeploy.client.Major;
 
 public class HotdeployListParameters extends FilesToDeployParameters {
     private static final String MAJOR_OPTION = "major";
+    private static final String VERBOSE_OPTION = "verbose";
     private Major major;
+    private boolean verbose;
 
     @Override
     public void getHelp(ParameterHelp help) {
@@ -19,6 +22,9 @@ public class HotdeployListParameters extends FilesToDeployParameters {
 
         help.addOption(MAJOR_OPTION, new MajorParser(),
             "If specified, limits the list to content of a single major.");
+
+        help.addOption(VERBOSE_OPTION, new BooleanParser(),
+                "Whether to print major names of objects.");
     }
 
     @Override
@@ -32,6 +38,8 @@ public class HotdeployListParameters extends FilesToDeployParameters {
         catch (NotProvidedException e) {
             // ignore.
         }
+
+        setVerbose(args.getFlag(VERBOSE_OPTION, false));
     }
 
     public void setMajor(Major major) {
@@ -41,4 +49,13 @@ public class HotdeployListParameters extends FilesToDeployParameters {
     public Major getMajor() {
         return major;
     }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
 }

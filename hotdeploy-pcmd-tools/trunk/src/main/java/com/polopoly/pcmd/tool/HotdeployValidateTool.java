@@ -7,9 +7,9 @@ import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.Plural;
-import example.deploy.xml.consistency.PresentFileReader;
 import example.deploy.xml.consistency.VerifyResult;
 import example.deploy.xml.consistency.XMLConsistencyVerifier;
+import example.deploy.xml.present.PresentFileReader;
 
 public class HotdeployValidateTool implements Tool<HotdeployValidateParameters> {
 

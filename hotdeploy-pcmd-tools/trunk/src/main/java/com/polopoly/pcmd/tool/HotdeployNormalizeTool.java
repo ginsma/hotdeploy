@@ -7,7 +7,8 @@ import com.polopoly.pcmd.tool.parameters.HotdeployNormalizeParameters;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.normalize.NormalizeElementGatherer;
+import example.deploy.xml.parser.ContentXmlParser;
 
 public class HotdeployNormalizeTool implements Tool<HotdeployNormalizeParameters> {
 
@@ -27,8 +28,8 @@ public class HotdeployNormalizeTool implements Tool<HotdeployNormalizeParameters
                 System.out.println("Skipping bootstrap file " + file + ".");
             }
             else {
-                new XmlParser().parse(file, new NormalizeElementGatherer(
-                    parameters.getToDirectory()));
+                new ContentXmlParser().parse(file,
+                    new NormalizeElementGatherer(parameters.getToDirectory()));
             }
         }
     }
