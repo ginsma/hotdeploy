@@ -22,8 +22,8 @@ public class TestFileChecksumsPolicy extends ManualTestCase {
 
                 checksums.setChecksums(anotherFile, 3, 4);
 
-                assertEquals(3, checksums.getQuickChecksum(aFile));
-                assertEquals(4, checksums.getSlowChecksum(aFile));
+                assertEquals(3, checksums.getQuickChecksum(anotherFile));
+                assertEquals(4, checksums.getSlowChecksum(anotherFile));
             }};
     }
 

@@ -9,6 +9,7 @@ public enum Major implements Comparable<Major> {
     LAYOUT_ELEMENT(7, "layoutelement"),
     WORKFLOW_TYPE(10, "workflowtype"),
     WORKFLOW(11, "workflow"),
+    REFERENCE_METADATA(13, "referencemetadata"),
     INPUT_TEMPLATE(14, "inputtemplate"),
     OUTPUT_TEMPLATE(15, "outputtemplate"),
     APP_CONFIG(17, "appconfig"),
@@ -17,7 +18,7 @@ public enum Major implements Comparable<Major> {
 
     static {
         ALL_MAJORS = new Major[] {MAJOR_CONFIG, ARTICLE, DEPARTMENT, CONTENT, LAYOUT_ELEMENT, WORKFLOW,
-                WORKFLOW_TYPE, INPUT_TEMPLATE, OUTPUT_TEMPLATE, APP_CONFIG, USER, COMMUNITY};
+                WORKFLOW_TYPE, REFERENCE_METADATA, INPUT_TEMPLATE, OUTPUT_TEMPLATE, APP_CONFIG, USER, COMMUNITY};
     }
 
     private static Major[] ALL_MAJORS;
@@ -33,6 +34,16 @@ public enum Major implements Comparable<Major> {
         for (Major major : ALL_MAJORS) {
             if (major.getName().equalsIgnoreCase(majorName) ||
                     Integer.toString(major.getIntegerMajor()).equals(majorName)) {
+                return major;
+            }
+        }
+
+        return UNKNOWN;
+    }
+
+    public static Major getMajor(int integerMajor) {
+        for (Major major : ALL_MAJORS) {
+            if (major.getIntegerMajor() == integerMajor) {
                 return major;
             }
         }

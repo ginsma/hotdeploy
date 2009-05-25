@@ -3,6 +3,9 @@ package example.deploy.xml.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
+import example.deploy.xml.present.PresentFileReader;
+import example.deploy.xml.present.PresentFilesAware;
+
 import junit.framework.TestCase;
 
 public class TestPresentFileReader extends TestCase implements PresentFilesAware {

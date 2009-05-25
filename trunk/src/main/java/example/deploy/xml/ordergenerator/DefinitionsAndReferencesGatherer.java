@@ -6,9 +6,9 @@ import java.util.Set;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.xml.consistency.PresentFilesAware;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
+import example.deploy.xml.present.PresentFilesAware;
 
 public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentFilesAware {
     private DefinitionsAndReferences definitionsAndReferences = new DefinitionsAndReferences();

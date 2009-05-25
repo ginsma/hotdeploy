@@ -9,8 +9,8 @@ import java.util.Set;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
 public class DefinitionsAndReferences {
-    Map<String, Set<DeploymentFile>> definingFilesByExternalId =
+    public Map<String, Set<DeploymentFile>> definingFilesByExternalId =
         new HashMap<String, Set<DeploymentFile>>();
 
-    List<Reference> references = new ArrayList<Reference>();
+    public List<Reference> references = new ArrayList<Reference>();
 }

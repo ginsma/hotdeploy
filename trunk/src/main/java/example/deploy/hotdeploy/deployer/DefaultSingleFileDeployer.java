@@ -29,9 +29,6 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
         this.server = server;
     }
 
-    /* (non-Javadoc)
-     * @see example.deploy.hotdeploy.deployer.ISingleFileDeployer#prepare()
-     */
     public void prepare() throws ParserConfigurationException {
         importer = new DispatchingDocumentImporter(server);
     }

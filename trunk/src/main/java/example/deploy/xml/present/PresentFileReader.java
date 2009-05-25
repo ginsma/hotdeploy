@@ -1,4 +1,4 @@
-package example.deploy.xml.consistency;
+package example.deploy.xml.present;
 
 import java.io.BufferedReader;
 import java.io.File;

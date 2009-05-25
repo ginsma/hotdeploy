@@ -7,7 +7,7 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
 
 public class AllContentFinder {
     public class AllContentFinderParserCallback implements ParseCallback {
@@ -29,7 +29,7 @@ public class AllContentFinder {
     private AllContent result = new AllContent();
 
     public AllContentFinder(List<DeploymentFile> files) {
-        this(new XmlParser(), files);
+        this(new ContentXmlParser(), files);
     }
 
     public AllContentFinder(DeploymentFileParser parser, List<DeploymentFile> files) {

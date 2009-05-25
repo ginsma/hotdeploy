@@ -19,7 +19,8 @@ import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.present.PresentFilesAware;
 
 /**
  * Verifies that content XML is consistent and warns in
@@ -88,7 +89,7 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentFilesAware 
         for (DeploymentFile file : filesToVerify) {
             logger.log(Level.FINE, "Parsing " + file + "...");
 
-            new XmlParser().parse(file, this);
+            new ContentXmlParser().parse(file, this);
         }
 
         logger.log(Level.INFO, "Verification of " + filesToVerify.size() + " content XML files finished.");

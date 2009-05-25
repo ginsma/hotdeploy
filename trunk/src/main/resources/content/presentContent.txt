@@ -105,3 +105,4 @@ p.WorkFrame
 p.language.en
 p.language.sv
 siteengine.config.SiteCacheConfiguration
+p.siteengine.ModeConfiguration.d

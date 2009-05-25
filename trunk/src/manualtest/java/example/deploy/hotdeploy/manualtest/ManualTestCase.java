@@ -7,7 +7,7 @@ import com.polopoly.util.client.PolopolyClient;
 import com.polopoly.util.client.PolopolyContext;
 
 public abstract class ManualTestCase extends TestCase {
-    protected static PolopolyContext context;
+    public static PolopolyContext context;
 
     static {
         PolopolyClient client = new PolopolyClient();

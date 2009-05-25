@@ -1,4 +1,4 @@
-package example.deploy.xml.consistency;
+package example.deploy.xml.present;
 
 public interface PresentFilesAware {
 

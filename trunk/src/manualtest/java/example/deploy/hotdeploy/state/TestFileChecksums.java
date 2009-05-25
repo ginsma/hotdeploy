@@ -63,12 +63,6 @@ public class TestFileChecksums extends ManualTestCase {
             }});
     }
 
-    public void testFetchingWhenBlocked() throws CouldNotFetchChecksumsException, CMException, CouldNotUpdateStateException {
-        createOtherContentWithSameExternalId();
-
-        persistChecksums();
-    }
-
     public void testOnlySingleVersion() throws Exception {
         createChecksums();
 

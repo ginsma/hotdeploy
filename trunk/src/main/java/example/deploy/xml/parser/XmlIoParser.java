@@ -72,7 +72,7 @@ class XmlIoParser extends AbstractParser {
             if (major == Major.UNKNOWN) {
                 callback.contentReferenceFound(context, contentId.getMajor(), contentId.getExternalId());
             }
-            else {
+            else if (contentId.getExternalId() != null) {
                 callback.contentFound(context,
                         contentId.getExternalId(), major, inputTemplate);
             }

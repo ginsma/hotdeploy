@@ -1,6 +1,7 @@
 package example.deploy.xml.consistency;
 
 import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.xml.present.PresentFileReader;
 
 
 public class VerifyXMLConsistency {

@@ -10,7 +10,7 @@ import org.apache.tools.ant.util.ReaderInputStream;
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.state.DummyDeploymentFile;
 import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.cache.FileParseCallbackMemento;
 
 public class TestBootstrapFileWriter extends TestCase {
@@ -75,7 +75,7 @@ public class TestBootstrapFileWriter extends TestCase {
 
     private FileParseCallbackMemento parseAndReturnMemento(DummyDeploymentFile file) {
         FileParseCallbackMemento parseResult = new FileParseCallbackMemento(file);
-        new XmlParser().parse(file, parseResult);
+        new ContentXmlParser().parse(file, parseResult);
         return parseResult;
     }
 

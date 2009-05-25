@@ -16,23 +16,23 @@ public class ParserAsserts implements ParseCallback {
     Set<ParsedContentId> foundContentReferences = new HashSet<ParsedContentId>();
     Set<String> foundClassReferences = new HashSet<String>();
 
-    void assertFoundTemplates(String[] expectTemplates) {
+    public void assertFoundTemplates(String... expectTemplates) {
         Assert.assertEquals(asSet(expectTemplates), foundTemplates);
     }
 
-    void assertFoundContent(String[] expectContent) {
+    public void assertFoundContent(String... expectContent) {
         Assert.assertEquals(asSet(expectContent), foundContent);
     }
 
-    void assertFoundClassReferences(String[] expectClassReferences) {
+    public void assertFoundClassReferences(String... expectClassReferences) {
         Assert.assertEquals(asSet(expectClassReferences), foundClassReferences);
     }
 
-    void assertFoundTemplateReferences(String[] expectTemplateReferences) {
+    public void assertFoundTemplateReferences(String... expectTemplateReferences) {
         Assert.assertEquals(asSet(expectTemplateReferences), foundTemplateReferences);
     }
 
-    void assertFoundContentReferences(ParsedContentId[] expectContentReferences) {
+    public void assertFoundContentReferences(ParsedContentId... expectContentReferences) {
         Assert.assertEquals(asSet(expectContentReferences), foundContentReferences);
     }
 

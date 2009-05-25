@@ -13,9 +13,9 @@ import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.topologicalsort.TopologicalSorter;
 import example.deploy.hotdeploy.util.MapList;
 import example.deploy.hotdeploy.util.Mapping;
-import example.deploy.xml.consistency.PresentFilesAware;
 import example.deploy.xml.parser.DeploymentFileParser;
-import example.deploy.xml.parser.XmlParser;
+import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.present.PresentFilesAware;
 
 public class ImportOrderGenerator implements PresentFilesAware {
     private static final Logger logger =
@@ -24,7 +24,7 @@ public class ImportOrderGenerator implements PresentFilesAware {
     private DeploymentFileParser parser;
 
     public ImportOrderGenerator() {
-        this(new XmlParser());
+        this(new ContentXmlParser());
     }
 
     public ImportOrderGenerator(DeploymentFileParser parser) {

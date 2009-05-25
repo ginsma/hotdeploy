@@ -16,11 +16,11 @@ import org.xml.sax.SAXException;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-public class XmlParser implements DeploymentFileParser {
+public class ContentXmlParser implements DeploymentFileParser {
     private static final Logger logger =
-        Logger.getLogger(XmlParser.class.getName());
+        Logger.getLogger(ContentXmlParser.class.getName());
 
-    public XmlParser() {
+    public ContentXmlParser() {
     }
 
     private void handleException(DeploymentFile file, Exception e) {
