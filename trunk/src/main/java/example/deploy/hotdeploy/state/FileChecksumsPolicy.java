@@ -15,16 +15,32 @@ public class FileChecksumsPolicy extends ContentPolicy {
     private static final Logger logger =
         Logger.getLogger(FileChecksumsPolicy.class.getName());
 
+    public static final int ATTRIBGROUP_MAXLEN = 128;
+    private static final int SAFETY_MARGIN = 20;
+    private static final int HALF_ATTRIB_GROUP_MAXLEN = (ATTRIBGROUP_MAXLEN - SAFETY_MARGIN) / 2;
+
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
     private static final String SLOW_CHECKSUM_COMPONENT = "slow";
 
+    private String getAttributeGroup(DeploymentFile file) {
+        String result = file.getName();
+
+        if (result.length() > ATTRIBGROUP_MAXLEN - SAFETY_MARGIN) {
+            result =
+                result.substring(0, HALF_ATTRIB_GROUP_MAXLEN) + "..." +
+                result.substring(result.length() - HALF_ATTRIB_GROUP_MAXLEN);
+        }
+
+        return result;
+    }
+
     private LongComponent getQuickChecksumComponent(DeploymentFile file) {
-        return new LongComponent(file.getName(),
+        return new LongComponent(getAttributeGroup(file),
             QUICK_CHECKSUM_COMPONENT, -1);
     }
 
     private LongComponent getSlowChecksumComponent(DeploymentFile file) {
-        return new LongComponent(file.getName(),
+        return new LongComponent(getAttributeGroup(file),
             SLOW_CHECKSUM_COMPONENT, -1);
     }
 
