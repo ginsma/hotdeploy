@@ -8,9 +8,9 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.present.PresentFilesAware;
+import example.deploy.xml.present.PresentContentAware;
 
-public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentFilesAware {
+public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentContentAware {
     private DefinitionsAndReferences definitionsAndReferences = new DefinitionsAndReferences();
     private Set<String> alreadyPresentContent = new HashSet<String>();
 

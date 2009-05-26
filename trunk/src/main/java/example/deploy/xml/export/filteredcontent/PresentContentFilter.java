@@ -11,9 +11,9 @@ import com.polopoly.cm.util.ContentIdFilter;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.exception.NoSuchExternalIdException;
 
-import example.deploy.xml.present.PresentFilesAware;
+import example.deploy.xml.present.PresentContentAware;
 
-public class PresentContentFilter implements PresentFilesAware, ContentIdFilter {
+public class PresentContentFilter implements PresentContentAware, ContentIdFilter {
     private static final Logger logger =
         Logger.getLogger(PresentContentFilter.class.getName());
 

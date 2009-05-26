@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import example.deploy.hotdeploy.client.Major;
-import example.deploy.xml.present.PresentFilesAware;
+import example.deploy.xml.present.PresentContentAware;
 
-public class Bootstrap extends ArrayList<BootstrapContent> implements PresentFilesAware {
+public class Bootstrap extends ArrayList<BootstrapContent> implements PresentContentAware {
     private List<BootstrapContent> neverCreatedButReferenced = new ArrayList<BootstrapContent>();
 
     public void addNeverCreatedButReferenced(BootstrapContent bootstrapContent) {

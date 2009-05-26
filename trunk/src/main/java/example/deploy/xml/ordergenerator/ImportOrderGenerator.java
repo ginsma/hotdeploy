@@ -15,9 +15,9 @@ import example.deploy.hotdeploy.util.MapList;
 import example.deploy.hotdeploy.util.Mapping;
 import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.parser.ContentXmlParser;
-import example.deploy.xml.present.PresentFilesAware;
+import example.deploy.xml.present.PresentContentAware;
 
-public class ImportOrderGenerator implements PresentFilesAware {
+public class ImportOrderGenerator implements PresentContentAware {
     private static final Logger logger =
         Logger.getLogger(ImportOrderGenerator.class.getName());
     private DefinitionsAndReferencesGatherer callback;

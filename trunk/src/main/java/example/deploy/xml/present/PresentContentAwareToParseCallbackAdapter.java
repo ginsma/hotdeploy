@@ -5,10 +5,10 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
 
-public class PresentFilesAwareToParseCallbackAdapter implements ParseCallback {
-    private PresentFilesAware presentFilesAware;
+public class PresentContentAwareToParseCallbackAdapter implements ParseCallback {
+    private PresentContentAware presentFilesAware;
 
-    public PresentFilesAwareToParseCallbackAdapter(PresentFilesAware presentFilesAware) {
+    public PresentContentAwareToParseCallbackAdapter(PresentContentAware presentFilesAware) {
         this.presentFilesAware = presentFilesAware;
     }
 
@@ -25,7 +25,6 @@ public class PresentFilesAwareToParseCallbackAdapter implements ParseCallback {
         }
     }
 
-    public void contentReferenceFound(ParseContext context, Major major,
-            String externalId) {
+    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
     }
 }

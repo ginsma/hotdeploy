@@ -5,16 +5,22 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.client.Major;
+import example.deploy.hotdeploy.discovery.DirectoryFileDiscoverer;
+import example.deploy.hotdeploy.discovery.FallbackDiscoverer;
+import example.deploy.hotdeploy.discovery.NotApplicableException;
+import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.DeploymentObject;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.file.ResourceFile;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
+import example.deploy.xml.parser.ContentXmlParser;
 
 public class PresentFileReader {
     private static final Logger logger =
@@ -25,15 +31,23 @@ public class PresentFileReader {
     private static final String PRESENT_TEMPLATES_FILE = "presentTemplates.txt";
 
     private File rootDirectory;
-    private PresentFilesAware presentFilesAware;
+    private PresentContentAware presentFilesAware;
 
-    public PresentFileReader(File rootDirectory, PresentFilesAware presentFilesAware) {
+    public PresentFileReader(File rootDirectory, PresentContentAware presentFilesAware) {
         this.rootDirectory = rootDirectory;
         this.presentFilesAware = presentFilesAware;
     }
 
-    public PresentFileReader(PresentFilesAware presentFilesAware) {
+    public PresentFileReader(PresentContentAware presentFilesAware) {
         this.presentFilesAware = presentFilesAware;
+    }
+
+    public void readAndScanContent() {
+        read();
+
+        if (rootDirectory != null) {
+            scanContent();
+        }
     }
 
     public void read() {
@@ -42,6 +56,41 @@ public class PresentFileReader {
         }
 
         readFromResource();
+    }
+
+    protected void scanContent() {
+        try {
+            new PresentFileReader(rootDirectory, presentFilesAware).read();
+
+            List<DeploymentFile> deploymentFiles =
+                discoverFilesInDirectory(rootDirectory);
+
+            ContentXmlParser parser = new ContentXmlParser();
+
+            PresentContentAwareToParseCallbackAdapter callback =
+                new PresentContentAwareToParseCallbackAdapter(presentFilesAware);
+
+            int fileCount = 0;
+
+            for (DeploymentFile deploymentFile : deploymentFiles) {
+                parser.parse(deploymentFile, callback);
+
+                if (++fileCount % 100 == 0) {
+                    System.err.println("Scanned " + fileCount + " files...");
+                }
+            }
+        } catch (NotApplicableException e) {
+            logger.log(Level.INFO, "The directory " + rootDirectory.getAbsolutePath() + " did not contain any content files.");
+        }
+    }
+
+    public static List<DeploymentFile> discoverFilesInDirectory(File directory) throws NotApplicableException {
+        FallbackDiscoverer discoverer =
+            new FallbackDiscoverer(
+                new ImportOrderFileDiscoverer(),
+                new DirectoryFileDiscoverer());
+
+        return discoverer.getFilesToImport(directory);
     }
 
     private void readFromResource() {

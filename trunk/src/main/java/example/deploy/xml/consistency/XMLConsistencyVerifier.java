@@ -20,14 +20,14 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.ContentXmlParser;
-import example.deploy.xml.present.PresentFilesAware;
+import example.deploy.xml.present.PresentContentAware;
 
 /**
  * Verifies that content XML is consistent and warns in
  * non-existing fields are referenced.
  * @author AndreasE
  */
-public class XMLConsistencyVerifier implements ParseCallback, PresentFilesAware {
+public class XMLConsistencyVerifier implements ParseCallback, PresentContentAware {
     private static final Logger logger =
         Logger.getLogger(XMLConsistencyVerifier.class.getName());
 
