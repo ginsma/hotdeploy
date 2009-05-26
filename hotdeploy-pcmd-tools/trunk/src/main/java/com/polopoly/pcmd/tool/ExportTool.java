@@ -7,16 +7,21 @@ import java.util.Set;
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.util.ContentIdFilter;
 import com.polopoly.cm.xml.util.export.DefaultContentContentsExporter;
+import com.polopoly.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.pcmd.tool.parameters.ExportParameters;
 import com.polopoly.pcmd.tool.parameters.ListExportableParameters;
 import com.polopoly.util.client.PolopolyContext;
 
+import example.deploy.hotdeploy.util.Plural;
 import example.deploy.xml.export.ContentsExporterFactory;
 import example.deploy.xml.export.NormalizedFileExporter;
 import example.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
 import example.deploy.xml.export.filteredcontent.OrContentIdFilter;
 import example.deploy.xml.export.filteredcontent.PresentContentFilter;
+import example.deploy.xml.export.filteredcontent.ProjectContentFilterFactory;
+import example.deploy.xml.export.filteredcontent.RejectionCollectingContentIdFilter;
 import example.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
+import example.deploy.xml.present.PresentFileReader;
 
 public class ExportTool extends ListExportableTool {
 
@@ -33,8 +38,10 @@ public class ExportTool extends ListExportableTool {
 
         File outputDirectory = parameters.getOutputDirectory();
 
+        System.err.println("Scanning project content...");
+
         ContentIdFilter existingObjectsFilter =
-            getExistingObjectsFilter(context, listParameters);
+            new ProjectContentFilterFactory(context).getExistingObjectsFilter(listParameters.getProjectContentDirectory());
 
         PresentContentFilter alreadyExportedObjectsFilter =
             createAlreadyExportedObjectsFilter(context, outputDirectory);
@@ -42,10 +49,13 @@ public class ExportTool extends ListExportableTool {
         ContentIdFilter existingOrExportedObjectsFilter =
             or(existingObjectsFilter, alreadyExportedObjectsFilter);
 
+        RejectionCollectingContentIdFilter collectingExistingOrExportedObjectsFilter =
+            new RejectionCollectingContentIdFilter(existingOrExportedObjectsFilter);
+
         ContentsExporterFactory contentsExporterFactory =
             new ContentsExporterFactory(context,
                 new ContentIdFilterToContentReferenceFilterWrapper(
-                    existingOrExportedObjectsFilter));
+                    collectingExistingOrExportedObjectsFilter));
 
         Set<ContentId> contentIdsToExport = new HashSet<ContentId>(250);
         int since = parameters.getSince();
@@ -67,6 +77,44 @@ public class ExportTool extends ListExportableTool {
             contentsExporterFactory.getExternalIdGenerator());
 
         normalizedFileExporter.export(contentIdsToExport);
+
+        Set<ContentId> rejected = collectingExistingOrExportedObjectsFilter.getRejectedIds();
+
+        if (!rejected.isEmpty()) {
+            logRejected(rejected, context);
+        }
+    }
+
+    private void logRejected(Set<ContentId> rejected, PolopolyContext context) {
+        System.out.println("The exported content had references to " + Plural.count(rejected, "content object") +
+            " not part either of the exported data or of project content. These references were excluded. ");
+
+        if (rejected.size() > 50) {
+            System.out.print("Some of the referenced objects were: ");
+
+            rejected = collect(rejected, 50);
+        }
+        else {
+            System.out.print("The referenced objects were: ");
+        }
+
+        for (ContentId contentId : rejected) {
+            System.out.println(AbstractContentIdField.get(contentId, context));
+        }
+    }
+
+    private <T> Set<T> collect(Set<T> set, int count) {
+        HashSet<T> result = new HashSet<T>(count);
+
+        for (T object : set) {
+            result.add(object);
+
+            if (result.size() >= count) {
+                break;
+            }
+        }
+
+        return result;
     }
 
     private ContentIdFilter or(ContentIdFilter filter,
@@ -85,8 +133,8 @@ public class ExportTool extends ListExportableTool {
             PolopolyContext context, File outputDirectory) {
         PresentContentFilter alreadyExportedObjectsFilter = new PresentContentFilter(context);
 
-        readPresentFilesFromDirectory(outputDirectory,
-            "already exported files", alreadyExportedObjectsFilter);
+        System.err.println("Scanning output directory for existing content...");
+        new PresentFileReader(outputDirectory, alreadyExportedObjectsFilter).readAndScanContent();
 
         return alreadyExportedObjectsFilter;
     }

@@ -2,6 +2,7 @@ package com.polopoly.pcmd.tool;
 
 import java.util.Iterator;
 
+import com.polopoly.cm.ContentId;
 import com.polopoly.cm.app.deepcopy.CopyTreeNode;
 import com.polopoly.cm.app.deepcopy.DeepCopySettings;
 import com.polopoly.cm.app.deepcopy.filter.DefaultExportFilter;
@@ -9,25 +10,28 @@ import com.polopoly.cm.app.deepcopy.impl.CopyTree;
 import com.polopoly.cm.app.deepcopy.impl.CopyTreeBuilder;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.ContentRead;
-import com.polopoly.pcmd.argument.ContentIdListParameters;
 import com.polopoly.pcmd.field.content.AbstractContentIdField;
+import com.polopoly.pcmd.tool.parameters.ListDeepcopyObjectsParameters;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.collection.ContentIdToContentIterator;
 
-public class ListDeepcopyObjectsTool implements Tool<ContentIdListParameters> {
+public class ListDeepcopyObjectsTool implements Tool<ListDeepcopyObjectsParameters> {
 
-    public ContentIdListParameters createParameters() {
-        return new ContentIdListParameters();
+    public ListDeepcopyObjectsParameters createParameters() {
+        return new ListDeepcopyObjectsParameters();
     }
 
     @SuppressWarnings("unchecked")
     public void execute(PolopolyContext context,
-            ContentIdListParameters parameters) {
+            ListDeepcopyObjectsParameters parameters) {
         ContentIdToContentIterator it =
             new ContentIdToContentIterator(context, parameters.getContentIds(), parameters.isStopOnException());
 
         while (it.hasNext()) {
             ContentRead rootContent = it.next();
+
+            System.out.println(AbstractContentIdField.get(
+                rootContent.getContentId().getContentId(), context));
 
             try {
                 DeepCopySettings settings = new DeepCopySettings(new DefaultExportFilter());
@@ -39,18 +43,29 @@ public class ListDeepcopyObjectsTool implements Tool<ContentIdListParameters> {
                 while (nodes.hasNext()) {
                     CopyTreeNode node = nodes.next();
                     if (node.isDeepCopyable()) {
-                        System.out.println(AbstractContentIdField.get(
-                            node.getVersionedContentId().getContentId(), context));
+                        printResultContentId(node, parameters, context);
                     }
                 }
             } catch (CMException e) {
                 System.err.println("Error building tree for " +
-                    AbstractContentIdField.get(rootContent.getContentId(), context));
+                    AbstractContentIdField.get(rootContent.getContentId(), context) + ": " + e.getMessage());
+                e.printStackTrace();
             }
-
         }
 
         it.printInfo(System.err);
+    }
+
+    private void printResultContentId(CopyTreeNode node,
+            ListDeepcopyObjectsParameters parameters, PolopolyContext context) {
+        ContentId contentId = node.getVersionedContentId().getContentId();
+
+        if (parameters.isResolve()) {
+            System.out.println(AbstractContentIdField.get(contentId, context));
+        }
+        else {
+            System.out.println(contentId.getContentIdString());
+        }
     }
 
     public String getHelp() {

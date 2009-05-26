@@ -1,0 +1,35 @@
+package com.polopoly.pcmd.tool.parameters;
+
+import java.io.File;
+
+import com.polopoly.pcmd.argument.ArgumentException;
+import com.polopoly.pcmd.argument.Arguments;
+import com.polopoly.pcmd.argument.ContentIdListParameters;
+import com.polopoly.pcmd.argument.ParameterHelp;
+import com.polopoly.util.client.PolopolyContext;
+
+public class ExcludeProjectContentParameters extends ContentIdListParameters {
+    private ProjectContentParameters projectContentParameters = new ProjectContentParameters();
+
+    @Override
+    public void getHelp(ParameterHelp help) {
+        super.getHelp(help);
+        projectContentParameters.getHelp(help);
+    }
+
+    @Override
+    public void parseParameters(Arguments args, PolopolyContext context)
+            throws ArgumentException {
+        super.parseParameters(args, context);
+        projectContentParameters.parseParameters(args, context);
+    }
+
+    public File getProjectContentDirectory() {
+        return projectContentParameters.getProjectContentDirectory();
+    }
+
+    public boolean isResolve() {
+        return projectContentParameters.isResolve();
+    }
+
+}
