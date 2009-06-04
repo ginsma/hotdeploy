@@ -23,6 +23,12 @@ public class TestFileDeploymentFile extends TestCase {
         assertTrue(file1.hashCode() == file1a.hashCode());
     }
 
+    public void testImports() {
+        assertFalse(file1.imports(file2));
+        assertFalse(file1.imports(file2));
+        assertTrue(file1.imports(file1));
+    }
+
     public void testStream() throws FileNotFoundException, IOException {
         file2.getInputStream().close();
     }

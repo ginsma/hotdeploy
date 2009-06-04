@@ -33,6 +33,17 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
     }
 
     public List<DeploymentFile> getFilesToImport(DeploymentDirectory directory) throws NotApplicableException {
+        final List<DeploymentFile> result = new ArrayList<DeploymentFile>();
+
+        getFilesToImport(directory, new FileCollector() {
+            public void collect(List<DeploymentFile> files) {
+                result.addAll(files);
+            }});
+
+        return result;
+    }
+
+    public void getFilesToImport(DeploymentDirectory directory, FileCollector collector) throws NotApplicableException {
         DeploymentObject[] files = directory.listFiles();
 
         List<DeploymentFile> result = new ArrayList<DeploymentFile>();
@@ -57,18 +68,18 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
         // of the templates.
         sortFiles(result);
 
+        collector.collect(result);
+
         for (DeploymentObject file : files) {
             if (file instanceof DeploymentDirectory) {
                 try {
                     logger.log(Level.INFO, "Recursing into " + file);
 
-                    result.addAll(getFilesToImport((DeploymentDirectory) file));
+                    getFilesToImport((DeploymentDirectory) file, collector);
                 } catch (NotApplicableException e) {
                 }
             }
         }
-
-        return result;
     }
 
     /**

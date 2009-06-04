@@ -90,4 +90,8 @@ public class FileDeploymentFile extends AbstractDeploymentObject implements Depl
     public File getFile() {
         return file;
     }
+
+    public boolean imports(DeploymentObject object) {
+        return object.equals(this);
+    }
 }

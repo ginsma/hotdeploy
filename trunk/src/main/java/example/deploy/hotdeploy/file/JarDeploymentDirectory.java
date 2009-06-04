@@ -84,7 +84,7 @@ public class JarDeploymentDirectory extends AbstractDeploymentObject implements 
         return jarFile.getName() + "!" + nameWithinJar;
     }
 
-    private String getNameWithinJar() {
+    protected String getNameWithinJar() {
         return entry.getName();
     }
 
@@ -108,5 +108,19 @@ public class JarDeploymentDirectory extends AbstractDeploymentObject implements 
 
     protected JarFile getJarFile() {
         return jarFile;
+    }
+
+    public boolean imports(DeploymentObject object) {
+        if (object instanceof JarDeploymentDirectory) {
+            return ((JarDeploymentDirectory) object).getJarFile().equals(jarFile) &&
+                ((JarDeploymentDirectory) object).getNameWithinJar().startsWith(getNameWithinJar());
+        }
+
+        if (object instanceof JarDeploymentFile) {
+            return ((JarDeploymentFile) object).getJarFile().equals(jarFile) &&
+                ((JarDeploymentFile) object).getNameWithinJar().startsWith(getNameWithinJar());
+        }
+
+        return false;
     }
 }

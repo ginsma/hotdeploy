@@ -7,6 +7,7 @@ import java.net.URL;
 
 import example.deploy.hotdeploy.file.AbstractDeploymentObject;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.file.DeploymentObject;
 
 public class DummyDeploymentFile extends AbstractDeploymentObject implements DeploymentFile {
     private long quickChecksum;
@@ -61,5 +62,9 @@ public class DummyDeploymentFile extends AbstractDeploymentObject implements Dep
 
     public void setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
+    }
+
+    public boolean imports(DeploymentObject object) {
+        return false;
     }
 }

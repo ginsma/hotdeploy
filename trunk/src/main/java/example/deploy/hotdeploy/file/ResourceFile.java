@@ -38,4 +38,8 @@ public class ResourceFile extends AbstractDeploymentObject implements Deployment
         return resourceName;
     }
 
+    public boolean imports(DeploymentObject object) {
+        return object.equals(this);
+    }
+
 }

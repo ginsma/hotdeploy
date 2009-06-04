@@ -36,4 +36,10 @@ public class JarDeploymentRoot extends JarDeploymentDirectory {
 
         return deploymentObject.getName();
     }
+
+    @Override
+    protected String getNameWithinJar() {
+        return "";
+    }
+
 }

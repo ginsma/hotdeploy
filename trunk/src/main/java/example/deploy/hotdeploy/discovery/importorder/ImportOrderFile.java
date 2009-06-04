@@ -62,6 +62,16 @@ public class ImportOrderFile implements Iterable<DeploymentObject> {
         return directory;
     }
 
+    public boolean imports(DeploymentObject fileOrDirectory) {
+        for (DeploymentObject deploymentObject : this) {
+            if (deploymentObject.imports(fileOrDirectory)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public String toString() {
         try {

@@ -83,4 +83,8 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements Deplo
     public long getSlowChecksum() {
         return entry.getCrc();
     }
+
+    public boolean imports(DeploymentObject object) {
+        return object.equals(this);
+    }
 }

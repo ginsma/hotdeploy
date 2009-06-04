@@ -29,4 +29,8 @@ public class DummyAllFilesExistDirectory implements DeploymentDirectory {
         return deploymentObject.getName();
     }
 
+    public boolean imports(DeploymentObject object) {
+        return false;
+    }
+
 }

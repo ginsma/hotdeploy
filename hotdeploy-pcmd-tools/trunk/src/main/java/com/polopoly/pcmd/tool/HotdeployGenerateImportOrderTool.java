@@ -15,9 +15,10 @@ import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.xml.ordergenerator.AddWholeRootToImportOrderFile;
 import example.deploy.xml.ordergenerator.ImportOrderGenerator;
-import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.present.PresentFileReader;
 
 public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDeployParameters> {
@@ -61,6 +62,8 @@ public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDep
     }
 
     static void writeFile(ImportOrderFile importOrderFile) {
+        new AddWholeRootToImportOrderFile(importOrderFile).addWholeRoot();
+
         try {
             new ImportOrderFileWriter(importOrderFile).write();
 

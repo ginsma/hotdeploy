@@ -12,7 +12,7 @@ import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 
-public class HotdeployParameters extends FilesToDeployParameters {
+public class ImportParameters extends FilesToDeployParameters {
     private boolean bootstrapNonCreated = false;
     private boolean generateImportOrder = false;
     private boolean generateBootstrap = false;

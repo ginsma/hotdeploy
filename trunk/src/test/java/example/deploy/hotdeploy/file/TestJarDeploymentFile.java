@@ -26,6 +26,12 @@ public class TestJarDeploymentFile extends TestCase {
         }
     }
 
+    public void testImports() {
+        assertFalse(file.imports(file2));
+        assertTrue(file.imports(file));
+        assertTrue(new JarDeploymentRoot(jarFile).imports(file));
+    }
+
     public void testEquality() {
         JarDeploymentFile fileb = new JarDeploymentFile(jarFile, jarFile.getEntry("a.xml"));
 

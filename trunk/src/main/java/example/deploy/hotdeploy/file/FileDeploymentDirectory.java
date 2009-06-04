@@ -23,6 +23,10 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
     public DeploymentObject getFile(String fileName) throws FileNotFoundException {
         File newFile;
 
+        if (fileName.equals(".")) {
+            return this;
+        }
+
         if (new File(fileName).isAbsolute()) {
             newFile = new File(fileName);
         }
@@ -71,15 +75,30 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
     }
 
     public String getRelativeName(DeploymentObject deploymentObject) {
-        if (deploymentObject instanceof FileDeploymentFile || deploymentObject instanceof FileDeploymentDirectory) {
+        if (deploymentObject instanceof FileDeploymentFile ||
+                deploymentObject instanceof FileDeploymentDirectory) {
             String fileName = deploymentObject.getName();
             String directoryName = getName();
 
             if (fileName.startsWith(directoryName + File.separator)) {
                 return fileName.substring(directoryName.length() + 1);
             }
+
+            if (deploymentObject.equals(this)) {
+                return ".";
+            }
         }
 
         return deploymentObject.getName();
+    }
+
+    public boolean imports(DeploymentObject object) {
+        if (object instanceof FileDeploymentDirectory ||
+                object instanceof FileDeploymentFile) {
+            return object.equals(this) ||
+                object.getName().startsWith(getName() + File.separator);
+        }
+
+        return false;
     }
 }

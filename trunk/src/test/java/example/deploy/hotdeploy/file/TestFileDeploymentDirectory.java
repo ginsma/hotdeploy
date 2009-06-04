@@ -15,6 +15,11 @@ public class TestFileDeploymentDirectory extends TestCase {
         dir2 = new FileDeploymentDirectory(new File("src/test"));
     }
 
+    public void testImports() {
+        assertTrue(dir1.imports(dir2));
+        assertFalse(dir2.imports(dir1));
+    }
+
     public void testEquality() {
         assertFalse(dir1.equals(dir2));
         FileDeploymentDirectory dir1a = new FileDeploymentDirectory(new File("src"));

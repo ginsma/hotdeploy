@@ -25,6 +25,11 @@ public class TestJarDeploymentDirectory extends TestCase {
         dir = new JarDeploymentDirectory(jarFile, jarFile.getEntry(DIR_NAME_NO_SLASH + "/"));
     }
 
+    public void testImports() {
+        assertTrue(root.imports(dir));
+        assertFalse(dir.imports(root));
+    }
+
     public void testGetDir() throws FileNotFoundException {
         DeploymentObject file = root.getFile(DIR_NAME_NO_SLASH);
 

@@ -28,7 +28,7 @@ import example.deploy.hotdeploy.state.NoFilesImportedDirectoryState;
 import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
 
-public class HotdeployTool implements Tool<HotdeployParameters> {
+public class ImportTool implements Tool<ImportParameters> {
     private final class LoggingSingleFileDeployer extends DefaultSingleFileDeployer {
         private int fileCount;
         private int imported;
@@ -67,12 +67,12 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
     private DirectoryState directoryState;
     private DirectoryStateFetcher directoryStateFetcher;
 
-    public HotdeployTool() {
+    public ImportTool() {
         cachingParser = new CachingDeploymentFileParser(new ContentXmlParser());
     }
 
-    public HotdeployParameters createParameters() {
-        return new HotdeployParameters();
+    public ImportParameters createParameters() {
+        return new ImportParameters();
     }
 
     private boolean importOrderAvailable(FilesToDeployParameters parameters) {
@@ -85,13 +85,13 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
         }
     }
 
-    private boolean shouldCreateImportOrder(HotdeployParameters parameters,
+    private boolean shouldCreateImportOrder(ImportParameters parameters,
             List<DeploymentFile> files) {
         return files.size() > 1 && (!importOrderAvailable(parameters) || parameters.isGenerateImportOrder());
     }
 
     private List<DeploymentFile> createImportOrder(
-            HotdeployParameters parameters) {
+            ImportParameters parameters) {
         ImportOrder importOrder =
             generateImportOrder(cachingParser, parameters, parameters.isIgnorePresent());
 
@@ -100,12 +100,12 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
         return importOrder;
     }
 
-    private boolean shouldCreateBootstrap(HotdeployParameters parameters,
+    private boolean shouldCreateBootstrap(ImportParameters parameters,
             boolean createImportOrder) {
         return createImportOrder || parameters.isGenerateBootstrap();
     }
 
-    private void createBootstrap(HotdeployParameters parameters,
+    private void createBootstrap(ImportParameters parameters,
             List<DeploymentFile> files) {
         BootstrapFileGenerator generator = new BootstrapFileGenerator();
 
@@ -117,7 +117,7 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
         generator.generateBootstrap(parameters.getDirectory(), files);
     }
 
-    private DirectoryState getDirectoryState(PolopolyContext context, HotdeployParameters parameters) {
+    private DirectoryState getDirectoryState(PolopolyContext context, ImportParameters parameters) {
         if (parameters.isForce()) {
             return new NoFilesImportedDirectoryState();
         }
@@ -130,7 +130,7 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
     }
 
     public void execute(PolopolyContext context,
-            HotdeployParameters parameters) {
+            ImportParameters parameters) {
         directoryState = getDirectoryState(context, parameters);
 
         try {
