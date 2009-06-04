@@ -18,10 +18,12 @@ public class HotdeployParameters extends FilesToDeployParameters {
     private boolean generateBootstrap = false;
     private boolean ignorePresent = false;
     private boolean force = false;
+    private boolean searchResources;
 
     private static final String GENERATE_IMPORT_ORDER_PARAMETER = "order";
     private static final String GENERATE_BOOTSTRAP_PARAMETER = "bootstrap";
     private static final String FORCE_PARAMETER = "force";
+    private static final String SEARCH_RESOURCES_PARAMETER = "searchclasspath";
 
     @Override
     public void getHelp(ParameterHelp help) {
@@ -40,6 +42,8 @@ public class HotdeployParameters extends FilesToDeployParameters {
                 "Whether to import files even if they had not been modified.");
         help.addOption(IGNORE_PRESENT, new BooleanParser(),
                 "Whether to not consider any content to already be present (this is only useful when analyzing Polopoly initxml content).");
+        help.addOption(SEARCH_RESOURCES_PARAMETER, new BooleanParser(),
+                "Whether to deploy content present as resources on the class path (e.g. in JAR files). True by default.");
     }
 
     @Override
@@ -51,6 +55,7 @@ public class HotdeployParameters extends FilesToDeployParameters {
         setGenerateBootstrap(args.getFlag(GENERATE_BOOTSTRAP_PARAMETER, generateBootstrap));
         setIgnorePresent(args.getFlag(IGNORE_PRESENT, ignorePresent));
         setForce(args.getFlag(FORCE_PARAMETER, force));
+        setSearchResources(args.getFlag(SEARCH_RESOURCES_PARAMETER, true));
     }
 
     public void setBootstrapNonCreated(boolean bootstrapNonCreated) {
@@ -91,5 +96,13 @@ public class HotdeployParameters extends FilesToDeployParameters {
 
     public boolean isIgnorePresent() {
         return ignorePresent;
+    }
+
+    public void setSearchResources(boolean searchResources) {
+        this.searchResources = searchResources;
+    }
+
+    public boolean isSearchResources() {
+        return searchResources;
     }
 }

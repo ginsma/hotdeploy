@@ -19,7 +19,7 @@ public class TestAllNonPresentContentFinder extends ManualTestCase {
         rootDepartment = context.getContent("p.RootDepartment");
         rootDepartmentId = rootDepartment.getContentId().unversioned();
 
-        finder = new FilteredAllContentFinder(context);
+        finder = new FilteredAllContentFinder(context.getPolicyCMServer());
 
         finder.addFilter(new ContentIdFilter() {
             public boolean accept(ContentId contentId) {

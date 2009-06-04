@@ -92,7 +92,8 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
 
     private List<DeploymentFile> createImportOrder(
             HotdeployParameters parameters) {
-        ImportOrder importOrder = generateImportOrder(cachingParser, parameters, parameters.isIgnorePresent());
+        ImportOrder importOrder =
+            generateImportOrder(cachingParser, parameters, parameters.isIgnorePresent());
 
         writeFile(importOrder);
 
@@ -133,7 +134,9 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
         directoryState = getDirectoryState(context, parameters);
 
         try {
-            deployResourceContent(context);
+            if (parameters.isSearchResources()) {
+                deployResourceContent(context);
+            }
 
             List<DeploymentFile> files = parameters.discoverFiles();
 
@@ -168,12 +171,10 @@ public class HotdeployTool implements Tool<HotdeployParameters> {
     }
 
     private MultipleFileDeployer createDeployer(PolopolyContext context, File directory, int fileCount) {
-        MultipleFileDeployer deployer = new MultipleFileDeployer(
+        return new MultipleFileDeployer(
                 new LoggingSingleFileDeployer(context.getPolicyCMServer(), fileCount),
                 directory,
                 directoryState);
-
-        return deployer;
     }
 
     private void deployResourceContent(PolopolyContext context) throws FatalDeployException {

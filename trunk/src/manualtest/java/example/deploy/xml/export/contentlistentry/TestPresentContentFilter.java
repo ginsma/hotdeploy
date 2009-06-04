@@ -12,7 +12,7 @@ public class TestPresentContentFilter extends ManualTestCase {
 
     @Override
     public void setUp() {
-        filter = new PresentContentFilter(context);
+        filter = new PresentContentFilter(context.getPolicyCMServer());
     }
 
     public void testAddPresentContent() throws Exception {

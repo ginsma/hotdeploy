@@ -1,16 +1,13 @@
 package example.deploy.xml.bootstrap;
 
-import java.io.CharArrayReader;
+import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 
 import junit.framework.TestCase;
-
-import org.apache.tools.ant.util.ReaderInputStream;
-
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.state.DummyDeploymentFile;
-import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.parser.cache.FileParseCallbackMemento;
 
 public class TestBootstrapFileWriter extends TestCase {
@@ -48,20 +45,16 @@ public class TestBootstrapFileWriter extends TestCase {
         bootstrap.add(new BootstrapContent(Major.DEPARTMENT, DEPARTMENT_EXTERNAL_ID));
     }
 
-    private char[] generateBootstrap() {
-        final CharArrayWriter writer = new CharArrayWriter(1000);
-        new BootstrapFileWriter(bootstrap).write(writer);
-        char[] charArray = writer.toCharArray();
-        return charArray;
+    private String generateBootstrap() {
+        CharArrayWriter charArrayWriter = new CharArrayWriter(2000);
+
+        new BootstrapFileWriter(bootstrap).write(charArrayWriter);
+
+        return charArrayWriter.toString();
     }
 
     public void testExactXML() {
-        char[] charArray = generateBootstrap();
-
-        String bootstrapXml =
-            new StringBuffer().append(charArray).toString();
-
-        assertEquals(EXPECTED_XML, bootstrapXml);
+        assertEquals(EXPECTED_XML, generateBootstrap());
     }
 
     private FileParseCallbackMemento getExpectedParseResult(
@@ -79,16 +72,16 @@ public class TestBootstrapFileWriter extends TestCase {
         return parseResult;
     }
 
-    private DummyDeploymentFile getFileReading(char[] charArray) {
+    private DummyDeploymentFile getFileReading(String string) {
         DummyDeploymentFile file = new DummyDeploymentFile("any");
-        file.setInputStream(new ReaderInputStream(new CharArrayReader(charArray)));
+        file.setInputStream(new ByteArrayInputStream(string.getBytes()));
         return file;
     }
 
     public void testReadingXMLBack() {
-        char[] charArray = generateBootstrap();
+        String bootStrap = generateBootstrap();
 
-        DummyDeploymentFile file = getFileReading(charArray);
+        DummyDeploymentFile file = getFileReading(bootStrap);
 
         FileParseCallbackMemento parseResult = parseAndReturnMemento(file);
         FileParseCallbackMemento expectedParseResult = getExpectedParseResult(file);

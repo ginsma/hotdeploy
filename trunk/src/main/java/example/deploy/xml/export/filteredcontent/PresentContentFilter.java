@@ -6,10 +6,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.polopoly.cm.ContentId;
+import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.VersionedContentId;
+import com.polopoly.cm.client.CMException;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.util.ContentIdFilter;
-import com.polopoly.util.client.PolopolyContext;
-import com.polopoly.util.exception.NoSuchExternalIdException;
 
 import example.deploy.xml.present.PresentContentAware;
 
@@ -18,10 +19,11 @@ public class PresentContentFilter implements PresentContentAware, ContentIdFilte
         Logger.getLogger(PresentContentFilter.class.getName());
 
     private Set<ContentId> presentIds = new HashSet<ContentId>(100);
-    private PolopolyContext context;
 
-    public PresentContentFilter(PolopolyContext context) {
-        this.context = context;
+    private PolicyCMServer server;
+
+    public PresentContentFilter(PolicyCMServer server) {
+        this.server = server;
     }
 
     public void presentContent(String externalId) {
@@ -35,11 +37,16 @@ public class PresentContentFilter implements PresentContentAware, ContentIdFilte
     private void present(String externalId) {
         try {
             VersionedContentId contentId =
-                context.resolveExternalId(externalId);
+                server.findContentIdByExternalId(new ExternalContentId(externalId));
 
-            presentIds.add(contentId.getContentId());
-        } catch (NoSuchExternalIdException e) {
-            logger.log(Level.FINE, "While looking up purportedly present content " + externalId + ": " + e.getMessage());
+            if (contentId != null) {
+                presentIds.add(contentId.getContentId());
+            }
+            else {
+                logger.log(Level.FINE, "Purportedly present content " + externalId + " could not be found.");
+            }
+        } catch (CMException e) {
+            logger.log(Level.WARNING, "While looking up present content " + externalId + ": " + e.getMessage());
         }
     }
 

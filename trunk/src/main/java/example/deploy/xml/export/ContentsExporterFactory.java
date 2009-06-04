@@ -15,7 +15,6 @@ import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
 import com.polopoly.cm.xml.util.export.PrefixExternalIdGenerator;
 import com.polopoly.cm.xml.util.export.tree.CreatingExternalContentIdExporter;
 import com.polopoly.user.server.UserServer;
-import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.xml.export.contentlistentry.ContentReferenceFilter;
 import example.deploy.xml.export.contentlistentry.FilteringContentListEntryExporter;
@@ -26,18 +25,19 @@ public class ContentsExporterFactory {
     private ExternalIdGenerator externalIdGenerator = new PrefixExternalIdGenerator("");
 
     private ContentReferenceFilter contentReferenceFilter;
-    private PolopolyContext context;
 
-    public ContentsExporterFactory(PolopolyContext context,
+    private PolicyCMServer cmServer;
+    private UserServer userServer;
+
+    public ContentsExporterFactory(PolicyCMServer cmServer, UserServer userServer,
             ContentReferenceFilter contentReferenceFilter) {
         this.contentReferenceFilter = contentReferenceFilter;
-        this.context = context;
+
+        this.cmServer = cmServer;
+        this.userServer = userServer;
     }
 
     public DefaultContentContentsExporter createContentsExporter(Set<ContentId> contentIdsToExport) {
-        PolicyCMServer cmServer = context.getPolicyCMServer();
-        UserServer userServer = context.getUserServer();
-
         CreatingExternalContentIdExporter contentIdExporter =
             new CreatingExternalContentIdExporter(cmServer);
         contentIdExporter.setExternalIdGenerator(externalIdGenerator);
@@ -67,7 +67,7 @@ public class ContentsExporterFactory {
         FilteringContentListEntryExporter filteringContentListEntryExporter =
             new FilteringContentListEntryExporter(
                 contentListEntryExporter,
-                filter, context);
+                filter, cmServer);
 
         contentListExporter.setEntryExporter(filteringContentListEntryExporter);
         exporter.setContentListExporter(contentListExporter);

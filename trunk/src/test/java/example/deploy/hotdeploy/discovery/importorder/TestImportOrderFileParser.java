@@ -1,5 +1,6 @@
 package example.deploy.hotdeploy.discovery.importorder;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,9 +8,6 @@ import java.io.StringWriter;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-
-import org.apache.tools.ant.filters.StringInputStream;
-
 import example.deploy.hotdeploy.file.DeploymentObject;
 import example.deploy.hotdeploy.state.DummyDeploymentFile;
 
@@ -61,7 +59,7 @@ public class TestImportOrderFileParser extends TestCase {
         DummyDeploymentFile importOrderFileAsDeploymentFile = new DummyDeploymentFile("file") {
             @Override
             public InputStream getInputStream() throws FileNotFoundException {
-                return new StringInputStream(FILE_CONTENT);
+                return new ByteArrayInputStream(FILE_CONTENT.getBytes());
             }
         };
 

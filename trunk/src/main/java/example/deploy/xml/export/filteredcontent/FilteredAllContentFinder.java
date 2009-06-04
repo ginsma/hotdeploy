@@ -12,20 +12,19 @@ import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.search.db.SearchExpression;
 import com.polopoly.cm.search.db.Version;
 import com.polopoly.cm.util.ContentIdFilter;
-import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.util.Plural;
 
 public class FilteredAllContentFinder {
     private static final int LIMIT = 500;
 
-    private PolopolyContext context;
-
     private List<ContentIdFilter> filters = new ArrayList<ContentIdFilter>();
     private List<SearchExpression> searchExpressions = new ArrayList<SearchExpression>();
 
-    public FilteredAllContentFinder(PolopolyContext context) {
-        this.context = context;
+    private PolicyCMServer policyCMServer;
+
+    public FilteredAllContentFinder(PolicyCMServer policyCMServer) {
+        this.policyCMServer = policyCMServer;
     }
 
     public void addFilter(ContentIdFilter filter) {
@@ -37,7 +36,6 @@ public class FilteredAllContentFinder {
     }
 
     public Set<ContentId> findAllNonPresentContent() throws CMException {
-        PolicyCMServer policyCMServer = context.getPolicyCMServer();
         Set<ContentId> result = new HashSet<ContentId>(200);
 
         SearchExpression searchExpression =
@@ -87,6 +85,6 @@ public class FilteredAllContentFinder {
 
     private void printStatus(int scanned, Set<ContentId> result) {
         System.err.println("Scanned " + Plural.count(scanned, "object") +
-                ". Found " + Plural.count(result, "object") + " matching criteria...");
+            ". Found " + Plural.count(result, "object") + " matching criteria...");
     }
 }

@@ -6,13 +6,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.polopoly.cm.ContentId;
-import com.polopoly.cm.client.CMRuntimeException;
+import com.polopoly.cm.ExternalContentId;
+import com.polopoly.cm.VersionedContentId;
+import com.polopoly.cm.client.CMException;
+import com.polopoly.cm.client.ContentRead;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.server.ServerNames;
 import com.polopoly.cm.util.ContentIdFilter;
-import com.polopoly.util.client.PolopolyContext;
-import com.polopoly.util.content.ContentUtil;
-import com.polopoly.util.contentid.ContentIdUtil;
-import com.polopoly.util.exception.ContentGetException;
 
 import example.deploy.hotdeploy.client.Major;
 
@@ -25,10 +25,20 @@ public class InputTemplateFilter implements ContentIdFilter {
 
     private static final String DEFAULT_REFERENCE_METADATA = "p.DefaultReferenceMetaData";
 
-    private PolopolyContext context;
+    private PolicyCMServer server;
 
-    public InputTemplateFilter(PolopolyContext context) {
-        this.context = context;
+    private VersionedContentId defaultReferenceMetadataId;
+    private VersionedContentId fieldInputTemplateId;
+
+    public InputTemplateFilter(PolicyCMServer server) {
+        this.server = server;
+
+        try {
+            defaultReferenceMetadataId = server.findContentIdByExternalId(new ExternalContentId(DEFAULT_REFERENCE_METADATA));
+            fieldInputTemplateId = server.findContentIdByExternalId(new ExternalContentId(FIELD_INPUT_TEMPLATE));
+        } catch (CMException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
     }
 
     public boolean accept(ContentId contentId) {
@@ -53,9 +63,9 @@ public class InputTemplateFilter implements ContentIdFilter {
         }
 
         try {
-            ContentUtil content = context.getContent(contentId);
+            ContentRead content = server.getContent(contentId);
 
-            ContentIdUtil referredId = content.getContentReference(
+            ContentId referredId = content.getContentReference(
                     ServerNames.REFERENCE_ATTRG_SYSTEM,
                     ServerNames.REFERENCE_ATTR_REFERRED_CONTENT_ID);
 
@@ -63,12 +73,14 @@ public class InputTemplateFilter implements ContentIdFilter {
                 return false;
             }
 
-            if (!content.getInputTemplate().getExternalIdString().equals(DEFAULT_REFERENCE_METADATA)) {
+            if (!content.getInputTemplateId().equalsIgnoreVersion(defaultReferenceMetadataId)) {
                 return false;
             }
 
             return true;
-        } catch (ContentGetException e) {
+        } catch (CMException e) {
+            logger.log(Level.WARNING, contentId.getContentIdString() + ": " + e.getMessage(), e);
+
             return false;
         }
     }
@@ -78,20 +90,14 @@ public class InputTemplateFilter implements ContentIdFilter {
             return false;
         }
 
-        return getInputTemplateString(contentId).equals(FIELD_INPUT_TEMPLATE);
-    }
-
-    private String getInputTemplateString(ContentId contentId) {
         try {
-            return context.getContent(contentId).getInputTemplate().getExternalIdString();
-        } catch (ContentGetException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
+            ContentRead content = server.getContent(contentId);
 
-            return "";
-        } catch (CMRuntimeException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
+            return content.getInputTemplateId().equalsIgnoreVersion(fieldInputTemplateId);
+        } catch (CMException e) {
+            logger.log(Level.WARNING, contentId.getContentIdString() + ": " + e.getMessage(), e);
 
-            return "";
+            return false;
         }
     }
 

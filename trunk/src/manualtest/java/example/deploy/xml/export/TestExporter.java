@@ -1,24 +1,34 @@
 package example.deploy.xml.export;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.xml.util.export.DefaultContentContentsExporter;
 
+import example.deploy.hotdeploy.discovery.PlatformNeutralPath;
 import example.deploy.hotdeploy.manualtest.ManualTestCase;
 import example.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
 import example.deploy.xml.export.filteredcontent.PresentContentFilter;
 import example.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
 
 public class TestExporter extends ManualTestCase {
+    private static final Logger logger =
+        Logger.getLogger(TestExporter.class.getName());
+
     private Set<ExportedContent> exportedContentSet = new HashSet<ExportedContent>();
     private Set<ExportedContent> cleanUpContents = new HashSet<ExportedContent>();
 
     private HashSet<ExportedContent> failures;
     private HashSet<ExportedArticle> presentArticles;
     private int articleCounter;
+    private DefaultNormalizationNamingStrategy namingStrategy;
+
+    private static File directory;
 
     public void testSingleContentNoReferences() throws Exception {
         ExportedArticle article = article();
@@ -204,7 +214,7 @@ public class TestExporter extends ManualTestCase {
         }
 
         for (ExportedContent exportedContent : contentToImport) {
-            exportedContent.importFromFile();
+            exportedContent.importFromFile(namingStrategy);
             cleanUpContents.add(exportedContent);
         }
     }
@@ -262,15 +272,15 @@ public class TestExporter extends ManualTestCase {
     }
 
     void exportToFile(ExportedArticle... articlesToExport) {
-        PresentContentFilter pressentContentFilter = new PresentContentFilter(context);
+        PresentContentFilter presentContentFilter = new PresentContentFilter(context.getPolicyCMServer());
 
         for (ExportedArticle presentArticle : presentArticles) {
-            pressentContentFilter.presentContent(presentArticle.getExternalIdString());
+            presentContentFilter.presentContent(presentArticle.getExternalIdString());
         }
 
         ContentsExporterFactory contentsExporterFactory =
-            new ContentsExporterFactory(context,
-                new ContentIdFilterToContentReferenceFilterWrapper(pressentContentFilter));
+            new ContentsExporterFactory(context.getPolicyCMServer(), context.getUserServer(),
+                new ContentIdFilterToContentReferenceFilterWrapper(presentContentFilter));
 
         Set<ContentId> contentIdsToExportSet = new HashSet<ContentId>();
 
@@ -281,10 +291,8 @@ public class TestExporter extends ManualTestCase {
         DefaultContentContentsExporter exporter = contentsExporterFactory.
             createContentsExporter(contentIdsToExportSet);
 
-        DefaultNormalizationNamingStrategy namingStrategy = ExportedArticle.getNamingStrategy();
-
         NormalizedFileExporter normalizedFileExporter =
-            new NormalizedFileExporter(context, exporter, namingStrategy);
+            new NormalizedFileExporter(context.getPolicyCMServer(), exporter, namingStrategy);
 
         normalizedFileExporter.setExternalIdGenerator(contentsExporterFactory.getExternalIdGenerator());
 
@@ -299,6 +307,14 @@ public class TestExporter extends ManualTestCase {
 
         articleCounter = 1;
         exportedContentSet.clear();
+
+        directory = new File(PlatformNeutralPath.unixToPlatformSpecificPath("target/exporttarget"));
+
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+        namingStrategy = new DefaultNormalizationNamingStrategy(directory);
     }
 
     @Override
@@ -306,5 +322,29 @@ public class TestExporter extends ManualTestCase {
         super.tearDown();
 
         cleanUpAll();
+
+        deleteDirectory(directory);
+    }
+
+    private void deleteDirectory(File directory) {
+        File[] files = directory.listFiles();
+
+        for (File file : files) {
+            if (file.isDirectory() && !file.getName().startsWith(".")) {
+                deleteDirectory(file);
+            }
+            else {
+                if (!file.delete()) {
+                    System.err.println("Could not delete " + file + ".");
+                }
+            }
+        }
+
+        if (directory.delete()) {
+            logger.log(Level.INFO, "Cleaning up. Deleted " + directory + ".");
+        }
+        else {
+            logger.log(Level.WARNING, "Could not delete " + directory + ".");
+        }
     }
 }

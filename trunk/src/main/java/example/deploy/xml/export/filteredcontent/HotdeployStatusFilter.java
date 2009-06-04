@@ -1,14 +1,21 @@
 package example.deploy.xml.export.filteredcontent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.polopoly.cm.ContentId;
+import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.VersionedContentId;
+import com.polopoly.cm.client.CMException;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.util.ContentIdFilter;
-import com.polopoly.util.client.PolopolyContext;
-import com.polopoly.util.exception.NoSuchExternalIdException;
 
 import example.deploy.hotdeploy.state.DefaultFileChecksums;
 
 public class HotdeployStatusFilter implements ContentIdFilter {
+    private static final Logger logger =
+        Logger.getLogger(HotdeployStatusFilter.class.getName());
+
     private static final String OLD_HOTDEPLOY_STATE_EXTERNAL_ID =
         "p.HotDeployDirectoryState";
 
@@ -16,19 +23,19 @@ public class HotdeployStatusFilter implements ContentIdFilter {
 
     private VersionedContentId oldHotdeployStatusContentId;
 
-    public HotdeployStatusFilter(PolopolyContext context) {
+    public HotdeployStatusFilter(PolicyCMServer server) {
         try {
-            hotdeployStatusContentId = context.resolveExternalId(
-                DefaultFileChecksums.CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME);
-        } catch (NoSuchExternalIdException e) {
-            // current version of hotdeploy not used.
+            hotdeployStatusContentId = server.findContentIdByExternalId(
+                new ExternalContentId(DefaultFileChecksums.CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME));
+        } catch (CMException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
         }
 
         try {
-            oldHotdeployStatusContentId = context.resolveExternalId(
-                    OLD_HOTDEPLOY_STATE_EXTERNAL_ID);
-        } catch (NoSuchExternalIdException e) {
-            // old version of hotdeploy not used.
+            oldHotdeployStatusContentId = server.findContentIdByExternalId(
+                    new ExternalContentId(OLD_HOTDEPLOY_STATE_EXTERNAL_ID));
+        } catch (CMException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
         }
     }
 

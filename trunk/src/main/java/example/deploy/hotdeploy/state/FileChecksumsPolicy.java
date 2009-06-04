@@ -15,9 +15,8 @@ public class FileChecksumsPolicy extends ContentPolicy {
     private static final Logger logger =
         Logger.getLogger(FileChecksumsPolicy.class.getName());
 
-    public static final int ATTRIBGROUP_MAXLEN = 128;
-    private static final int SAFETY_MARGIN = 20;
-    private static final int HALF_ATTRIB_GROUP_MAXLEN = (ATTRIBGROUP_MAXLEN - SAFETY_MARGIN) / 2;
+    public static final int ATTRIBGROUP_MAXLEN = 60;
+    private static final int HALF_ATTRIB_GROUP_MAXLEN = ATTRIBGROUP_MAXLEN / 2;
 
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
     private static final String SLOW_CHECKSUM_COMPONENT = "slow";
@@ -25,7 +24,7 @@ public class FileChecksumsPolicy extends ContentPolicy {
     private String getAttributeGroup(DeploymentFile file) {
         String result = file.getName();
 
-        if (result.length() > ATTRIBGROUP_MAXLEN - SAFETY_MARGIN) {
+        if (result.length() > ATTRIBGROUP_MAXLEN) {
             result =
                 result.substring(0, HALF_ATTRIB_GROUP_MAXLEN) + "..." +
                 result.substring(result.length() - HALF_ATTRIB_GROUP_MAXLEN);

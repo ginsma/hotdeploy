@@ -10,13 +10,19 @@ import com.polopoly.pcmd.argument.Arguments;
 import com.polopoly.pcmd.argument.ContentIdListParameters;
 import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.pcmd.argument.Parameters;
+import com.polopoly.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.pcmd.parser.ExistingDirectoryParser;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.collection.FetchingIterator;
 
 public class ExportParameters extends ListExportableParameters implements Parameters {
+    private static final String ALL_OPTION = "all";
+    public static final String EXPORT_PRESENT_OPTION = "exportpresent";
+
     private File outputDirectory;
+    private boolean exportPresent;
+    private boolean idsAreArguments;
 
     private ContentIdListParameters idListParameters = new ContentIdListParameters() {
         @Override
@@ -25,8 +31,13 @@ public class ExportParameters extends ListExportableParameters implements Parame
         }
     };
 
-    private boolean idsAreArguments;
-    private static final String ALL_OPTION = "all";
+    public boolean isExportPresent() {
+        return exportPresent;
+    }
+
+    public void setExportPresent(boolean exportPresent) {
+        this.exportPresent = exportPresent;
+    }
 
     @Override
     public void getHelp(ParameterHelp help) {
@@ -39,6 +50,9 @@ public class ExportParameters extends ListExportableParameters implements Parame
 
         help.addOption(ALL_OPTION, new BooleanParser(),
                 "Whether to export all exportable objects (if not specified, the objects to be exported will be expected on standard in or as arguments)");
+
+        help.addOption(EXPORT_PRESENT_OPTION, new BooleanParser(),
+                "Whether to export objects even though they are part of the project content or the Polopoly installation (defaults to false).");
     }
 
     @Override
@@ -59,6 +73,8 @@ public class ExportParameters extends ListExportableParameters implements Parame
                     "=true to export all objects rather than a list of specific objects)");
             }
         }
+
+        exportPresent = args.getFlag(EXPORT_PRESENT_OPTION, false);
     }
 
     public File getOutputDirectory() {
@@ -69,7 +85,7 @@ public class ExportParameters extends ListExportableParameters implements Parame
         return idsAreArguments;
     }
 
-    public Iterable<ContentId> getIdArgumentsIterator(final ContentIdFilter excludeFilter) {
+    public Iterable<ContentId> getIdArgumentsIterator(final ContentIdFilter excludeFilter, final PolopolyContext context) {
         return new Iterable<ContentId>() {
             public Iterator<ContentId> iterator() {
                 return new FetchingIterator<ContentId>() {
@@ -82,6 +98,10 @@ public class ExportParameters extends ListExportableParameters implements Parame
 
                             if (!excludeFilter.accept(candidate)) {
                                 return candidate;
+                            }
+                            else {
+                                System.err.println("Skipping " + AbstractContentIdField.get(candidate, context) +
+                                    " since it is part of project or product content.");
                             }
                         }
 

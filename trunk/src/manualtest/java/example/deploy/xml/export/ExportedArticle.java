@@ -18,9 +18,8 @@ import com.polopoly.util.policy.PolicyUtil;
 import com.polopoly.util.policy.Util;
 
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
-import example.deploy.hotdeploy.discovery.PlatformNeutralPath;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
-import example.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
+import example.deploy.xml.normalize.NormalizationNamingStrategy;
 
 public class ExportedArticle extends ExportedContent {
     private static final String INPUT_TEMPLATE = "p.DefaultArticle";
@@ -31,8 +30,6 @@ public class ExportedArticle extends ExportedContent {
     private PolopolyContext context;
 
     private int articleCounter;
-
-    private static File directory;
 
     public ExportedArticle(int articleCounter, PolopolyContext context) {
         this.context = context;
@@ -77,9 +74,9 @@ public class ExportedArticle extends ExportedContent {
     }
 
     @Override
-    public void importFromFile() throws Exception {
+    public void importFromFile(NormalizationNamingStrategy namingStrategy) throws Exception {
         File file =
-            getNamingStrategy().getFileName(
+            namingStrategy.getFileName(
                    getMajor(contentId.getMajor()),
                    externalId,
                    INPUT_TEMPLATE);
@@ -110,19 +107,7 @@ public class ExportedArticle extends ExportedContent {
         this.contentId = article.getContentId();
     }
 
-    static DefaultNormalizationNamingStrategy getNamingStrategy() {
-        DefaultNormalizationNamingStrategy namingStrategy =
-            new DefaultNormalizationNamingStrategy(directory);
-
-        return namingStrategy;
-    }
-
     public String getExternalIdString() {
         return externalId;
-    }
-
-    static {
-        directory =
-            new File(PlatformNeutralPath.unixToPlatformSpecificPath("src/test/resources/exporttarget"));
     }
 }

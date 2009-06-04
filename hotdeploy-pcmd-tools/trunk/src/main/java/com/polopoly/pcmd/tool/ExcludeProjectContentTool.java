@@ -25,7 +25,8 @@ public class ExcludeProjectContentTool implements Tool<ExcludeProjectContentPara
         }
 
         ContentIdFilter filter =
-            new ProjectContentFilterFactory(context).getExistingObjectsFilter(projectContentDirectory);
+            new ProjectContentFilterFactory(context.getPolicyCMServer()).
+                getExistingObjectsFilter(projectContentDirectory);
 
         Iterator<ContentId> it = parameters.getContentIds();
 
