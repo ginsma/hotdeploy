@@ -75,7 +75,7 @@ public class ImportOrderFileParser {
     }
 
     private boolean isLineThatShouldBeSkipped(String line) {
-        return line.charAt(0) == '#' || line.trim().equals("");
+        return line.length() == 0 || line.charAt(0) == '#' || line.trim().equals("");
     }
 
     private boolean isNotAFile(String line) {
