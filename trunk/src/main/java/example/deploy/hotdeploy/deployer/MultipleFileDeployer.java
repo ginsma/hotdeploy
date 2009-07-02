@@ -2,7 +2,6 @@ package example.deploy.hotdeploy.deployer;
 
 import static example.deploy.hotdeploy.util.Plural.count;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,7 +24,6 @@ public class MultipleFileDeployer
     private static final Logger logger =
         Logger.getLogger(MultipleFileDeployer.class.getName());
     private boolean failFast;
-    private File rootDirectory;
     private DirectoryState directoryState;
     private ClassLoader oldClassLoader;
 
@@ -33,14 +31,13 @@ public class MultipleFileDeployer
     private Set<DeploymentFile> successfulFiles = new HashSet<DeploymentFile>();
     private SingleFileDeployer deployer;
 
-    public MultipleFileDeployer(SingleFileDeployer deployer, File rootDirectory, DirectoryState directoryState) {
-        this(deployer, rootDirectory, directoryState, false);
+    public MultipleFileDeployer(SingleFileDeployer deployer, DirectoryState directoryState) {
+        this(deployer, directoryState, false);
     }
 
-    public MultipleFileDeployer(SingleFileDeployer deployer, File rootDirectory, DirectoryState directoryState, boolean failFast) {
+    public MultipleFileDeployer(SingleFileDeployer deployer, DirectoryState directoryState, boolean failFast) {
         this.failFast = failFast;
         this.deployer = deployer;
-        this.rootDirectory = rootDirectory;
         this.directoryState = directoryState;
     }
 
@@ -151,7 +148,7 @@ public class MultipleFileDeployer
 
         for (FileDiscoverer discoverer : discoverers) {
             try {
-                files.addAll(discoverer.getFilesToImport(rootDirectory));
+                files.addAll(discoverer.getFilesToImport());
             } catch (NotApplicableException e) {
                 logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
             }

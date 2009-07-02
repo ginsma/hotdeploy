@@ -67,7 +67,7 @@ public class ContentsExporterFactory {
         FilteringContentListEntryExporter filteringContentListEntryExporter =
             new FilteringContentListEntryExporter(
                 contentListEntryExporter,
-                filter, cmServer);
+                filter);
 
         contentListExporter.setEntryExporter(filteringContentListEntryExporter);
         exporter.setContentListExporter(contentListExporter);

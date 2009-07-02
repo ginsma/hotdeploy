@@ -1,5 +1,6 @@
 package example.deploy.hotdeploy;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,7 +13,7 @@ import com.polopoly.user.server.UserServer;
 import example.deploy.hotdeploy.client.DeployContentUser;
 import example.deploy.hotdeploy.deployer.FatalDeployException;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
-import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
 
 /**
  * A thread monitoring the specified directory for changes and automatically
@@ -26,6 +27,7 @@ public class HotDeployContentThread extends PolopolyThread {
     private MultipleFileDeployer contentDeployer = null;
     private PolicyCMServer server;
     private UserServer userServer;
+    private Collection<FileDiscoverer> discoverers;
 
     private static final Logger logger =
         Logger.getLogger(HotDeployContentThread.class.getName());
@@ -39,12 +41,14 @@ public class HotDeployContentThread extends PolopolyThread {
      */
     public HotDeployContentThread(PolicyCMServer server,
                                   UserServer userServer,
-                                  MultipleFileDeployer contentDeployer) {
+                                  MultipleFileDeployer contentDeployer,
+                                  Collection<FileDiscoverer> discoverers) {
         super("Content HotDeploy Thread");
 
         this.server = server;
         this.userServer = userServer;
         this.contentDeployer = contentDeployer;
+        this.discoverers = discoverers;
     }
 
     @Override
@@ -62,13 +66,13 @@ public class HotDeployContentThread extends PolopolyThread {
                 }
 
                 try {
-                    contentDeployer.discoverAndDeploy(DefaultDiscoverers.getDiscoverers());
+                    contentDeployer.discoverAndDeploy(discoverers);
                 } catch (FatalDeployException e) {
                     if (e.getCause() instanceof PermissionDeniedException) {
                         // in case the session gets invalidated for any reason, retry once.
                         DeployContentUser.login(server, userServer);
 
-                        contentDeployer.discoverAndDeploy(DefaultDiscoverers.getDiscoverers());
+                        contentDeployer.discoverAndDeploy(discoverers);
                     }
                     else {
                         throw e;

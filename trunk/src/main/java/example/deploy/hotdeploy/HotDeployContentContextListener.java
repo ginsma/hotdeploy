@@ -1,9 +1,10 @@
 package example.deploy.hotdeploy;
 
-import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import com.polopoly.application.InternalApplicationUtil;
@@ -12,7 +13,7 @@ import com.polopoly.user.server.UserServer;
 
 import example.deploy.hotdeploy.client.DeployContentUser;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
-import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
 
 /**
  * A {@link javax.servlet.ServletContextListener} that starts a thread
@@ -37,14 +38,15 @@ public class HotDeployContentContextListener extends DeployContentContextListene
 
                 logout = DeployContentUser.login(server, userServer);
 
-                File rootDirectory = new File(event.getServletContext().getRealPath("/"));
-
                 MultipleFileDeployer contentDeployer =
-                    getContentDeployer(server, event.getServletContext(), rootDirectory);
+                    getContentDeployer(server, event.getServletContext());
 
-                contentDeployer.discoverAndDeploy(DefaultDiscoverers.getDiscoverers());
+                ServletContext servletContext = event.getServletContext();
 
-                thread = new HotDeployContentThread(server, userServer, contentDeployer);
+                List<FileDiscoverer> discoverers = WebApplicationDiscoverers.getWebAppDiscoverers(servletContext);
+                contentDeployer.discoverAndDeploy(discoverers);
+
+                thread = new HotDeployContentThread(server, userServer, contentDeployer, discoverers);
             }
             finally {
                 if (logout) {

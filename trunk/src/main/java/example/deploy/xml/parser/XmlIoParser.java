@@ -1,17 +1,33 @@
 package example.deploy.xml.parser;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.w3c.dom.Element;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
 class XmlIoParser extends AbstractParser {
+    private static final Logger logger = Logger.getLogger(XmlIoParser.class.getName());
+
     XmlIoParser(DeploymentFile file, Element root, ParseCallback callback) {
         super(file, callback);
 
-        for (Element content : children(root)) {
+        parseBatch(root);
+    }
+
+    private void parseBatch(Element contentElement) {
+        for (Element content : children(contentElement)) {
             if (content.getNodeName().equals("content")) {
                 parseContent(content);
+            }
+            else if (content.getNodeName().equals("batch")) {
+                parseBatch(content);
+            }
+            else {
+                logger.log(Level.WARNING, "Unexpected tag " + content.getNodeName() +
+                        " in " + file + ". Expected \"content\" or \"batch\".");
             }
         }
     }

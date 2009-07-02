@@ -29,11 +29,16 @@ public class VertexGenerator {
         Map<String, Set<DeploymentFile>> definingFileByExternalId =
             definitionsAndReferences.definingFilesByExternalId;
 
-        List<Reference> references = definitionsAndReferences.references;
+        List<Reference> references = definitionsAndReferences.referencesToNonPresentContent;
 
         addDependencies(references, definingFileByExternalId);
 
-        // add files that don't have any definitions.
+        // add files that only modify existing objects
+        for (Reference referenceToPresentContent : definitionsAndReferences.referencesToPresentContent) {
+            getVertex(referenceToPresentContent.inFile);
+        }
+
+        // add files that don't have any references.
         for (Set<DeploymentFile> fileSet : definitionsAndReferences.definingFilesByExternalId.values()) {
             for (DeploymentFile file : fileSet) {
                 getVertex(file);

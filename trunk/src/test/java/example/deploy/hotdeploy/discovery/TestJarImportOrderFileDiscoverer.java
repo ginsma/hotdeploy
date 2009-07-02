@@ -21,7 +21,7 @@ public class TestJarImportOrderFileDiscoverer extends TestCase {
         JarFile file = new JarFile(new File(fileName));
         DeploymentDirectory dir = new JarDeploymentRoot(file);
 
-        ImportOrder files = new ImportOrderFileDiscoverer().getFilesToImport(dir);
+        ImportOrder files = new ImportOrderFileDiscoverer(dir).getFilesToImport();
 
         assertEquals(new JarDeploymentFile(file, file.getEntry("b/c.xml")), files.get(0));
 
@@ -41,7 +41,7 @@ public class TestJarImportOrderFileDiscoverer extends TestCase {
         JarFile file = new JarFile(new File(fileName));
         DeploymentDirectory dir = new JarDeploymentRoot(file);
 
-        ImportOrder files = new ImportOrderFileDiscoverer().getFilesToImport(dir);
+        ImportOrder files = new ImportOrderFileDiscoverer(dir).getFilesToImport();
 
         String firstDependency = files.getDependencies().iterator().next();
 

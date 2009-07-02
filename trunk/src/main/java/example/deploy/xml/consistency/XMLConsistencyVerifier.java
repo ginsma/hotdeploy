@@ -17,9 +17,9 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.present.PresentContentAware;
 
 /**
@@ -43,7 +43,6 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
     private Collection<File> classDirectories = new ArrayList<File>();
 
     private Collection<DeploymentFile> filesToVerify;
-    private File rootDirectory;
 
     private boolean validateClassReferences = true;
 
@@ -55,23 +54,25 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
         this.classDirectories.addAll(verifier.classDirectories);
     }
 
-    public XMLConsistencyVerifier(Collection<FileDiscoverer> discoverers) {
+    public XMLConsistencyVerifier() {
+    }
+
+    public void discoverFiles(FileDiscoverer discoverer) {
         List<DeploymentFile> files = new ArrayList<DeploymentFile>();
 
-        for (FileDiscoverer discoverer : discoverers) {
-            try {
-                List<DeploymentFile> theseFiles = discoverer.getFilesToImport(rootDirectory);
+        try {
+            List<DeploymentFile> theseFiles = discoverer.getFilesToImport();
 
-                logger.log(Level.WARNING, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
-
-                files.addAll(theseFiles);
-            } catch (NotApplicableException e) {
-                logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
+            if (theseFiles.isEmpty()) {
+                logger.log(Level.WARNING, "Found no files to verify using " + discoverer + ".");
             }
-        }
+            else {
+                logger.log(Level.INFO, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
+            }
 
-        if (files == null) {
-            logger.log(Level.WARNING, "Found no files to verify in " + rootDirectory);
+            files.addAll(theseFiles);
+        } catch (NotApplicableException e) {
+            logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
         }
     }
 
@@ -183,14 +184,6 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
         }
     }
 
-    public File getRootDirectory() {
-        return rootDirectory;
-    }
-
-    public void setRootDirectory(File rootDirectory) {
-        this.rootDirectory = rootDirectory;
-    }
-
     public void addClassDirectory(File classDirectory) {
         classDirectories.add(classDirectory);
     }
@@ -215,5 +208,9 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
 
     public boolean isValidateClassReferences() {
         return validateClassReferences;
+    }
+
+    public Collection<DeploymentFile> getFiles() {
+        return filesToVerify;
     }
 }

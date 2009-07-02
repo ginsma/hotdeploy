@@ -3,20 +3,27 @@ package example.deploy.xml.consistency;
 import static example.deploy.xml.consistency.ParameterConstants.DIRECTORY_ARGUMENT;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.client.ArgumentConsumer;
 import example.deploy.hotdeploy.client.ArgumentParser;
+import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 
 public class VerifierParameterParser implements ArgumentConsumer {
     private static final Logger logger =
         Logger.getLogger(VerifierParameterParser.class.getName());
 
-    private XMLConsistencyVerifier verifier;
     private String[] args;
 
-    public VerifierParameterParser(XMLConsistencyVerifier verifier,
+    private XMLConsistencyVerifier verifier;
+
+    private Collection<File> xmlDirectories = new ArrayList<File>();
+
+    public VerifierParameterParser(
+            XMLConsistencyVerifier verifier,
             String[] args) {
         this.verifier = verifier;
         this.args = args;
@@ -25,8 +32,8 @@ public class VerifierParameterParser implements ArgumentConsumer {
     public void parse() {
         new ArgumentParser(this, args).parse();
 
-        if (verifier.getRootDirectory() == null) {
-            System.err.println("The parameter --"+ DIRECTORY_ARGUMENT + " is required.");
+        if (verifier.getFiles().isEmpty()) {
+            System.err.println("No found. Did you specify the parameter --"+ DIRECTORY_ARGUMENT + " is required.");
             System.exit(1);
         }
     }
@@ -39,7 +46,7 @@ public class VerifierParameterParser implements ArgumentConsumer {
         }
 
         if (parameter.equals(DIRECTORY_ARGUMENT)) {
-            parseRootDirectory(value);
+            parseDirectory(value);
         }
         else if (parameter.equals("classdir")) {
             parseClassDirectoryNames(value);
@@ -51,7 +58,7 @@ public class VerifierParameterParser implements ArgumentConsumer {
         }
     }
 
-    private void parseRootDirectory(String directoryName) {
+    private void parseDirectory(String directoryName) {
         File xmlDirectory = new File(directoryName);
 
         if (!xmlDirectory.canRead()) {
@@ -61,7 +68,9 @@ public class VerifierParameterParser implements ArgumentConsumer {
             System.exit(1);
         }
 
-        verifier.setRootDirectory(xmlDirectory);
+        xmlDirectories.add(xmlDirectory);
+
+        verifier.discoverFiles(new ImportOrderOrDirectoryFileDiscoverer(xmlDirectory));
     }
 
     private void parseClassDirectoryNames(String classDirectoryNames) {
@@ -87,5 +96,9 @@ public class VerifierParameterParser implements ArgumentConsumer {
         System.err.println("Accepted parameters:");
         System.err.println("  --" + DIRECTORY_ARGUMENT + " The directory where the _import_order_ file or the content to import is located.");
         System.err.println("  --classdir The directory where the project classes are built to (optional).");
+    }
+
+    public Collection<File> getXMLDirectories() {
+        return xmlDirectories;
     }
 }

@@ -1,6 +1,6 @@
 package example.deploy.hotdeploy;
 
-import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,7 +17,7 @@ import example.deploy.hotdeploy.client.DeployContentUser;
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
 import example.deploy.hotdeploy.deployer.SingleFileDeployer;
-import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.state.DirectoryStateFetcher;
 
 /**
@@ -37,12 +37,12 @@ public class DeployContentContextListener implements ServletContextListener {
             PolicyCMServer server = InternalApplicationUtil.getPolicyCMServer(event.getServletContext());
             UserServer userServer = InternalApplicationUtil.getUserServer(event.getServletContext());
 
-            File rootDirectory = new File(event.getServletContext().getRealPath("/"));
-
             DeployContentUser.login(server, userServer);
 
-            MultipleFileDeployer deployer = getContentDeployer(server, event.getServletContext(), rootDirectory);
-            deployer.discoverAndDeploy(DefaultDiscoverers.getDiscoverers());
+            List<FileDiscoverer> discoverers = WebApplicationDiscoverers.getWebAppDiscoverers(event.getServletContext());
+
+            MultipleFileDeployer deployer = getContentDeployer(server, event.getServletContext());
+            deployer.discoverAndDeploy(discoverers);
         }
         // don't ever throw an exception since it stops the deploy process.
         catch (Throwable t) {
@@ -50,10 +50,10 @@ public class DeployContentContextListener implements ServletContextListener {
         }
     }
 
-    protected MultipleFileDeployer getContentDeployer(PolicyCMServer server, ServletContext servletContext, File rootDirectory) throws CMException {
+    protected MultipleFileDeployer getContentDeployer(PolicyCMServer server, ServletContext servletContext) throws CMException {
         SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(server);
 
-        return new MultipleFileDeployer(singleFileDeployer, rootDirectory,
+        return new MultipleFileDeployer(singleFileDeployer,
             new DirectoryStateFetcher(server).getDirectoryState());
     }
 

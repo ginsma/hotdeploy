@@ -7,17 +7,13 @@ import java.util.jar.JarFile;
 
 import junit.framework.TestCase;
 import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentRoot;
 
 public class TestJarDirectoryFileDiscoverer extends TestCase {
 
-    private DirectoryFileDiscoverer discoverer;
-
     @Override
     protected void setUp() throws Exception {
-        discoverer = new DirectoryFileDiscoverer();
     }
 
     public void testFileDirectory() throws NotApplicableException, IOException {
@@ -25,8 +21,10 @@ public class TestJarDirectoryFileDiscoverer extends TestCase {
 
         JarFile jarFile = new JarFile(new File(directory));
 
+        DirectoryFileDiscoverer discoverer = new DirectoryFileDiscoverer(new JarDeploymentRoot(jarFile));
+
         List<DeploymentFile> files =
-            discoverer.getFilesToImport(new JarDeploymentRoot(jarFile));
+            discoverer.getFilesToImport();
 
         assertEquals(2, files.size());
         assertTrue(files.contains(new JarDeploymentFile(jarFile, jarFile.getEntry("b/c.xml"))));
@@ -36,9 +34,10 @@ public class TestJarDirectoryFileDiscoverer extends TestCase {
     public void testEmptyFileDirectory()  {
         String directory = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "emptyfolder";
 
+        DirectoryFileDiscoverer discoverer = new DirectoryFileDiscoverer(new File(directory));
+
         try {
-            discoverer.getFilesToImport(new FileDeploymentDirectory(
-                new File(directory)));
+            discoverer.getFilesToImport();
             fail("Did not throw NotApplicableException");
         } catch (NotApplicableException e) {
             // expected

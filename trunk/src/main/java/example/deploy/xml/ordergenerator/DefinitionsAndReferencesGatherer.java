@@ -13,6 +13,7 @@ import example.deploy.xml.present.PresentContentAware;
 public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentContentAware {
     private DefinitionsAndReferences definitionsAndReferences = new DefinitionsAndReferences();
     private Set<String> alreadyPresentContent = new HashSet<String>();
+    private Set<DeploymentFile> filesWithDefinitionsOrReferences = new HashSet<DeploymentFile>();
 
     public void classReferenceFound(DeploymentFile file, String string) {
     }
@@ -29,22 +30,35 @@ public class DefinitionsAndReferencesGatherer implements ParseCallback, PresentC
         }
 
         definingFiles.add(context.getFile());
+        filesWithDefinitionsOrReferences.add(context.getFile());
+    }
+
+    public boolean hasDefinitionOrReference(DeploymentFile file) {
+        return filesWithDefinitionsOrReferences.contains(file);
     }
 
     public void contentReferenceFound(ParseContext context, Major major, String externalId) {
+        filesWithDefinitionsOrReferences.add(context.getFile());
+
+        DeploymentFile referringFile = context.getFile();
+        Reference reference = new Reference(externalId, referringFile);
+
         if (alreadyPresentContent.contains(externalId)) {
+            definitionsAndReferences.referencesToPresentContent.add(reference);
+
             return;
         }
 
-        DeploymentFile referringFile = context.getFile();
         boolean referenceWithinFile = isAlreadyDefinedInFile(referringFile, externalId);
 
         // references within a file are not relevant to the order.
         if (referenceWithinFile) {
+            definitionsAndReferences.referencesToPresentContent.add(reference);
+
             return;
         }
 
-        definitionsAndReferences.references.add(new Reference(externalId, referringFile));
+        definitionsAndReferences.referencesToNonPresentContent.add(reference);
     }
 
     private boolean isAlreadyDefinedInFile(DeploymentFile file, String externalId) {

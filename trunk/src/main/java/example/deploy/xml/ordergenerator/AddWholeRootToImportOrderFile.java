@@ -41,8 +41,8 @@ public class AddWholeRootToImportOrderFile {
         }
 
         try {
-            new DirectoryFileDiscoverer().getFilesToImport(
-                    new FileDeploymentDirectory(root), new FileCollector() {
+            new DirectoryFileDiscoverer(new FileDeploymentDirectory(root)).getFilesToImport(
+                    new FileCollector() {
                 public void collect(List<DeploymentFile> filesInDirectory) {
                     for (DeploymentFile fileInDirectory : filesInDirectory) {
                         if (!importOrderFile.imports(fileInDirectory)) {

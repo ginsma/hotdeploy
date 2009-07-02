@@ -1,6 +1,3 @@
-98
-99
-p.Icons
 article.mydesktop
 form.error.StandardErrorBundle
 form.mail.StandardMailConfig
@@ -40,6 +37,7 @@ p.siteengine.FeedTemplateCategory
 p.siteengine.FeedTemplates
 p.siteengine.Iterators.d
 p.siteengine.LocalizedStrings.d
+p.siteengine.ModeConfiguration.d
 p.siteengine.ModeUrlTranslatorArticleTemplates.d
 p.siteengine.ModeUrlTranslatorTemplates.d
 p.siteengine.PageTypes.d
@@ -66,6 +64,7 @@ p.templatecategory.media
 p.templatecategory.standardarticle
 p.templatecategory.video
 polopoly.localization.language
+p.Icons
 p.ComplexWorkflow
 p.SimpleWorkflow
 community.ot.Blog
@@ -102,7 +101,12 @@ p.SearchConfigSettings
 p.ShortcutsWorkFrame
 p.UserSessionFrame
 p.WorkFrame
+p.config.ImageGenerationConfiguration
 p.language.en
 p.language.sv
 siteengine.config.SiteCacheConfiguration
-p.siteengine.ModeConfiguration.d
+1
+94
+96
+97
+99

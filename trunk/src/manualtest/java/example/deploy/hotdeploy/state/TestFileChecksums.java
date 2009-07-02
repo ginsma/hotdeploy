@@ -5,11 +5,8 @@ import static example.deploy.hotdeploy.state.DefaultFileChecksums.CHECKSUMS_SING
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.Content;
-import com.polopoly.cm.policy.Policy;
 import com.polopoly.user.server.Caller;
 import com.polopoly.user.server.UserId;
-import com.polopoly.util.exception.PolicyCreateException;
-import com.polopoly.util.policy.PolicyModification;
 
 import example.deploy.hotdeploy.manualtest.ManualTestCase;
 
@@ -53,14 +50,6 @@ public class TestFileChecksums extends ManualTestCase {
         lockChecksums();
 
         persistChecksums();
-    }
-
-    private void createOtherContentWithSameExternalId()
-            throws PolicyCreateException {
-        context.createPolicy(2, "p.DepartmentSystemTemplate", new PolicyModification<Policy>() {
-            public void modify(Policy newVersion) throws CMException {
-                newVersion.getContent().setExternalId(CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME);
-            }});
     }
 
     public void testOnlySingleVersion() throws Exception {

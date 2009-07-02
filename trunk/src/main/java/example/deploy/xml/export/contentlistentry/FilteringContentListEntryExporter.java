@@ -10,7 +10,6 @@ import com.polopoly.cm.ContentReference;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.ContentRead;
 import com.polopoly.cm.collections.ContentListRead;
-import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.xml.util.export.ContentListEntryExporter;
 
 public class FilteringContentListEntryExporter implements ContentListEntryExporter {
@@ -19,12 +18,10 @@ public class FilteringContentListEntryExporter implements ContentListEntryExport
 
     private ContentListEntryExporter delegate;
     private ContentReferenceFilter filter;
-    private PolicyCMServer server;
 
-    public FilteringContentListEntryExporter(ContentListEntryExporter delegate, ContentReferenceFilter filter, PolicyCMServer server) {
+    public FilteringContentListEntryExporter(ContentListEntryExporter delegate, ContentReferenceFilter filter) {
         this.delegate = delegate;
         this.filter = filter;
-        this.server = server;
     }
 
     public void exportContentListEntry(Element contentListElement,

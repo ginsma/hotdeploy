@@ -17,9 +17,7 @@ public class TestResourceFileDiscoverer extends TestCase {
     @Override
     protected void setUp() throws Exception {
         discoverer = new ResourceFileDiscoverer();
-        foundFiles =
-            discoverer.getFilesToImport(
-                new File("."));
+        foundFiles = discoverer.getFilesToImport();
     }
 
     private void assertContainsFile(String fileName) {

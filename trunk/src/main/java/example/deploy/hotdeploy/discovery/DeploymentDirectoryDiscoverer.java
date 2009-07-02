@@ -25,7 +25,7 @@ import example.deploy.hotdeploy.file.JarDeploymentRoot;
 
 public class DeploymentDirectoryDiscoverer {
     public interface FileFinder {
-        Collection<DeploymentDirectory> getDirectories(String string) throws FileNotFoundException;
+        Collection<DeploymentDirectory> getDirectories(String directory) throws FileNotFoundException;
     }
 
     private static final Logger logger =
@@ -83,10 +83,16 @@ public class DeploymentDirectoryDiscoverer {
                     throw new FileNotFoundException("While fetching resource " + resourceName + ": " + e);
                 }
 
+                if (!resources.hasMoreElements()) {
+                    logger.log(Level.FINE, "There were no resources called " + resourceName + ".");
+                }
+
                 List<DeploymentDirectory> result = new ArrayList<DeploymentDirectory>();
 
                 while (resources.hasMoreElements()) {
                     URL resource = resources.nextElement();
+
+                    logger.log(Level.FINE, "Found the import order resource file " + resource + ".");
 
                     if (resource.getProtocol().equals("file")) {
                         addFile(resource, result);

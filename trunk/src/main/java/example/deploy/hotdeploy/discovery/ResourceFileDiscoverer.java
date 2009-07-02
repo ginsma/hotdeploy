@@ -1,6 +1,5 @@
 package example.deploy.hotdeploy.discovery;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +19,7 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
     private static final Logger logger =
         Logger.getLogger(ResourceFileDiscoverer.class.getName());
 
-    public List<DeploymentFile> getFilesToImport(File rootDirectory) throws NotApplicableException {
+    public List<DeploymentFile> getFilesToImport() throws NotApplicableException {
         ClassLoader classLoader = getClass().getClassLoader();
 
         return getFilesToImport(classLoader);
@@ -62,7 +61,7 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
 
             for (DeploymentDirectory subDirectory : subDirectories) {
                 try {
-                    ImportOrder thisResult = new ImportOrderFileDiscoverer().getFilesToImport(subDirectory);
+                    ImportOrder thisResult = new ImportOrderFileDiscoverer(subDirectory).getFilesToImport();
 
                     if (!foundImportOrderFiles.contains(thisResult)) {
                         logFilesFound(subDirectory, thisResult);

@@ -17,22 +17,29 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
     private static final Logger logger =
         Logger.getLogger(DirectoryFileDiscoverer.class.getName());
     private static final String XML_SUFFIX = ".xml";
+    private DeploymentDirectory directory;
 
-    /**
-     * Return the FileSpecs for the files in the directory that should be
-     * imported. The list will be returned in the correct import order.
-     */
-    public List<DeploymentFile> getFilesToImport(File rootDirectory) throws NotApplicableException {
-        FileDeploymentDirectory directory = new FileDeploymentDirectory(rootDirectory);
+    public DirectoryFileDiscoverer(DeploymentDirectory directory) {
+        this.directory = directory;
+    }
 
+    public DirectoryFileDiscoverer(File directory) {
+        this.directory = new FileDeploymentDirectory(directory);
+    }
+
+    public List<DeploymentFile> getFilesToImport() throws NotApplicableException {
+        return getFilesToImport(directory);
+    }
+
+    public void getFilesToImport(FileCollector collector) throws NotApplicableException {
+        getFilesToImport(directory, collector);
+    }
+
+    private List<DeploymentFile> getFilesToImport(DeploymentDirectory directory) throws NotApplicableException {
         if (!directory.exists()) {
             throw new NotApplicableException(directory + " did not exist.");
         }
 
-        return getFilesToImport(directory);
-    }
-
-    public List<DeploymentFile> getFilesToImport(DeploymentDirectory directory) throws NotApplicableException {
         final List<DeploymentFile> result = new ArrayList<DeploymentFile>();
 
         getFilesToImport(directory, new FileCollector() {
@@ -43,7 +50,7 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
         return result;
     }
 
-    public void getFilesToImport(DeploymentDirectory directory, FileCollector collector) throws NotApplicableException {
+    private void getFilesToImport(DeploymentDirectory directory, FileCollector collector) throws NotApplicableException {
         DeploymentObject[] files = directory.listFiles();
 
         List<DeploymentFile> result = new ArrayList<DeploymentFile>();
@@ -55,7 +62,7 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
         int fileCount = 0;
 
         for (DeploymentObject file : files) {
-            if (file instanceof DeploymentFile &&  file.getName().endsWith(XML_SUFFIX)) {
+            if (file instanceof DeploymentFile && file.getName().endsWith(XML_SUFFIX)) {
                 result.add((DeploymentFile) file);
                 fileCount++;
             }
@@ -119,6 +126,6 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
 
     @Override
     public String toString() {
-        return "all XML files in directory";
+        return "all XML files in " + directory;
     }
 }

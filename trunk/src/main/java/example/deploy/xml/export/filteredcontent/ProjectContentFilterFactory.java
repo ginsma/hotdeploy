@@ -1,6 +1,7 @@
 package example.deploy.xml.export.filteredcontent;
 
 import java.io.File;
+import java.util.List;
 
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.util.ContentIdFilter;
@@ -16,9 +17,9 @@ public class ProjectContentFilterFactory {
         this.server = server;
     }
 
-    public ContentIdFilter getExistingObjectsFilter(File projectContentDirectory) {
+    public ContentIdFilter getExistingObjectsFilter(List<File> projectContentDirectories) {
         PresentContentFilter projectContentFilter =
-            createProjectContentFilter(server, projectContentDirectory);
+            createProjectContentFilter(server, projectContentDirectories);
 
         System.err.println(Plural.count(projectContentFilter.getPresentIds(), "object") +
                 " were product or project content.");
@@ -32,12 +33,15 @@ public class ProjectContentFilterFactory {
     }
 
     protected PresentContentFilter createProjectContentFilter(
-            PolicyCMServer server, File projectContentDirectory) {
+            PolicyCMServer server, List<File> projectContentDirectories) {
         PresentContentFilter presentContentFilter = new PresentContentFilter(server);
 
-        PresentFileReader reader = new PresentFileReader(projectContentDirectory, presentContentFilter);
+        for (File projectContentDirectory : projectContentDirectories) {
+            PresentFileReader reader =
+                new PresentFileReader(projectContentDirectory, presentContentFilter);
 
-        reader.readAndScanContent();
+            reader.readAndScanContent();
+        }
 
         return presentContentFilter;
     }

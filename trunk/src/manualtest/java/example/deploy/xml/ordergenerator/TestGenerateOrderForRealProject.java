@@ -11,10 +11,9 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 public class TestGenerateOrderForRealProject {
 
     public void testDiscoverMtvuFiles() {
-        FilesInDirectoryDiscoverer filesInDirectory =
-            new FilesInDirectoryDiscoverer(Collections.singleton((FileDiscoverer) new ImportOrderFileDiscoverer()));
-
-        filesInDirectory.setRootDirectory(new File("/projects/mtvu-trunk/src/resources"));
+        DiscovereredFilesAggregator filesInDirectory =
+            new DiscovereredFilesAggregator(Collections.singleton((FileDiscoverer)
+                    new ImportOrderFileDiscoverer(new File("/projects/mtvu-trunk/src/resources"))));
 
         ImportOrderGenerator generator = new ImportOrderGenerator();
         List<DeploymentFile> result = generator.generate(filesInDirectory.getFiles());

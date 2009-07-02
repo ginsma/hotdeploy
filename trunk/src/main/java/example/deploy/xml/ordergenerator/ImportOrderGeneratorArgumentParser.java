@@ -3,16 +3,19 @@ package example.deploy.xml.ordergenerator;
 import static example.deploy.xml.consistency.ParameterConstants.DIRECTORY_ARGUMENT;
 
 import java.io.File;
+import java.util.List;
 
 import example.deploy.hotdeploy.client.ArgumentConsumer;
 import example.deploy.hotdeploy.client.ArgumentParser;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
+import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 
 public class ImportOrderGeneratorArgumentParser implements ArgumentConsumer {
     private String[] args;
-    private FilesInDirectoryDiscoverer filesInDirectory;
+    private List<FileDiscoverer> discoverers;
 
-    public ImportOrderGeneratorArgumentParser(ImportOrderGenerator generator, FilesInDirectoryDiscoverer filesInDirectory, String[] args) {
-        this.filesInDirectory = filesInDirectory;
+    public ImportOrderGeneratorArgumentParser(ImportOrderGenerator generator, List<FileDiscoverer> discoverers, String[] args) {
+        this.discoverers = discoverers;
         this.args = args;
     }
 
@@ -29,7 +32,7 @@ public class ImportOrderGeneratorArgumentParser implements ArgumentConsumer {
                 System.exit(1);
             }
 
-            filesInDirectory.setRootDirectory(directory);
+            discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
         }
         else {
             System.err.println("Unknown parameter " + argument + ".");

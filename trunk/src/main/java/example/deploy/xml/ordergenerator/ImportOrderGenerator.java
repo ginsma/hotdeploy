@@ -13,8 +13,8 @@ import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.topologicalsort.TopologicalSorter;
 import example.deploy.hotdeploy.util.MapList;
 import example.deploy.hotdeploy.util.Mapping;
-import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.parser.ContentXmlParser;
+import example.deploy.xml.parser.DeploymentFileParser;
 import example.deploy.xml.present.PresentContentAware;
 
 public class ImportOrderGenerator implements PresentContentAware {
@@ -34,14 +34,18 @@ public class ImportOrderGenerator implements PresentContentAware {
 
     private DefinitionsAndReferences parse(Collection<DeploymentFile> files) {
         for (DeploymentFile file : files) {
-            logger.log(Level.FINE, "Parsing " + files + "...");
+            logger.log(Level.FINE, "Parsing " + file + "...");
 
             parser.parse(file, callback);
+
+            if (!callback.hasDefinitionOrReference(file)) {
+                logger.log(Level.WARNING, "The file " + file +
+                    " does not seem to define any content. " +
+                    "It will not be included in the import order.");
+            }
         }
 
-        DefinitionsAndReferences definitionsAndReferences = callback.getDefinitionsAndReferences();
-
-        return definitionsAndReferences;
+        return callback.getDefinitionsAndReferences();
     }
 
     private List<DeploymentFileVertex> toVertexList(
@@ -51,6 +55,7 @@ public class ImportOrderGenerator implements PresentContentAware {
 
         List<DeploymentFileVertex> vertexList =
             new ArrayList<DeploymentFileVertex>(vertexCollection);
+
         return vertexList;
     }
 

@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,19 +25,21 @@ public class ImportOrderFileDiscoverer implements FileDiscoverer {
 
     private static final String XML_EXTENSION = ".xml";
 
-    public List<DeploymentFile> getFilesToImport(File directory) throws NotApplicableException {
-        if (directory == null) {
-            throw new NotApplicableException("No root directory available.");
-        }
+    private DeploymentDirectory directory;
 
-        List<DeploymentFile> result = getFilesToImport(new FileDeploymentDirectory(directory));
-
-        logger.log(Level.INFO, "Found " + result.size() + " content file(s) in " + directory + ".");
-
-        return result;
+    public ImportOrderFileDiscoverer(DeploymentDirectory directory) {
+        this.directory = directory;
     }
 
-    public ImportOrder getFilesToImport(DeploymentDirectory directory) throws NotApplicableException {
+    public ImportOrderFileDiscoverer(File directory) {
+        this.directory = new FileDeploymentDirectory(directory);
+    }
+
+    public ImportOrder getFilesToImport() throws NotApplicableException {
+        if (directory == null) {
+            throw new NotApplicableException("No directory available.");
+        }
+
         ImportOrder importOrderResult = new ImportOrder(directory);
 
         ImportOrderFile parsedFile;
@@ -69,6 +70,8 @@ public class ImportOrderFileDiscoverer implements FileDiscoverer {
         for (String dependency : parsedFile.getDependencies()) {
             importOrderResult.addDependency(dependency);
         }
+
+        logger.log(Level.INFO, "Found " + importOrderResult.size() + " content file(s) in " + directory + ".");
 
         return importOrderResult;
     }
@@ -120,6 +123,6 @@ public class ImportOrderFileDiscoverer implements FileDiscoverer {
 
     @Override
     public String toString() {
-        return "files specified in " + IMPORT_ORDER_FILE_NAME;
+        return "files specified in " + IMPORT_ORDER_FILE_NAME + " in " + directory;
     }
 }

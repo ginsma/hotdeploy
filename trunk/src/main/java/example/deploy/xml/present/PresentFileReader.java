@@ -10,10 +10,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.client.Major;
-import example.deploy.hotdeploy.discovery.DirectoryFileDiscoverer;
 import example.deploy.hotdeploy.discovery.FallbackDiscoverer;
+import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.DeploymentObject;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
@@ -86,11 +85,9 @@ public class PresentFileReader {
 
     public static List<DeploymentFile> discoverFilesInDirectory(File directory) throws NotApplicableException {
         FallbackDiscoverer discoverer =
-            new FallbackDiscoverer(
-                new ImportOrderFileDiscoverer(),
-                new DirectoryFileDiscoverer());
+            new ImportOrderOrDirectoryFileDiscoverer(directory);
 
-        return discoverer.getFilesToImport(directory);
+        return discoverer.getFilesToImport();
     }
 
     private void readFromResource() {

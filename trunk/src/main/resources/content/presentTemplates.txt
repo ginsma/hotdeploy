@@ -20,8 +20,10 @@ p.AnyContentSelect
 p.ApplicationId
 p.ApplicationStatus
 p.ArticleCategorization
+p.ArticleCategorizationSuggestion
 p.ArticleDiscussionCreator
 p.BadWords
+p.BatchOperation
 p.BlackListedUserCreator
 p.BlacklistedUser
 p.BlacklistedUserList
@@ -43,6 +45,7 @@ p.ClipboardClient
 p.Column
 p.ColumnHolder
 p.Comment
+p.CommentBrowser
 p.ConfigInstance
 p.ConfigType
 p.Configuration
@@ -78,6 +81,7 @@ p.DefaultToc
 p.DefaultUserDataTemplate
 p.DefaultWorkflow
 p.DefaultWorkflowType
+p.DeleteState
 p.DepartmentSystemTemplate
 p.DirectoryState
 p.Duplicator
@@ -231,6 +235,7 @@ p.archive.FileSelect
 p.archive.Image
 p.archive.ImageSelect
 p.cl.ContentList
+p.config.ImageGenerationConfiguration.it
 p.config.SearchConfig
 p.formbuilder.Error
 p.formbuilder.ErrorLink
@@ -288,6 +293,7 @@ p.siteengine.PublishingQueueContainer
 p.siteengine.ScheduledElementQueue
 p.siteengine.ServiceDefinition
 p.siteengine.Site
+p.siteengine.Site.BatchOperations
 p.siteengine.Site.MembershipConfiguration
 p.siteengine.SiteOutputTemplate
 p.siteengine.SiteRoot

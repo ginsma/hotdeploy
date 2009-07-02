@@ -1,6 +1,5 @@
 package example.deploy.xml.ordergenerator;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -12,19 +11,14 @@ import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-public class FilesInDirectoryDiscoverer {
-    private File rootDirectory;
+public class DiscovereredFilesAggregator {
     private Collection<FileDiscoverer> discoverers;
 
     private static final Logger logger =
-        Logger.getLogger(FilesInDirectoryDiscoverer.class.getName());
+        Logger.getLogger(DiscovereredFilesAggregator.class.getName());
 
-    public FilesInDirectoryDiscoverer(Collection<FileDiscoverer> discoverers) {
+    public DiscovereredFilesAggregator(Collection<FileDiscoverer> discoverers) {
         this.discoverers = discoverers;
-    }
-
-    public void setRootDirectory(File rootDirectory) {
-        this.rootDirectory = rootDirectory;
     }
 
     public Set<DeploymentFile> getFiles() {
@@ -32,7 +26,7 @@ public class FilesInDirectoryDiscoverer {
 
         for (FileDiscoverer discoverer : discoverers) {
             try {
-                List<DeploymentFile> theseFiles = discoverer.getFilesToImport(rootDirectory);
+                List<DeploymentFile> theseFiles = discoverer.getFilesToImport();
 
                 logger.log(Level.WARNING, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
 

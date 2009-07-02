@@ -12,7 +12,7 @@ public class TestFileImportOrderFileDiscoverer extends TestCase {
     public void testDiscoverer() throws NotApplicableException {
         String directory = "src" + File.separator + "test" + File.separator + "resources";
 
-        List<DeploymentFile> files = new ImportOrderFileDiscoverer().getFilesToImport(new File(directory));
+        List<DeploymentFile> files = new ImportOrderFileDiscoverer(new File(directory)).getFilesToImport();
 
         String subFolder = directory + File.separator + "folder" + File.separator + "subfolder";
 

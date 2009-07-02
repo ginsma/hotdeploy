@@ -12,5 +12,6 @@ public class DefinitionsAndReferences {
     public Map<String, Set<DeploymentFile>> definingFilesByExternalId =
         new HashMap<String, Set<DeploymentFile>>();
 
-    public List<Reference> references = new ArrayList<Reference>();
+    public List<Reference> referencesToNonPresentContent = new ArrayList<Reference>();
+    public List<Reference> referencesToPresentContent = new ArrayList<Reference>();
 }

@@ -1,6 +1,5 @@
 package example.deploy.hotdeploy.deployer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -146,7 +145,7 @@ public class TestMultipleFileDeployer extends TestCase {
 
     public void testDiscoverAndDeploy() throws FatalDeployException {
         FileDiscoverer aFileDiscoverer = new FileDiscoverer() {
-            public List<DeploymentFile> getFilesToImport(File rootDirectory)
+            public List<DeploymentFile> getFilesToImport()
             throws NotApplicableException {
                 return Collections.singletonList((DeploymentFile) aFile);
             }};
@@ -174,7 +173,6 @@ public class TestMultipleFileDeployer extends TestCase {
 
         multipleFileDeployer = new MultipleFileDeployer(
             singleFileDeployer,
-            new File("."),
             directoryState);
     }
 }

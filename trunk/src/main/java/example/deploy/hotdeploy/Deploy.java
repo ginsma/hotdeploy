@@ -1,6 +1,8 @@
 package example.deploy.hotdeploy;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +14,9 @@ import example.deploy.hotdeploy.client.PolopolyClient;
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
 import example.deploy.hotdeploy.deployer.SingleFileDeployer;
-import example.deploy.hotdeploy.discovery.DefaultDiscoverers;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
+import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
+import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.state.DirectoryState;
 import example.deploy.hotdeploy.state.DirectoryStateFetcher;
@@ -90,10 +94,14 @@ public class Deploy {
             SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(server);
 
             MultipleFileDeployer deployer =
-                new MultipleFileDeployer(singleFileDeployer, directory, directoryState);
+                new MultipleFileDeployer(singleFileDeployer, directoryState);
+
+            List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
+            discoverers.add(new ResourceFileDiscoverer());
+            discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
 
             Set<DeploymentFile> failingFiles =
-                deployer.discoverAndDeploy(DefaultDiscoverers.getDiscoverers());
+                deployer.discoverAndDeploy(discoverers);
 
             success = failingFiles.isEmpty();
         } catch (Exception e) {

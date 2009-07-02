@@ -10,18 +10,17 @@ import example.deploy.hotdeploy.file.FileDeploymentFile;
 
 public class TestFileDirectoryFileDiscoverer extends TestCase {
 
-    private DirectoryFileDiscoverer discoverer;
-
     @Override
     protected void setUp() throws Exception {
-        discoverer = new DirectoryFileDiscoverer();
     }
 
     public void testFileDirectory() throws NotApplicableException {
         String directory = PlatformNeutralPath.unixToPlatformSpecificPath("src/test/resources/folder");
-        List<DeploymentFile> files =
-            discoverer.getFilesToImport(new FileDeploymentDirectory(
-                new File(directory)));
+
+        DirectoryFileDiscoverer discoverer =
+            new DirectoryFileDiscoverer(new FileDeploymentDirectory(new File(directory)));
+
+        List<DeploymentFile> files = discoverer.getFilesToImport();
 
         assertEquals(3, files.size());
         assertTrue(files.contains(new FileDeploymentFile(
@@ -36,9 +35,11 @@ public class TestFileDirectoryFileDiscoverer extends TestCase {
         String directory = "src" + File.separator + "test" + File.separator +
             "resources" + File.separator + "emptyfolder";
 
+        DirectoryFileDiscoverer discoverer =
+            new DirectoryFileDiscoverer(new FileDeploymentDirectory(new File(directory)));
+
         try {
-            discoverer.getFilesToImport(new FileDeploymentDirectory(
-                new File(directory)));
+            discoverer.getFilesToImport();
             fail("Did not throw NotApplicableException");
         } catch (NotApplicableException e) {
             // expected
