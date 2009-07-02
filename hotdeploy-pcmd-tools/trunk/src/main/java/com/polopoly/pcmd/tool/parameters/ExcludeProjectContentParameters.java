@@ -1,6 +1,7 @@
 package com.polopoly.pcmd.tool.parameters;
 
 import java.io.File;
+import java.util.List;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
@@ -24,8 +25,8 @@ public class ExcludeProjectContentParameters extends ContentIdListParameters {
         projectContentParameters.parseParameters(args, context);
     }
 
-    public File getProjectContentDirectory() {
-        return projectContentParameters.getProjectContentDirectory();
+    public List<File> getProjectContentDirectories() {
+        return projectContentParameters.getProjectContentDirectories();
     }
 
     public boolean isResolve() {

@@ -19,10 +19,12 @@ import com.polopoly.util.collection.FetchingIterator;
 public class ExportParameters extends ListExportableParameters implements Parameters {
     private static final String ALL_OPTION = "all";
     public static final String EXPORT_PRESENT_OPTION = "exportpresent";
+    private static final String FILTER_REFERENCES = "filterreferences";
 
     private File outputDirectory;
     private boolean exportPresent;
     private boolean idsAreArguments;
+    private boolean filterReferences;
 
     private ContentIdListParameters idListParameters = new ContentIdListParameters() {
         @Override
@@ -53,6 +55,9 @@ public class ExportParameters extends ListExportableParameters implements Parame
 
         help.addOption(EXPORT_PRESENT_OPTION, new BooleanParser(),
                 "Whether to export objects even though they are part of the project content or the Polopoly installation (defaults to false).");
+
+        help.addOption(FILTER_REFERENCES, new BooleanParser(),
+                "Whether to remove references to content that is neither project content nor part of the export (defaults to true).");
     }
 
     @Override
@@ -75,6 +80,8 @@ public class ExportParameters extends ListExportableParameters implements Parame
         }
 
         exportPresent = args.getFlag(EXPORT_PRESENT_OPTION, false);
+
+        filterReferences = args.getFlag(FILTER_REFERENCES, true);
     }
 
     public File getOutputDirectory() {
@@ -108,5 +115,9 @@ public class ExportParameters extends ListExportableParameters implements Parame
                         return null;
                     }};
             }};
+    }
+
+    public boolean isFilterReferences() {
+        return filterReferences;
     }
 }

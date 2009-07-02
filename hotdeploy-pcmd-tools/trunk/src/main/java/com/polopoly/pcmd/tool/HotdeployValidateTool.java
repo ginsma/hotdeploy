@@ -26,7 +26,7 @@ public class HotdeployValidateTool implements Tool<HotdeployValidateParameters> 
             new XMLConsistencyVerifier(files);
 
         if (!parameters.isIgnorePresent()) {
-            new PresentFileReader(verifier.getRootDirectory(), verifier).read();
+            new PresentFileReader(parameters.getDirectory(), verifier).read();
         }
 
         verifier.setValidateClassReferences(parameters.isValidateClasses());

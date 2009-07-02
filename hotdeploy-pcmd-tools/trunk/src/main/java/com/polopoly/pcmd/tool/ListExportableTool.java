@@ -36,7 +36,7 @@ public class ListExportableTool implements Tool<ListExportableParameters> {
 
         ContentIdFilter existingObjectsFilter =
             new ProjectContentFilterFactory(context.getPolicyCMServer()).getExistingObjectsFilter(
-                parameters.getProjectContentDirectory());
+                parameters.getProjectContentDirectories());
 
         int since = parameters.getSince();
 

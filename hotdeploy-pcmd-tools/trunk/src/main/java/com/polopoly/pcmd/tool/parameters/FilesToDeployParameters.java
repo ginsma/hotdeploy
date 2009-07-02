@@ -11,8 +11,8 @@ import com.polopoly.pcmd.argument.Parameters;
 import com.polopoly.pcmd.parser.ExistingFileParser;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.discovery.DirectoryFileDiscoverer;
-import example.deploy.hotdeploy.discovery.FallbackDiscoverer;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
+import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
@@ -68,13 +68,11 @@ public class FilesToDeployParameters implements Parameters {
     }
 
     public static List<DeploymentFile> discoverFilesInDirectory(File directory) {
-        FallbackDiscoverer discoverer =
-            new FallbackDiscoverer(
-                new ImportOrderFileDiscoverer(),
-                new DirectoryFileDiscoverer());
+        FileDiscoverer discoverer =
+            new ImportOrderOrDirectoryFileDiscoverer(directory);
 
         try {
-            return discoverer.getFilesToImport(directory);
+            return discoverer.getFilesToImport();
         } catch (NotApplicableException e) {
             System.err.println("Could not find any content in directory " +
                 directory.getAbsolutePath() + ": " + e.getMessage());

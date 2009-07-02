@@ -18,6 +18,7 @@ import example.deploy.xml.export.ContentsExporterFactory;
 import example.deploy.xml.export.NormalizedFileExporter;
 import example.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
 import example.deploy.xml.export.contentlistentry.ContentReferenceFilter;
+import example.deploy.xml.export.filteredcontent.AcceptAllContentIdFilter;
 import example.deploy.xml.export.filteredcontent.AcceptNoneContentIdFilter;
 import example.deploy.xml.export.filteredcontent.OrContentIdFilter;
 import example.deploy.xml.export.filteredcontent.PresentContentFilter;
@@ -54,18 +55,30 @@ public class ExportTool extends ListExportableTool {
 
         Set<ContentId> contentIdsToExport = getIdsToExport(existingObjectsFilter);
 
-        RejectionCollectingContentIdFilter collectingExistingOrExportedObjectsFilter =
-            new RejectionCollectingContentIdFilter(existingOrExportedObjectsFilter);
+        RejectionCollectingContentIdFilter referenceFilter;
+
+        if (parameters.isFilterReferences()) {
+            RejectionCollectingContentIdFilter collectingExistingOrExportedObjectsFilter =
+                new RejectionCollectingContentIdFilter(existingOrExportedObjectsFilter);
+
+            referenceFilter = collectingExistingOrExportedObjectsFilter;
+        }
+        else {
+            RejectionCollectingContentIdFilter collectingAcceptAllFilter =
+                new RejectionCollectingContentIdFilter(new AcceptAllContentIdFilter());
+
+            referenceFilter = collectingAcceptAllFilter;
+        }
 
         NormalizedFileExporter normalizedFileExporter =
             createExporter(
                 outputDirectory, contentIdsToExport,
                 new ContentIdFilterToContentReferenceFilterWrapper(
-                    collectingExistingOrExportedObjectsFilter));
+                    referenceFilter));
 
         normalizedFileExporter.export(contentIdsToExport);
 
-        logRejected(collectingExistingOrExportedObjectsFilter);
+        logRejected(referenceFilter);
     }
 
     private NormalizedFileExporter createExporter(File outputDirectory,
@@ -95,7 +108,7 @@ public class ExportTool extends ListExportableTool {
     private ContentIdFilter createExistingObjectsFilter(
             ListExportableParameters listParameters) {
         return new ProjectContentFilterFactory(context.getPolicyCMServer()).
-            getExistingObjectsFilter(listParameters.getProjectContentDirectory());
+            getExistingObjectsFilter(listParameters.getProjectContentDirectories());
     }
 
     private PresentContentFilter createAlreadyExportedObjectsFilter(File outputDirectory) {

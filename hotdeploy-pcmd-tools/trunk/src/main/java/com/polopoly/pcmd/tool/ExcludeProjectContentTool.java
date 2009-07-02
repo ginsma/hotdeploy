@@ -2,6 +2,7 @@ package com.polopoly.pcmd.tool;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.util.ContentIdFilter;
@@ -18,15 +19,15 @@ public class ExcludeProjectContentTool implements Tool<ExcludeProjectContentPara
     }
 
     public void execute(PolopolyContext context, ExcludeProjectContentParameters parameters) {
-        File projectContentDirectory = parameters.getProjectContentDirectory();
+        List<File> projectContentDirectories = parameters.getProjectContentDirectories();
 
-        if (projectContentDirectory != null) {
+        if (!projectContentDirectories.isEmpty()) {
             System.err.println("Scanning project content...");
         }
 
         ContentIdFilter filter =
             new ProjectContentFilterFactory(context.getPolicyCMServer()).
-                getExistingObjectsFilter(projectContentDirectory);
+                getExistingObjectsFilter(projectContentDirectories);
 
         Iterator<ContentId> it = parameters.getContentIds();
 

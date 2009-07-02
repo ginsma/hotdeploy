@@ -4,7 +4,6 @@ import static com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool.generateIm
 import static com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool.writeFile;
 import static example.deploy.hotdeploy.util.Plural.plural;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -158,7 +157,7 @@ public class ImportTool implements Tool<ImportParameters> {
                     " found in " + parameters.getFileOrDirectory().getAbsolutePath() + "...");
 
             MultipleFileDeployer deployer =
-                createDeployer(context, parameters.getDirectory(), files.size());
+                createDeployer(context, files.size());
 
             deployer.deploy(files);
 
@@ -170,10 +169,9 @@ public class ImportTool implements Tool<ImportParameters> {
         }
     }
 
-    private MultipleFileDeployer createDeployer(PolopolyContext context, File directory, int fileCount) {
+    private MultipleFileDeployer createDeployer(PolopolyContext context, int fileCount) {
         return new MultipleFileDeployer(
                 new LoggingSingleFileDeployer(context.getPolicyCMServer(), fileCount),
-                directory,
                 directoryState);
     }
 
@@ -187,7 +185,7 @@ public class ImportTool implements Tool<ImportParameters> {
             }
 
             MultipleFileDeployer deployer =
-                createDeployer(context, new File("."), resourceFiles.size());
+                createDeployer(context, resourceFiles.size());
 
             deployer.deploy(resourceFiles);
 
