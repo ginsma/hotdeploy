@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<template-definition version="1.0" xmlns="http://www.polopoly.com/polopoly/cm/app/xml">
+  <input-template name="example.NewsletterContentListWrapper">
+    <content-list-wrapper>com.polopoly.cm.app.policy.ConfigurableContentListWrapper</content-list-wrapper>
+    <idparam-list name="allowedInputTemplates">
+      <contentid>
+        <externalid>example.Newsletter</externalid>
+      </contentid>
+    </idparam-list>
+  </input-template>
+
+  <input-template name="example.Article">
+       <field name="imageContentCreator" input-template="it.wid.ContentCreator" label="Create New Image">
+          <param name="insertTargetAlias">content</param>
+          <param name="askInsertTarget">false</param>
+          <param name="insertionContentListName">images</param>
+          <param name="askInsertionContentListName">false</param>
+          <param name="major">1</param>
+          <idparam name="inputTemplateId">
+            <externalid>example.Image</externalid>
+          </idparam>
+          <param name="createWithSecurityParent">true</param>
+          <param name="securityParentAlias">content</param>
+          <param name="createLabel">cm.action.CreateNewImage</param>
+          <param name="insertPosition">bottom</param>
+          <param name="autoInsertContentListRelativeName">topimages</param>
+          <param name="showCategorySelectWithOneCategory">false</param>
+          <param name="inContextEditInViewMode">true</param>
+          <param name="categoryMajor0">Article</param>
+          <param name="categoryLabel0">Article</param>
+          <idparam-list name="categoryList0">
+            <contentid>
+              <major>InputTemplate</major>
+              <externalid>example.Image</externalid>
+            </contentid>
+          </idparam-list>
+        </field>
+  </input-template>
+</template-definition>

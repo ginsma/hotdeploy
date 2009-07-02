@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template-definition version="1.0" xmlns="http://www.polopoly.com/polopoly/cm/app/xml">
+  <input-template name="example.FlashElement" label="Flash">
+    <content-xml>
+      <component group="polopoly.Content" name="name">Flash Element</component>
+    </content-xml>
+    <policy>example.layout.element.ElementPolicy</policy>
+    <editor>example.widget.OContentInsertionTopPolicyWidget</editor>
+	<viewer>example.widget.OContentInsertionTopPolicyWidget</viewer>
+    <type>LayoutElement</type>
+    <param name="templateIcon">page_with_flash.png</param>
+    <editor contextName="orchid_TOCENTRY">example.widget.OContentListEntryBasePolicyWidget</editor>
+    <viewer contextName="orchid_TOCENTRY">example.widget.OContentListEntryBasePolicyWidget</viewer>
+    
+    <param name="insertable">false</param>
+    <param name="EditState_saveAndView">true</param>
+    <param name="EditNewState_saveAndView">true</param>
+    <param name="ViewState_copy">true</param>
+
+          
+    <output-templates mode="www">
+      <id>example.FlashElement.ot</id>
+    </output-templates>
+  </input-template>
+  <output-template name="example.FlashElement.ot" input-template="p.siteengine.ElementOutputTemplate">
+    <content-xml>
+      <component group="polopoly.Content" name="name">Flash animation</component>
+      <component group="output/renderer/selected/default" name="value">
+        <![CDATA[
+<div class="clearfix">
+
+<div class="insert media flash" id="$content.contentId.contentIdString">
+   <div class="media-content">
+      Please download your Flash player <a href="http://adobe.com/go/getflashplayer">here</a>.
+    </div>                  
+</div>
+
+## Get background color
+#set($bgcolor = "")
+#if($content.bgcolor.value)
+  #set($bgcolor = $content.bgcolor.value)
+#end
+
+## Get width
+#set($width = "")
+#if($content.width.value)
+  #set($width = $content.width.value)
+#end
+
+## Get height
+#set($height = "")
+#if($content.height.value)
+  #set($height = $content.height.value)
+#end
+
+<script type="text/javascript">
+
+       var flashvars = {
+#foreach($flashvar in $content.flashvars.componentMap.entrySet())
+         "$flashvar.key": "$esc.url($flashvar.value)",
+#end
+         backcolor: "$bgcolor" };
+
+       var params = {
+#foreach($param in $content.params.componentMap.entrySet())
+         "$param.key": "$param.value",
+#end
+         "" : ""
+       };
+
+#if($content.flashfile.selected.value)
+    swfobject.embedSWF("$content.flashfile.selected.value", "$content.contentId.contentIdString", "$width", "$height", "7.0.0", null, flashvars, params);
+#else
+    swfobject.embedSWF("#file({"filename": $content.flashfile.selected.flashfiles.fullFilePath, "contentId": $content.contentId, "":""})", "$content.contentId.contentIdString", "$width", "$height", "7.0.0", null, flashvars, params);
+#end
+
+</script>                    
+</div>
+      ]]>
+      </component>
+    </content-xml>
+  </output-template>
+</template-definition>
