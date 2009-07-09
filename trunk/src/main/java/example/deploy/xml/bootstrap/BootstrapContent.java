@@ -7,6 +7,7 @@ import example.deploy.hotdeploy.util.Tuple;
 public class BootstrapContent extends SingleObjectHolder<Tuple<Major, String>> implements Comparable<BootstrapContent> {
     private String externalId;
     private Major major;
+    private String inputTemplate;
 
     public BootstrapContent(Major major, String externalId) {
         super(new Tuple<Major, String>(major, externalId));
@@ -46,5 +47,13 @@ public class BootstrapContent extends SingleObjectHolder<Tuple<Major, String>> i
     public boolean equals(Object o) {
         return o instanceof BootstrapContent &&
             ((BootstrapContent) o).getExternalId().equals(getExternalId());
+    }
+
+    public void setInputTemplate(String inputTemplate) {
+        this.inputTemplate = inputTemplate;
+    }
+
+    public String getInputTemplate() {
+        return inputTemplate;
     }
 }

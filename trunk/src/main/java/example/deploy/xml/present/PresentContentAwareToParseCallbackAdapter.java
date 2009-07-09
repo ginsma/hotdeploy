@@ -18,7 +18,7 @@ public class PresentContentAwareToParseCallbackAdapter implements ParseCallback 
     public void contentFound(ParseContext context, String externalId,
             Major major, String inputTemplate) {
         if (major == Major.INPUT_TEMPLATE) {
-            presentFilesAware.presentTemplate(inputTemplate);
+            presentFilesAware.presentTemplate(externalId);
         }
         else {
             presentFilesAware.presentContent(externalId);

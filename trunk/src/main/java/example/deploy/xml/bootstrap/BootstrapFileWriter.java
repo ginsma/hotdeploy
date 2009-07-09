@@ -27,9 +27,15 @@ public class BootstrapFileWriter {
         "      <contentid>\n" +
         "        <major>%d</major>\n" +
         "        <externalid>%s</externalid>\n" +
-        "      </contentid>\n" +
+        "      </contentid>\n%s" +
         "    </metadata>\n" +
         "  </content>\n";
+
+    private static final String INPUT_TEMPLATE_XML =
+        "      <input-template>\n" +
+        "        <externalid>%s</externalid>\n" +
+        "      </input-template>\n";
+
 
     public BootstrapFileWriter(Bootstrap bootstrap) {
         this.bootstrap = bootstrap;
@@ -55,9 +61,18 @@ public class BootstrapFileWriter {
             return;
         }
 
+        StringBuffer inputTemplateXml = new StringBuffer(200);
+
+        // we should include the inpute template wherever possible. if the object has the wrong
+        // template the bootstrapped object can't be included in content lists with content list
+        // wrappers limiting the types of objects that can be added.
+        if (content.getInputTemplate() != null) {
+            new Formatter(inputTemplateXml).format(INPUT_TEMPLATE_XML, content.getInputTemplate());
+        }
+
         formatter.format(SINGLE_CONTENT_XML,
                 content.getMajor().getIntegerMajor(),
-                content.getExternalId());
+                content.getExternalId(), inputTemplateXml);
     }
 }
 

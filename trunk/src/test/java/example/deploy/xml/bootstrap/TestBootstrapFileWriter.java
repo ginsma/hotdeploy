@@ -14,6 +14,7 @@ public class TestBootstrapFileWriter extends TestCase {
 
     private static final String ARTICLE_EXTERNAL_ID = "id.article";
     private static final String DEPARTMENT_EXTERNAL_ID = "id.dept";
+    private static final String DEPARTMENT_INPUT_TEMPLATE = "it.dept";
 
     private static final String EXPECTED_XML =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -32,6 +33,9 @@ public class TestBootstrapFileWriter extends TestCase {
         "        <major>2</major>\n" +
         "        <externalid>" + DEPARTMENT_EXTERNAL_ID + "</externalid>\n" +
         "      </contentid>\n" +
+        "      <input-template>\n" +
+        "        <externalid>" + DEPARTMENT_INPUT_TEMPLATE + "</externalid>\n" +
+        "      </input-template>\n" +
         "    </metadata>\n" +
         "  </content>\n" +
         "</batch>\n";
@@ -42,7 +46,9 @@ public class TestBootstrapFileWriter extends TestCase {
         bootstrap = new Bootstrap();
 
         bootstrap.add(new BootstrapContent(Major.ARTICLE, ARTICLE_EXTERNAL_ID));
-        bootstrap.add(new BootstrapContent(Major.DEPARTMENT, DEPARTMENT_EXTERNAL_ID));
+        BootstrapContent deptContent = new BootstrapContent(Major.DEPARTMENT, DEPARTMENT_EXTERNAL_ID);
+        deptContent.setInputTemplate(DEPARTMENT_INPUT_TEMPLATE);
+        bootstrap.add(deptContent);
     }
 
     private String generateBootstrap() {
@@ -62,7 +68,8 @@ public class TestBootstrapFileWriter extends TestCase {
         FileParseCallbackMemento expectedParseResult = new FileParseCallbackMemento(file);
         ParseContext context = new ParseContext(file);
         expectedParseResult.contentFound(context, ARTICLE_EXTERNAL_ID, Major.ARTICLE, null);
-        expectedParseResult.contentFound(context, DEPARTMENT_EXTERNAL_ID, Major.DEPARTMENT, null);
+        expectedParseResult.contentFound(context, DEPARTMENT_EXTERNAL_ID, Major.DEPARTMENT, DEPARTMENT_INPUT_TEMPLATE);
+        expectedParseResult.contentReferenceFound(context, Major.INPUT_TEMPLATE, DEPARTMENT_INPUT_TEMPLATE);
         return expectedParseResult;
     }
 

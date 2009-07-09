@@ -18,11 +18,12 @@ public class BootstrapGatherer implements ParseCallback {
     public void classReferenceFound(DeploymentFile file, String string) {
     }
 
-    private void resolveMajor(String externalId, Major major) {
+    private void resolve(String externalId, Major major, String inputTemplate) {
         BootstrapContent bootstrapContent = bootstrapByExternalId.get(externalId);
 
         if (bootstrapContent != null) {
             bootstrapContent.setMajor(major);
+            bootstrapContent.setInputTemplate(inputTemplate);
         }
     }
 
@@ -30,9 +31,9 @@ public class BootstrapGatherer implements ParseCallback {
             Major major, String inputTemplate) {
         definedExternalIds.add(externalId);
 
-        // this content might have referenced before, so we will need to bootstrap it.
+        // this content might been have referenced before, so we will need to bootstrap it.
         // however, we might not have known the major before, but now we do.
-        resolveMajor(externalId, major);
+        resolve(externalId, major, inputTemplate);
     }
 
     public void contentReferenceFound(ParseContext context, Major major, String externalId) {
