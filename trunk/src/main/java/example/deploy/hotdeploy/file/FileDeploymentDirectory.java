@@ -28,7 +28,7 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
         }
 
         // we always support forward slashes, even on windows
-        if (File.separatorChar == '\\') {
+        if (File.separatorChar != '/') {
             fileName = fileName.replace('/', File.separatorChar);
         }
 
@@ -86,7 +86,15 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
             String directoryName = getName();
 
             if (fileName.startsWith(directoryName + File.separator)) {
-                return fileName.substring(directoryName.length() + 1);
+                String result = fileName.substring(directoryName.length() + 1);
+                
+                // the canonical form is using forward slashes. 
+                // the import order will have slashes in the wrong direction otherwise.
+                if (File.separatorChar != '/') {
+                    result = result.replace(File.separatorChar, '/');
+                }
+
+                return result;
             }
 
             if (deploymentObject.equals(this)) {
