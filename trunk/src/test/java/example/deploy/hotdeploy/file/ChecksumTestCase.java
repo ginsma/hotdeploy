@@ -14,8 +14,8 @@ public abstract class ChecksumTestCase extends TestCase {
     protected static final String A_FILE_NAME = "a_file";
 
     private DeploymentFile file;
-    private DeploymentFile identicalFile;
-    private DeploymentFile differentFile;
+    protected DeploymentFile identicalFile;
+    protected DeploymentFile differentFile;
 
     public void testQuickChecksum() {
         assertFalse(file.getQuickChecksum() == differentFile.getQuickChecksum());
