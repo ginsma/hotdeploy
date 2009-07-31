@@ -2,15 +2,19 @@ package com.polopoly.pcmd.tool;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import com.polopoly.cm.ContentId;
+import com.polopoly.cm.VersionedContentId;
+import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.util.ContentIdFilter;
 import com.polopoly.cm.xml.util.export.DefaultContentContentsExporter;
 import com.polopoly.pcmd.tool.export.AcceptanceCollectingContentIdFilter;
 import com.polopoly.pcmd.tool.export.RejectionCollectingContentIdFilter;
 import com.polopoly.pcmd.tool.parameters.ExportParameters;
 import com.polopoly.pcmd.tool.parameters.ListExportableParameters;
+import com.polopoly.pcmd.util.JoiningIterator;
 import com.polopoly.util.client.PolopolyContext;
 
 import example.deploy.hotdeploy.util.Plural;
@@ -174,6 +178,11 @@ public class ExportTool extends ListExportableTool {
             idIterable = super.getIdsToExport(context, since, excludeFilter);
         }
 
+        if (parameters.isIncludeReferrers()) {
+            idIterable = findReferrers(idIterable,
+                (parameters.isFilterReferences() ? presentContentFilter : new AcceptAllContentIdFilter()));
+        }
+
         Set<ContentId> contentIdsToExport = new HashSet<ContentId>(250);
 
         for (ContentId idToExport : idIterable) {
@@ -181,6 +190,70 @@ public class ExportTool extends ListExportableTool {
         }
 
         return contentIdsToExport;
+    }
+
+    private Iterable<ContentId> findReferrers(final Iterable<ContentId> idIterable,
+            ContentIdFilter contentIdFilter) {
+        System.out.println("Finding refererring content...");
+
+        final Set<ContentId> allReferrers = new HashSet<ContentId>(100);
+
+        int searched = 0;
+
+
+        System.out.println("HAS: " + idIterable.iterator().hasNext());
+
+        for (ContentId contentId : idIterable) {
+            ContentId[] referrers;
+            try {
+                referrers = context.getPolicyCMServer().getReferringContentIds(contentId, VersionedContentId.LATEST_COMMITTED_VERSION);
+
+                for (ContentId referrer : referrers) {
+                    allReferrers.add(referrer.getContentId());
+                }
+            } catch (CMException e) {
+                System.err.println("Finding referrers of " + contentId.getContentIdString() + ": " + e);
+            }
+
+            if (++searched % 10 == 0) {
+                System.out.println("Found referrers for " + searched + " objects...");
+            }
+        }
+
+        System.out.println("HAS: " + idIterable.iterator().hasNext());
+
+        for (ContentId contentId : idIterable) {
+            allReferrers.remove(contentId);
+        }
+
+
+        System.out.println("HAS: " + idIterable.iterator().hasNext());
+
+        int unfilteredSize = allReferrers.size();
+
+        Iterator<ContentId> it = allReferrers.iterator();
+
+        RejectionCollectingContentIdFilter rejectionCollectingFilter =
+            new RejectionCollectingContentIdFilter(contentIdFilter);
+
+        while (it.hasNext()) {
+            if (!rejectionCollectingFilter.accept(it.next().getContentId())) {
+                it.remove();
+            }
+        }
+
+        System.out.println("Found " + unfilteredSize + " referring objects. " + allReferrers.size() + " of these were retained.");
+
+        if (allReferrers.size() != unfilteredSize) {
+            System.out.println("Non-retained objects:");
+            rejectionCollectingFilter.printCollectedObjects(context);
+        }
+
+        return new Iterable<ContentId>() {
+            public Iterator<ContentId> iterator() {
+                return new JoiningIterator<ContentId>(idIterable.iterator(), allReferrers.iterator());
+            }
+        };
     }
 
     @Override

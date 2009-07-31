@@ -20,11 +20,13 @@ public class ExportParameters extends ListExportableParameters implements Parame
     private static final String ALL_OPTION = "all";
     public static final String EXPORT_PRESENT_OPTION = "exportpresent";
     private static final String FILTER_REFERENCES = "filterreferences";
+    private static final String INCLUDE_REFERRERS_OPTION = "includereferrers";
 
     private File outputDirectory;
     private boolean exportPresent;
     private boolean idsAreArguments;
     private boolean filterReferences;
+    private boolean includeReferrers;
 
     private ContentIdListParameters idListParameters = new ContentIdListParameters() {
         @Override
@@ -58,6 +60,9 @@ public class ExportParameters extends ListExportableParameters implements Parame
 
         help.addOption(FILTER_REFERENCES, new BooleanParser(),
                 "Whether to remove references to content that is neither project content nor part of the export (defaults to true).");
+
+        help.addOption(INCLUDE_REFERRERS_OPTION, new BooleanParser(),
+                "Whether to search for and include all content that has references to the specified content (will only retain content that is project content if " + FILTER_REFERENCES + " is true).");
     }
 
     @Override
@@ -82,6 +87,8 @@ public class ExportParameters extends ListExportableParameters implements Parame
         exportPresent = args.getFlag(EXPORT_PRESENT_OPTION, false);
 
         filterReferences = args.getFlag(FILTER_REFERENCES, true);
+
+        setIncludeReferrers(args.getFlag(INCLUDE_REFERRERS_OPTION, false));
     }
 
     public File getOutputDirectory() {
@@ -115,6 +122,14 @@ public class ExportParameters extends ListExportableParameters implements Parame
                         return null;
                     }};
             }};
+    }
+
+    public void setIncludeReferrers(boolean includeReferrers) {
+        this.includeReferrers = includeReferrers;
+    }
+
+    public boolean isIncludeReferrers() {
+        return includeReferrers;
     }
 
     public boolean isFilterReferences() {

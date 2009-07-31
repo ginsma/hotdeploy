@@ -16,7 +16,7 @@ public class ListExportableParameters extends ProjectContentParameters {
         super.getHelp(help);
 
         help.addOption(SINCE_OPTION, new IntegerParser(),
-                "Return all content created since this version (optional).");
+            "Return all content created since this version (optional).");
     }
 
     public int getSince() {
