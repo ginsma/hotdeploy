@@ -117,7 +117,9 @@ public class DeploymentDirectoryDiscoverer {
             }
 
             private void addFile(URL resource, List<DeploymentDirectory> result) {
-                File file = new File(resource.getPath());
+                String path = resource.getPath().replace("%20", " ");
+
+                File file = new File(path);
 
                 if (!file.isDirectory()) {
                     file = file.getParentFile();
@@ -128,8 +130,7 @@ public class DeploymentDirectoryDiscoverer {
 
             private void addJar(String directory, URL resource,
                     List<DeploymentDirectory> result) {
-                String urlString = resource.getPath();
-
+                String urlString = resource.getPath().replace("%20", " ");
                 boolean isFile = urlString.startsWith("file:");
 
                 if (isFile) {

@@ -32,8 +32,8 @@ public class VerifierParameterParser implements ArgumentConsumer {
     public void parse() {
         new ArgumentParser(this, args).parse();
 
-        if (verifier.getFiles().isEmpty()) {
-            System.err.println("No found. Did you specify the parameter --"+ DIRECTORY_ARGUMENT + " is required.");
+        if (verifier.getFiles() == null || verifier.getFiles().isEmpty()) {
+            System.err.println("No files found. Did you specify the parameter --"+ DIRECTORY_ARGUMENT + "?");
             System.exit(1);
         }
     }

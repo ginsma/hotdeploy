@@ -27,6 +27,11 @@ public class FileDeploymentDirectory extends AbstractDeploymentObject implements
             return this;
         }
 
+        // we always support forward slashes, even on windows
+        if (File.separatorChar == '\\') {
+            fileName = fileName.replace('/', File.separatorChar);
+        }
+
         if (new File(fileName).isAbsolute()) {
             newFile = new File(fileName);
         }

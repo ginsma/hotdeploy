@@ -69,16 +69,20 @@ public class Deploy {
     }
 
     private void validateDirectory() {
-        if (!directory.exists() || !directory.canRead() || !directory.isDirectory()) {
-            System.err.println(directory.getAbsolutePath() + " is not a readable directory.");
-            System.exit(1);
+        if (directory == null) {
+            System.err.println("--dir not specified. Only importing resource files.");
+        }
+        else if (!directory.exists() || !directory.canRead() || !directory.isDirectory()) {
+            System.err.println(directory.getAbsolutePath() + " is not a readable directory. Only importing resource files.");
         }
     }
 
     public boolean deploy() throws ConnectException {
         validateDirectory();
 
-        System.err.println("Importing content in " + directory.getAbsolutePath() + " to Polopoly server " + connectionUrl + ".");
+        System.err.println("Importing content in " +
+                (directory == null ? "resource files" : directory.getAbsolutePath()) +
+                " to Polopoly server " + connectionUrl + ".");
 
         PolopolyClient polopolyClient = getPolopolyClient();
 
@@ -98,7 +102,10 @@ public class Deploy {
 
             List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
             discoverers.add(new ResourceFileDiscoverer());
-            discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
+
+            if (directory != null) {
+                discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
+            }
 
             Set<DeploymentFile> failingFiles =
                 deployer.discoverAndDeploy(discoverers);

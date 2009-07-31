@@ -7,6 +7,7 @@ public class DeployParameterParser implements ArgumentConsumer {
     private Deploy deploy;
 
     void parseParameters(Deploy deploy, String[] args) {
+        this.deploy = deploy;
         new ArgumentParser(this, args).parse();
     }
 

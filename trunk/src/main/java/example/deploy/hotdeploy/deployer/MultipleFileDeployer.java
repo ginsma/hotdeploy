@@ -150,7 +150,7 @@ public class MultipleFileDeployer
             try {
                 files.addAll(discoverer.getFilesToImport());
             } catch (NotApplicableException e) {
-                logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
+                logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage());
             }
         }
 

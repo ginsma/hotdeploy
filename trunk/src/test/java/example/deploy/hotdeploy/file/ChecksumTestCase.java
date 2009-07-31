@@ -18,7 +18,6 @@ public abstract class ChecksumTestCase extends TestCase {
     private DeploymentFile differentFile;
 
     public void testQuickChecksum() {
-        assertFalse(file.getQuickChecksum() == identicalFile.getQuickChecksum());
         assertFalse(file.getQuickChecksum() == differentFile.getQuickChecksum());
     }
 

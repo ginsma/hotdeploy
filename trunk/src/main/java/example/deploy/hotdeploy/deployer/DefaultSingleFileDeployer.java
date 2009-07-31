@@ -12,6 +12,7 @@ import org.w3c.dom.Document;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.ContentIdFactory;
+import com.polopoly.cm.VersionedContentId;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.Content;
 import com.polopoly.cm.client.impl.exceptions.LockException;
@@ -75,6 +76,18 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
         }
     }
 
+    private static Throwable contains(Throwable t, Class<?> klass) {
+        if (klass.isAssignableFrom(t.getClass())) {
+            return t;
+        }
+
+        if (t.getCause() != null) {
+            return contains(t.getCause(), klass);
+        }
+
+        return null;
+    }
+
     public boolean importAndHandleException(DeploymentFile fileToImport) throws FatalDeployException {
         if (importer == null) {
             throw new FatalDeployException("prepare() must be called before import.");
@@ -93,55 +106,60 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
         catch (ParserConfigurationException e) {
             throw new FatalDeployException(e);
         }
-        catch (LockException e) {
-            ContentId lockedId = null;
+        catch (Exception e) {
+            LockException lockException = (LockException) contains(e, LockException.class);
 
-            if (e.getLockInfo() != null) {
-                lockedId = e.getLockInfo().getLocked();
-            }
-            else {
-                int i = e.getMessage().indexOf("ContentId(");
+            if (lockException != null) {
+                ContentId lockedId = null;
 
-                if (i != -1) {
-                    int j = e.getMessage().indexOf(")", i+1);
+                if (lockException.getLockInfo() != null) {
+                    lockedId = lockException.getLockInfo().getLocked();
+                }
+                else {
+                    int i = e.getMessage().indexOf("ContentId(");
 
-                    String contentIdString = e.getMessage().substring(i + 10, j);
+                    if (i != -1) {
+                        int j = e.getMessage().indexOf(")", i+1);
 
-                    try {
-                        lockedId = ContentIdFactory.createContentId(contentIdString);
-                    }
-                    catch (IllegalArgumentException iae) {
-                        logger.log(Level.WARNING, "Could not parse content ID \"" + contentIdString + "\"in error message.");
+                        String contentIdString = e.getMessage().substring(i + 10, j);
+
+                        try {
+                            lockedId = ContentIdFactory.createContentId(contentIdString);
+                        }
+                        catch (IllegalArgumentException iae) {
+                            logger.log(Level.WARNING, "Could not parse content ID \"" + contentIdString + "\"in error message.");
+                        }
                     }
                 }
-            }
 
-            if (lockedId == null) {
-                logger.log(Level.WARNING,
-                    "Import of " + fileToImport + " failed: " + e.getMessage());
+                if (lockedId == null) {
+                    logger.log(Level.WARNING,
+                        "Import of " + fileToImport + " failed: " + e.getMessage());
 
-                return false;
-            }
+                    return false;
+                }
 
-            try {
-                Content content = (Content) server.getContent(lockedId);
+                try {
+                    Content content = (Content) server.getContent(
+                            new VersionedContentId(lockedId, VersionedContentId.LATEST_VERSION));
 
-                logger.log(Level.WARNING, lockedId.getContentIdString() +
-                    " was locked. Trying to unlock it.");
+                    logger.log(Level.WARNING, lockedId.getContentIdString() +
+                        " was locked. Trying to unlock it.");
 
-                content.forcedUnlock();
+                    content.forcedUnlock();
+                } catch (CMException cmException) {
+                    logger.log(Level.WARNING, "While unlocking: " + cmException, cmException);
+                    logger.log(Level.WARNING,
+                        "Import of " + fileToImport + " failed: " + e.getMessage());
+
+                    return false;
+                }
 
                 logger.log(Level.INFO, "Retrying import...");
 
                 return importAndHandleException(fileToImport);
-            } catch (CMException cmException) {
-                logger.log(Level.WARNING,
-                    "Import of " + fileToImport + " failed: " + e.getMessage());
-
-                return false;
             }
-        }
-        catch (Exception e) {
+
             logger.log(Level.WARNING,
                 "Import of " + fileToImport + " failed: " + e.getMessage(), e);
 

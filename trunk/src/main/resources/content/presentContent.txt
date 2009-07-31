@@ -87,6 +87,7 @@ p.siteengine.Page.contentxml.ot
 p.siteengine.Page.ot
 p.siteengine.Site.ot
 p.siteengine.Stylesheet.ot
+p.siteengine.MyDesktopTemplateCategory.d
 p.siteengine.layout.Header.ot
 p.siteengine.layout.Slot.ot
 p.BadWordsSingleton

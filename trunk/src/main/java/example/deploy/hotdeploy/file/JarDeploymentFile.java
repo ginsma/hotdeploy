@@ -31,6 +31,31 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements Deplo
     }
 
     public String getName() {
+        String entryName = null;
+
+        if (entry != null) {
+            entryName = entry.getName();
+
+            if (entryName.endsWith("/")) {
+                entryName = entryName.substring(0, entryName.length()-1);
+            }
+        }
+
+        String fileName = file.getName();
+
+        // for equality we don't consider the path of a JAR file, only its name, since it is likely to
+        // be found in multiple places such as the maven repository and web-inf/lib.
+        int fileSlash = fileName.lastIndexOf(File.separatorChar);
+
+        if (fileSlash != -1) {
+            fileName = fileName.substring(fileSlash+1);
+        }
+
+        return fileName + "!" + (entryName != null ? entryName : "n/a");
+    }
+
+    @Override
+    public String toString() {
         String name = null;
 
         if (entry != null) {
@@ -77,7 +102,7 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements Deplo
     }
 
     public long getQuickChecksum() {
-        return entry.getTime();
+        return entry.getCrc();
     }
 
     public long getSlowChecksum() {

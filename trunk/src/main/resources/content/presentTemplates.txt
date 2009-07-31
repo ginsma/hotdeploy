@@ -143,6 +143,7 @@ p.ModerationLevelDailyTimer
 p.ModerationLevelRelativeTimer
 p.ModerationLevelSelect
 p.ModerationLevelTimer
+p.ModerationState
 p.ModerationStateSelect
 p.MultiTypeDuplicator
 p.NameValue
@@ -196,6 +197,7 @@ p.SiteSelect
 p.SkinSelect
 p.StringBeanProperty
 p.SystemConfig
+p.TagCategory
 p.TagDefinition
 p.TagsTextInput
 p.TemplateCategory

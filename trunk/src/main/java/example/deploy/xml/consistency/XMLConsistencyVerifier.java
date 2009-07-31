@@ -58,8 +58,6 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
     }
 
     public void discoverFiles(FileDiscoverer discoverer) {
-        List<DeploymentFile> files = new ArrayList<DeploymentFile>();
-
         try {
             List<DeploymentFile> theseFiles = discoverer.getFilesToImport();
 
@@ -70,7 +68,7 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
                 logger.log(Level.INFO, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
             }
 
-            files.addAll(theseFiles);
+            filesToVerify = theseFiles;
         } catch (NotApplicableException e) {
             logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
         }

@@ -35,6 +35,9 @@ public class ArgumentParser {
             else if (parameter != null) {
                 consumer.argumentFound(parameter, arg);
             }
+            else {
+                System.err.println("Don't know what to do with parameter \"" + arg + "\". All parameters start with --.");
+            }
         }
 
         if (parameter != null) {

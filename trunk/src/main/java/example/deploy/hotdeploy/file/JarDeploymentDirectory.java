@@ -1,5 +1,6 @@
 package example.deploy.hotdeploy.file;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -22,6 +23,11 @@ public class JarDeploymentDirectory extends AbstractDeploymentObject implements 
     }
 
     public DeploymentObject getFile(String fileName) throws FileNotFoundException {
+        // zip files always use forward slashes. we can get confused under windows.
+        if (File.separatorChar == '\\') {
+            fileName = fileName.replace(File.separatorChar, '/');
+        }
+
         if (fileName.endsWith("/")) {
             fileName = fileName.substring(0, fileName.length()-1);
         }

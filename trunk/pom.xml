@@ -4,7 +4,7 @@
   <artifactId>hotdeploy</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy</name>
-  <version>9.13.0-DP4.1</version>
+  <version>9.13.0.2</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
@@ -35,6 +35,12 @@
       </plugin>
     </plugins>
   </build>
+  <distributionManagement>
+    <repository>
+      <id>prodtest00</id>
+      <url>scp://prodtest00/home/polopoly/www/solutions/maven2</url>
+    </repository>
+  </distributionManagement>
   <repositories>
     <repository>
       <id>maven</id>
@@ -61,7 +67,7 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>polopoly</artifactId>
-      <version>9.13.0-DP4</version>
+      <version>9.13.0</version>
     </dependency>
     <dependency>
         <groupId>jboss</groupId>
