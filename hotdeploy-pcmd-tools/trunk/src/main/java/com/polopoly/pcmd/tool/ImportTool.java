@@ -20,9 +20,11 @@ import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.state.CouldNotUpdateStateException;
 import example.deploy.hotdeploy.state.DirectoryState;
 import example.deploy.hotdeploy.state.DirectoryStateFetcher;
+import example.deploy.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
 import example.deploy.hotdeploy.state.NoFilesImportedDirectoryState;
 import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
@@ -124,7 +126,16 @@ public class ImportTool implements Tool<ImportParameters> {
             directoryStateFetcher =
                 new DirectoryStateFetcher(context.getPolicyCMServer());
 
-            return directoryStateFetcher.getDirectoryState();
+            DirectoryState directoryState = directoryStateFetcher.getDirectoryState();
+
+            String considerDirectoryJar = parameters.getConsiderJar();
+
+            if (considerDirectoryJar != null) {
+                directoryState = new DirectoryWillBecomeJarDirectoryState(directoryState,
+                    new FileDeploymentDirectory(parameters.getDirectory()), considerDirectoryJar);
+            }
+
+            return directoryState;
         }
     }
 
@@ -134,7 +145,7 @@ public class ImportTool implements Tool<ImportParameters> {
 
         try {
             if (parameters.isSearchResources()) {
-                deployResourceContent(context);
+                deployResourceContent(context, parameters.isOnlyJarResources());
             }
 
             List<DeploymentFile> files = parameters.discoverFiles();
@@ -175,10 +186,10 @@ public class ImportTool implements Tool<ImportParameters> {
                 directoryState);
     }
 
-    private void deployResourceContent(PolopolyContext context) throws FatalDeployException {
+    private void deployResourceContent(PolopolyContext context, boolean onlyJars) throws FatalDeployException {
         try {
             List<DeploymentFile> resourceFiles =
-                new ResourceFileDiscoverer().getFilesToImport(getClass().getClassLoader());
+                new ResourceFileDiscoverer(onlyJars).getFilesToImport(getClass().getClassLoader());
 
             if (resourceFiles.isEmpty()) {
                 return;

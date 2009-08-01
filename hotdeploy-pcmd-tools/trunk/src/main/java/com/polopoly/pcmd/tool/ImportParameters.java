@@ -18,12 +18,16 @@ public class ImportParameters extends FilesToDeployParameters {
     private boolean generateBootstrap = false;
     private boolean ignorePresent = false;
     private boolean force = false;
-    private boolean searchResources;
+    private boolean searchResources = true;
+    private boolean onlyJarResources = true;
+    private String considerJar;
 
     private static final String GENERATE_IMPORT_ORDER_PARAMETER = "order";
     private static final String GENERATE_BOOTSTRAP_PARAMETER = "bootstrap";
     private static final String FORCE_PARAMETER = "force";
     private static final String SEARCH_RESOURCES_PARAMETER = "searchclasspath";
+    private static final String CONSIDER_JAR = "considerjar";
+    private static final String ONLY_JAR_RESOURCES_PARAMETER = "onlyjarresources";
 
     @Override
     public void getHelp(ParameterHelp help) {
@@ -44,6 +48,11 @@ public class ImportParameters extends FilesToDeployParameters {
                 "Whether to not consider any content to already be present (this is only useful when analyzing Polopoly initxml content).");
         help.addOption(SEARCH_RESOURCES_PARAMETER, new BooleanParser(),
                 "Whether to deploy content present as resources on the class path (e.g. in JAR files). True by default.");
+        help.addOption(ONLY_JAR_RESOURCES_PARAMETER, new BooleanParser(),
+                "Whether (if " + SEARCH_RESOURCES_PARAMETER + " is true) to only deploy resources in JARS and not files on the class path. True by default.");
+        help.addOption(CONSIDER_JAR, null,
+                "Whether to treat the directory as if it were a JAR file with the specified name. " +
+                "This means that if the files were imported from that file before and are unchanged they will not be reimported.");
     }
 
     @Override
@@ -55,7 +64,9 @@ public class ImportParameters extends FilesToDeployParameters {
         setGenerateBootstrap(args.getFlag(GENERATE_BOOTSTRAP_PARAMETER, generateBootstrap));
         setIgnorePresent(args.getFlag(IGNORE_PRESENT, ignorePresent));
         setForce(args.getFlag(FORCE_PARAMETER, force));
-        setSearchResources(args.getFlag(SEARCH_RESOURCES_PARAMETER, true));
+        setSearchResources(args.getFlag(SEARCH_RESOURCES_PARAMETER, searchResources));
+        setOnlyJarResources(args.getFlag(ONLY_JAR_RESOURCES_PARAMETER, onlyJarResources));
+        setConsiderJar(args.getOptionString(CONSIDER_JAR, null));
     }
 
     public void setBootstrapNonCreated(boolean bootstrapNonCreated) {
@@ -104,5 +115,21 @@ public class ImportParameters extends FilesToDeployParameters {
 
     public boolean isSearchResources() {
         return searchResources;
+    }
+
+    public String getConsiderJar() {
+        return considerJar;
+    }
+
+    public void setConsiderJar(String considerJar) {
+        this.considerJar = considerJar;
+    }
+
+    public void setOnlyJarResources(boolean onlyJarResources) {
+        this.onlyJarResources = onlyJarResources;
+    }
+
+    public boolean isOnlyJarResources() {
+        return onlyJarResources;
     }
 }
