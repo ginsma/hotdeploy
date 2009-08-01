@@ -18,6 +18,11 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
     private static final String HOTDEPLOY_DEPENDENCY_NAME = "hotdeploy";
     private static final Logger logger =
         Logger.getLogger(ResourceFileDiscoverer.class.getName());
+    private boolean onlyJarResources;
+
+    public ResourceFileDiscoverer(boolean onlyJarResources) {
+        this.onlyJarResources = onlyJarResources;
+    }
 
     public List<DeploymentFile> getFilesToImport() throws NotApplicableException {
         ClassLoader classLoader = getClass().getClassLoader();
@@ -55,6 +60,12 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
 
         for (DeploymentDirectory directory : potentialDirectories) {
             logger.log(Level.FINE, "Scanning " + directory + " for content files.");
+
+            if (onlyJarResources && directory instanceof FileDeploymentDirectory) {
+                logger.log(Level.FINE, "Skipping " + directory + " since it's not in a JAR.");
+
+                continue;
+            }
 
             Collection<DeploymentDirectory> subDirectories =
                 discoverDirectories(directory);

@@ -23,7 +23,7 @@ public class WebApplicationDiscoverers {
                 DefaultDiscoveryDirectories.getDirectories()).getDiscoveredDirectories();
 
         List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
-        discoverers.add(new ResourceFileDiscoverer());
+        discoverers.add(new ResourceFileDiscoverer(false));
 
         for (DeploymentDirectory directory : directories) {
             discoverers.add(new ImportOrderFileDiscoverer(directory));

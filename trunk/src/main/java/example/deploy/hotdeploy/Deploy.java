@@ -18,8 +18,10 @@ import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.state.DirectoryState;
 import example.deploy.hotdeploy.state.DirectoryStateFetcher;
+import example.deploy.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
 
 /**
  * A deploy client with a main method that connects to Polopoly and does a deploy of all content.
@@ -32,6 +34,9 @@ public class Deploy {
     private String connectionUrl = "localhost";
     private String user = null;
     private String password = null;
+    private String considerDirectoryJar = null;
+    private boolean discoverResources = true;
+    private boolean onlyJarResources = true;
 
     private DirectoryState directoryState;
 
@@ -95,13 +100,21 @@ public class Deploy {
         try {
             DirectoryState directoryState = getDirectoryState(server);
 
+            if (considerDirectoryJar != null) {
+                directoryState = new DirectoryWillBecomeJarDirectoryState(directoryState,
+                        new FileDeploymentDirectory(directory), considerDirectoryJar);
+            }
+
             SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(server);
 
             MultipleFileDeployer deployer =
                 new MultipleFileDeployer(singleFileDeployer, directoryState);
 
             List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
-            discoverers.add(new ResourceFileDiscoverer());
+
+            if (discoverResources) {
+                discoverers.add(new ResourceFileDiscoverer(onlyJarResources));
+            }
 
             if (directory != null) {
                 discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
@@ -175,5 +188,29 @@ public class Deploy {
 
     public boolean isForce() {
         return force;
+    }
+
+    public String getConsiderDirectoryJar() {
+        return considerDirectoryJar;
+    }
+
+    public void setConsiderDirectoryJar(String considerDirectoryJar) {
+        this.considerDirectoryJar = considerDirectoryJar;
+    }
+
+    public boolean isDiscoverResources() {
+        return discoverResources;
+    }
+
+    public void setDiscoverResources(boolean discoverResources) {
+        this.discoverResources = discoverResources;
+    }
+
+    public boolean isOnlyJarResources() {
+        return onlyJarResources;
+    }
+
+    public void setOnlyJarResources(boolean onlyJarResources) {
+        this.onlyJarResources = onlyJarResources;
     }
 }

@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.Adler32;
+import java.util.zip.CRC32;
 
 public class FileDeploymentFile extends AbstractDeploymentObject implements DeploymentFile {
     private static final int BUF_SIZE = 1024 * 64;
@@ -55,7 +55,7 @@ public class FileDeploymentFile extends AbstractDeploymentObject implements Depl
     }
 
     public long getSlowChecksum() {
-        Adler32 checksum = new Adler32();
+        CRC32 checksum = new CRC32();
 
         byte[] buffer = new byte[BUF_SIZE];
 

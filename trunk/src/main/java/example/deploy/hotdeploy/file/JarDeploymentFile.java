@@ -102,7 +102,7 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements Deplo
     }
 
     public long getQuickChecksum() {
-        return entry.getCrc();
+        return entry.getTime();
     }
 
     public long getSlowChecksum() {

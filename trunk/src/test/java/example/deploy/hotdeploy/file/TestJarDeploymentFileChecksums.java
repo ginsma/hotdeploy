@@ -31,10 +31,19 @@ public class TestJarDeploymentFileChecksums extends ChecksumTestCase {
     }
 
     public void testEqualityBetweenJars() {
-        assertEquals(identicalFileInOtherJar.getQuickChecksum(), identicalFile.getQuickChecksum());
+        // don't test the quick checksum. it's ok even if it is different.
+
         assertEquals(identicalFileInOtherJar.getSlowChecksum(),  identicalFile.getSlowChecksum());
-        assertEquals(differentFileInOtherJar.getQuickChecksum(), differentFile.getQuickChecksum());
         assertEquals(differentFileInOtherJar.getSlowChecksum(),  differentFile.getSlowChecksum());
+    }
+
+    public void testEqualityBetweenJarAndFile() throws IOException {
+        TestFileDeploymentFileChecksums fileTest = new TestFileDeploymentFileChecksums();
+        fileTest.setUp();
+
+        // don't test the quick checksum. it's ok even if it is different.
+        assertEquals(fileTest.differentFile.getSlowChecksum(), differentFile.getSlowChecksum());
+        assertEquals(fileTest.identicalFile.getSlowChecksum(), identicalFile.getSlowChecksum());
     }
 
     @Override

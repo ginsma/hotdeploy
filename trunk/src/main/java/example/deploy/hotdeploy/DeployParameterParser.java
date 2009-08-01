@@ -12,7 +12,13 @@ public class DeployParameterParser implements ArgumentConsumer {
     }
 
     public void argumentFound(String parameter, String value) {
-        if (parameter.equals("force")) {
+        if (parameter.equals("discoverresources")) {
+            deploy.setDiscoverResources((value == null ? true : Boolean.parseBoolean(value)));
+        }
+        else if (parameter.equals("onlyjarresources")) {
+            deploy.setOnlyJarResources((value == null ? true : Boolean.parseBoolean(value)));
+        }
+        else if (parameter.equals("force")) {
             deploy.setForce(true);
 
             if (value != null) {
@@ -40,6 +46,9 @@ public class DeployParameterParser implements ArgumentConsumer {
             else if (parameter.equals("dir")) {
                 deploy.setDirectoryName(value);
             }
+            else if (parameter.equals("considerjar")) {
+                deploy.setConsiderDirectoryJar(value);
+            }
             else {
                 System.err.println("Unknown parameter " + parameter + ".");
                 printParameterHelp();
@@ -56,5 +65,8 @@ public class DeployParameterParser implements ArgumentConsumer {
         System.err.println("  --user The user to log in to import (only required if content manipulates ACLs or users).");
         System.err.println("  --password If user is specified, the password of the user.");
         System.err.println("  --force Import all content regardless of whether it had been modified.");
+        System.err.println("  --considerjar Consider the imported files as being in a JAR with the specified name.");
+        System.err.println("  --discoverresources Whether to import from the class path (default to true).");
+        System.err.println("  --onlyjarresources Whether (if discoverresources is true) to import only JAR resources and not files on the classpath. Default to true.");
     }
 }
