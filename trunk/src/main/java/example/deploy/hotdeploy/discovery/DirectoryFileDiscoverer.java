@@ -79,8 +79,8 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
 
         for (DeploymentObject file : files) {
             if (file instanceof DeploymentDirectory) {
-                try {
-                    logger.log(Level.INFO, "Recursing into " + file);
+                try { 
+                    logger.log(Level.FINE, "Recursing into " + file);
 
                     getFilesToImport((DeploymentDirectory) file, collector);
                 } catch (NotApplicableException e) {
