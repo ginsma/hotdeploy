@@ -36,4 +36,8 @@ public class FallbackDiscoverer implements FileDiscoverer {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return primaryDiscoverer + " or " + secondaryDiscoverer;
+    }
 }
