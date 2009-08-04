@@ -132,7 +132,8 @@ public class MultipleFileDeployer
         }
 
         if (unmodifiedFiles > 0) {
-            result.append(count(unmodifiedFiles, "file") + " had not been modified and was not imported. ");
+            result.append(count(unmodifiedFiles, "file") + " had not been modified and " +
+                    (unmodifiedFiles == 1 ? "was" : "were") + " not imported. ");
         }
 
         if (!failedFiles.isEmpty()) {
