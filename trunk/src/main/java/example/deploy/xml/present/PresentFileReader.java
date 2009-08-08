@@ -137,15 +137,13 @@ public class PresentFileReader {
             while (line != null) {
                 line = line.trim();
 
-                if (ignoreLine(line)) {
-                    continue;
-                }
-
-                if (major == Major.INPUT_TEMPLATE) {
-                    presentFilesAware.presentTemplate(line);
-                }
-                else {
-                    presentFilesAware.presentContent(line);
+                if (!ignoreLine(line)) {
+                    if (major == Major.INPUT_TEMPLATE) {
+                        presentFilesAware.presentTemplate(line);
+                    }
+                    else {
+                        presentFilesAware.presentContent(line);
+                    }
                 }
 
                 line = reader.readLine();
