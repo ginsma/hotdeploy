@@ -24,7 +24,7 @@ public class HotdeployListParameters extends FilesToDeployParameters {
             "If specified, limits the list to content of a single major.");
 
         help.addOption(VERBOSE_OPTION, new BooleanParser(),
-                "Whether to print major names of objects.");
+            "Whether to print major names of objects.");
     }
 
     @Override

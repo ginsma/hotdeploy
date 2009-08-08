@@ -53,7 +53,7 @@ public class HotdeployListTool implements Tool<HotdeployListParameters> {
     }
 
     public String getHelp() {
-        return "Returns a list of all the content defined in the specified directory.";
+        return "Lists all content defined in content or template XML in the specified directory.";
     }
 
 }

@@ -2,9 +2,11 @@ package com.polopoly.pcmd.tool;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.polopoly.cm.ContentId;
@@ -42,6 +44,15 @@ public class SpiderTool implements Tool<SpiderParameters> {
 
         filter = new AndContentIdFilter(filter, new NonTemplateContentIdFilter());
 
+        final Set<ContentId> skip = parameters.getSkip();
+
+        if (!skip.isEmpty()) {
+            filter = new AndContentIdFilter(filter, new ContentIdFilter() {
+                public boolean accept(ContentId contentId) {
+                    return !skip.contains(contentId.getContentId());
+                }});
+        }
+
         Set<ContentId> spideredIds = new HashSet<ContentId>();
         List<ContentId> spiderQueue = new ArrayList<ContentId>();
 
@@ -53,8 +64,26 @@ public class SpiderTool implements Tool<SpiderParameters> {
             spiderQueue.add(contentId);
         }
 
+        Map<ContentId, ContentId> sourceFor = new HashMap<ContentId, ContentId>();
+
         while (!spiderQueue.isEmpty()) {
             ContentId contentId = spiderQueue.remove(0);
+
+            if (filter.accept(contentId)) {
+                spideredIds.add(contentId);
+
+                System.out.print(AbstractContentIdField.get(contentId, context));
+
+                if (parameters.isVerbose()) {
+                    ContentId source = sourceFor.get(contentId);
+
+                    if (source != null) {
+                        System.out.print(" (from " + AbstractContentIdField.get(source, context) + ")");
+                    }
+                }
+
+                System.out.println();
+            }
 
             try {
                 Set<ContentId> candidateIds = allReferences(contentId, context);
@@ -62,17 +91,9 @@ public class SpiderTool implements Tool<SpiderParameters> {
                 for (ContentId candidateId : candidateIds) {
                     candidateId = candidateId.getContentId();
 
-                    if (!spideredIds.contains(candidateId) &&
-                            filter.accept(candidateId)) {
-                        spideredIds.add(candidateId);
+                    if (!spideredIds.contains(candidateId) && !spiderQueue.contains(candidateId) && filter.accept(candidateId)) {
                         spiderQueue.add(candidateId);
-
-                        System.out.print(AbstractContentIdField.get(candidateId, context));
-
-                        if (parameters.isVerbose()) {
-                            System.out.print(" ");
-                            System.out.println(" (from " + AbstractContentIdField.get(contentId, context) + ")");
-                        }
+                        sourceFor.put(candidateId, contentId);
                     }
                 }
             }
