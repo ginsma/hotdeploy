@@ -17,6 +17,7 @@ import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.Content;
 import com.polopoly.cm.client.impl.exceptions.LockException;
 import com.polopoly.cm.client.impl.exceptions.PermissionDeniedException;
+import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.xml.io.DispatchingDocumentImporter;
 import com.polopoly.common.xml.DOMUtil;
@@ -24,10 +25,15 @@ import com.polopoly.common.xml.DOMUtil;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
+import example.deploy.hotdeploy.text.CMServerValidationContext;
+import example.deploy.hotdeploy.text.TextContentDeployer;
+import example.deploy.hotdeploy.text.TextContentParser;
+import example.deploy.hotdeploy.text.TextContentSet;
 
 public class DefaultSingleFileDeployer implements SingleFileDeployer {
     private static final Logger logger =
         Logger.getLogger(DefaultSingleFileDeployer.class.getName());
+    private static final String TEXT_CONTENT_EXTENSION = "content";
     private PolicyCMServer server;
     private DispatchingDocumentImporter importer;
 
@@ -56,6 +62,18 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
     }
 
     private void importFile(DeploymentFile fileToImport) throws Exception {
+        if (fileToImport.getName().endsWith('.' + TEXT_CONTENT_EXTENSION)) {
+            TextContentSet textContent = new TextContentParser(fileToImport.getInputStream()).parse();
+
+            textContent.validate(new CMServerValidationContext(server));
+
+            for(Policy createdPolicy : new TextContentDeployer(textContent, server).deploy()) {
+               contentCommitted(createdPolicy.getContentId());
+            }
+
+            return;
+        }
+
         setImporterBaseUrl(importer, fileToImport);
 
         DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
@@ -74,6 +92,9 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
                 null,
                 ((FileDeploymentFile) fileToImport).getDirectory());
         }
+    }
+
+    protected void contentCommitted(ContentId createdId) {
     }
 
     private static Throwable contains(Throwable t, Class<?> klass) {

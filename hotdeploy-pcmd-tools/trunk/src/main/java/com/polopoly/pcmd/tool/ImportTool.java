@@ -7,8 +7,9 @@ import static example.deploy.hotdeploy.util.Plural.plural;
 import java.io.IOException;
 import java.util.List;
 
-import com.polopoly.cm.policy.PolicyCMServer;
+import com.polopoly.cm.ContentId;
 import com.polopoly.pcmd.bootstrap.BootstrapFileGenerator;
+import com.polopoly.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 
@@ -33,10 +34,12 @@ public class ImportTool implements Tool<ImportParameters> {
     private final class LoggingSingleFileDeployer extends DefaultSingleFileDeployer {
         private int fileCount;
         private int imported;
+        private PolopolyContext context;
 
-        private LoggingSingleFileDeployer(PolicyCMServer server, int fileCount) {
-            super(server);
+        private LoggingSingleFileDeployer(PolopolyContext context, int fileCount) {
+            super(context.getPolicyCMServer());
 
+            this.context = context;
             this.fileCount = fileCount;
         }
 
@@ -57,6 +60,11 @@ public class ImportTool implements Tool<ImportParameters> {
             System.out.println(message);
 
             return super.importAndHandleException(fileToImport);
+        }
+
+        @Override
+        protected void contentCommitted(ContentId createdId) {
+            System.out.println(AbstractContentIdField.get(createdId, context));
         }
 
         private String getPercentage(int i) {
@@ -182,7 +190,7 @@ public class ImportTool implements Tool<ImportParameters> {
 
     private MultipleFileDeployer createDeployer(PolopolyContext context, int fileCount) {
         return new MultipleFileDeployer(
-                new LoggingSingleFileDeployer(context.getPolicyCMServer(), fileCount),
+                new LoggingSingleFileDeployer(context, fileCount),
                 directoryState);
     }
 
