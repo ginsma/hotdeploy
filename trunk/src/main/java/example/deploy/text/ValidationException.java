@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.text;
+package example.deploy.text;
 
 
 public class ValidationException extends Exception {

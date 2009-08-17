@@ -25,15 +25,14 @@ import com.polopoly.common.xml.DOMUtil;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
-import example.deploy.hotdeploy.text.CMServerValidationContext;
-import example.deploy.hotdeploy.text.TextContentDeployer;
-import example.deploy.hotdeploy.text.TextContentParser;
-import example.deploy.hotdeploy.text.TextContentSet;
+import example.deploy.text.CMServerValidationContext;
+import example.deploy.text.TextContentDeployer;
+import example.deploy.text.TextContentParser;
+import example.deploy.text.TextContentSet;
 
 public class DefaultSingleFileDeployer implements SingleFileDeployer {
     private static final Logger logger =
         Logger.getLogger(DefaultSingleFileDeployer.class.getName());
-    private static final String TEXT_CONTENT_EXTENSION = "content";
     private PolicyCMServer server;
     private DispatchingDocumentImporter importer;
 
@@ -62,7 +61,7 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
     }
 
     private void importFile(DeploymentFile fileToImport) throws Exception {
-        if (fileToImport.getName().endsWith('.' + TEXT_CONTENT_EXTENSION)) {
+        if (fileToImport.getName().endsWith('.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
             TextContentSet textContent = new TextContentParser(fileToImport.getInputStream()).parse();
 
             textContent.validate(new CMServerValidationContext(server));

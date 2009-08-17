@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.text;
+package example.deploy.text;
 
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.client.CMException;

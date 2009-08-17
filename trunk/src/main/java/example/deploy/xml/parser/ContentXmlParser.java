@@ -15,6 +15,10 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.text.ParseException;
+import example.deploy.text.TextContentParseCallbackAdapter;
+import example.deploy.text.TextContentParser;
+import example.deploy.text.TextContentSet;
 
 public class ContentXmlParser implements DeploymentFileParser {
     private static final Logger logger =
@@ -31,23 +35,31 @@ public class ContentXmlParser implements DeploymentFileParser {
         InputStream inputStream = null;
 
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
             inputStream = file.getInputStream();
-            Document document = builder.parse(inputStream);
 
-            Element root = document.getDocumentElement();
-
-            String rootName = root.getNodeName();
-
-            if (rootName.equals("template-definition")) {
-                new TemplateDefinitionParser(file, root, callback);
-            }
-            else if (rootName.equals("batch")) {
-                new XmlIoParser(file, root, callback);
+            if (file.getName().endsWith('.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
+                ParseContext parseContext = new ParseContext(file);
+                TextContentSet contentSet = new TextContentParser(inputStream).parse();
+                new TextContentParseCallbackAdapter(contentSet).callback(callback, parseContext);
             }
             else {
-                logger.log(Level.WARNING, "File " + file + " was of unknown type.");
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document document = builder.parse(inputStream);
+
+                Element root = document.getDocumentElement();
+
+                String rootName = root.getNodeName();
+
+                if (rootName.equals("template-definition")) {
+                    new TemplateDefinitionParser(file, root, callback);
+                }
+                else if (rootName.equals("batch")) {
+                    new XmlIoParser(file, root, callback);
+                }
+                else {
+                    logger.log(Level.WARNING, "File " + file + " was of unknown type.");
+                }
             }
         } catch (FileNotFoundException e) {
             handleException(file, e);
@@ -56,6 +68,8 @@ public class ContentXmlParser implements DeploymentFileParser {
         } catch (SAXException e) {
             handleException(file, e);
         } catch (IOException e) {
+            handleException(file, e);
+        } catch (ParseException e) {
             handleException(file, e);
         } finally {
             if (inputStream != null) {

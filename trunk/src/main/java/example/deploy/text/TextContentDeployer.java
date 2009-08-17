@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.text;
+package example.deploy.text;
 
 import static com.polopoly.cm.VersionedContentId.LATEST_VERSION;
 
@@ -50,6 +50,8 @@ public class TextContentDeployer {
                     Policy newVersionPolicy = createNewVersion(textContent);
 
                     newVersionById.put(textContent.getId(), newVersionPolicy);
+
+                    createPublishInVersion(textContent, newVersionById);
                 }
                 catch (CMException e) {
                     throw new DeployException("While creating " + textContent.getId() + ": " + e, e);
@@ -58,9 +60,28 @@ public class TextContentDeployer {
 
             for (TextContent textContent : contentSet) {
                 try {
-                    deploy(textContent, newVersionById.get(textContent.getId()));
+                    Policy newVersion = newVersionById.get(textContent.getId());
+
+                    deploy(textContent, newVersion);
                 } catch (CMException e) {
                     throw new DeployException("While importing " + textContent.getId() + ": " + e, e);
+                }
+            }
+
+            // do this in a separate step since the deploy step clears content lists and we might be deploying
+            // to another object in the same batch.
+            for (TextContent textContent : contentSet) {
+                try {
+                    if (textContent.getPublishIn() != null) {
+                        String publishInExternalId = ((ExternalIdReference) textContent.getPublishIn()).getExternalId();
+
+                        Policy newVersion = newVersionById.get(textContent.getId());
+                        Policy publishInVersion = newVersionById.get(publishInExternalId);
+
+                        publish(newVersion, publishInVersion, textContent.getPublishInGroup());
+                    }
+                } catch (CMException e) {
+                    throw new DeployException("While publishing " + textContent.getId() + ": " + e, e);
                 }
             }
 
@@ -104,6 +125,46 @@ public class TextContentDeployer {
                     }
                 }
             }
+        }
+    }
+
+    private void publish(Policy publish, Policy publishIn,
+            String publishInGroup) throws CMException {
+        Content publishInContent = publishIn.getContent();
+        ContentList contentList;
+
+        if (publishInGroup != null) {
+            contentList = publishInContent.getContentList(publishInGroup);
+        }
+        else {
+            contentList = publishInContent.getContentList();
+        }
+
+        if (!contains(contentList, publish.getContentId())) {
+            contentList.add(contentList.size(), new ContentReference(publish.getContentId().getContentId(), null));
+        }
+    }
+
+    private boolean contains(ContentList contentList, ContentId contentId) throws CMException {
+        for (int i = contentList.size()-1; i >= 0; i--) {
+            if (contentList.getEntry(i).getReferredContentId().equalsIgnoreVersion(contentId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void createPublishInVersion(TextContent textContent,
+            Map<String, Policy> newVersionById) throws CMException {
+        Reference publishIn = textContent.getPublishIn();
+        String publishInExternalId = ((ExternalIdReference) publishIn).getExternalId();
+
+        if (publishIn != null && !newVersionById.containsKey(publishInExternalId)) {
+            Policy newPublishInVersion =
+                createNewVersionOfExistingContent(publishIn.resolve(server));
+
+            newVersionById.put(publishInExternalId, newPublishInVersion);
         }
     }
 
@@ -215,14 +276,26 @@ public class TextContentDeployer {
             newVersionPolicy.getContent().setExternalId(textContent.getId());
         }
         else {
-            LockInfo lockInfo = server.getContent(new VersionedContentId(contentId, LATEST_VERSION)).getLockInfo();
-
-            if (lockInfo != null && !lockInfo.getLocker().equals(server.getCurrentCaller())) {
-                ((Content) server.getContent(contentId)).forcedUnlock();
-            }
-
-            newVersionPolicy = server.createContentVersion(contentId);
+            newVersionPolicy = createNewVersionOfExistingContent(contentId);
         }
+
+        return newVersionPolicy;
+    }
+
+    private Policy createNewVersionOfExistingContent(ContentId contentId) throws CMException {
+        VersionedContentId latestVersion = new VersionedContentId(contentId, LATEST_VERSION);
+
+        latestVersion = server.translateSymbolicContentId(latestVersion);
+
+        Policy newVersionPolicy;
+        LockInfo lockInfo = server.getContent(latestVersion).getLockInfo();
+
+        if (lockInfo != null && !lockInfo.getLocker().equals(server.getCurrentCaller())) {
+            ((Content) server.getContent(contentId)).forcedUnlock();
+        }
+
+        newVersionPolicy = server.createContentVersion(latestVersion);
+
         return newVersionPolicy;
     }
 

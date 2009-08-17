@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.text;
+package example.deploy.text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -163,6 +163,17 @@ public class TextContent {
                 throw v;
             }
         }
+
+        if (publishIn != null) {
+            try {
+                publishIn.validate(context);
+            }
+            catch (ValidationException v) {
+                v.setContext("publish content of " + this);
+
+                throw v;
+            }
+        }
     }
 
     public String getTemplateId() {
@@ -171,6 +182,22 @@ public class TextContent {
 
     public void setTemplateId(String templateId) {
         this.templateId = templateId;
+    }
+
+    public Reference getPublishIn() {
+        return publishIn;
+    }
+
+    public void setPublishIn(Reference publishIn) {
+        this.publishIn = publishIn;
+    }
+
+    public String getPublishInGroup() {
+        return publishInGroup;
+    }
+
+    public void setPublishInGroup(String publishInGroup) {
+        this.publishInGroup = publishInGroup;
     }
 
     @Override

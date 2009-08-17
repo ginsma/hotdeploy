@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.text;
+package example.deploy.text;
 
 import java.util.HashSet;
 import java.util.Set;

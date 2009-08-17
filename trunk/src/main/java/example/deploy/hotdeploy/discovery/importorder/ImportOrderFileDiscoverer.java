@@ -16,14 +16,15 @@ import example.deploy.hotdeploy.file.DeploymentObject;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
+import example.deploy.text.TextContentParser;
 
 public class ImportOrderFileDiscoverer implements FileDiscoverer {
     private static final Logger logger =
         Logger.getLogger(ImportOrderFileDiscoverer.class.getName());
 
     public static final String IMPORT_ORDER_FILE_NAME = "_import_order";
-
     private static final String XML_EXTENSION = ".xml";
+    private static final String TEXT_EXTENSION = '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION;
 
     private DeploymentDirectory directory;
 
@@ -109,7 +110,7 @@ public class ImportOrderFileDiscoverer implements FileDiscoverer {
     private static int addFile(ArrayList<DeploymentFile> list, DeploymentFile file) {
         int result = 0;
 
-        if (file.getName().endsWith(XML_EXTENSION) && !list.contains(file)) {
+        if (isContent(file) && !list.contains(file)) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.log(Level.FINEST, "Adding file " + file + ".");
             }
@@ -119,6 +120,11 @@ public class ImportOrderFileDiscoverer implements FileDiscoverer {
         }
 
         return result;
+    }
+
+    private static boolean isContent(DeploymentFile file) {
+        return file.getName().endsWith(XML_EXTENSION) ||
+             file.getName().endsWith(TEXT_EXTENSION);
     }
 
     @Override

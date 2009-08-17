@@ -8,6 +8,7 @@ com.polopoly.pcmd.tool.HotdeployNormalizeTool
 com.polopoly.pcmd.tool.ImportTool
 com.polopoly.pcmd.tool.ExportTool
 com.polopoly.pcmd.tool.ListExportableTool
+com.polopoly.pcmd.tool.ListDeepcopyObjectsTool
+com.polopoly.pcmd.tool.SpiderTool
 com.polopoly.pcmd.tool.HotdeployListTool
 com.polopoly.pcmd.tool.ExcludeProjectContentTool
-com.polopoly.pcmd.tool.SpiderTool

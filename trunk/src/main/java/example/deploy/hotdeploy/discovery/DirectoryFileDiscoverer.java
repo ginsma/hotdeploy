@@ -12,11 +12,13 @@ import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.DeploymentObject;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
+import example.deploy.text.TextContentParser;
 
 public class DirectoryFileDiscoverer implements FileDiscoverer {
     private static final Logger logger =
         Logger.getLogger(DirectoryFileDiscoverer.class.getName());
     private static final String XML_SUFFIX = ".xml";
+    private static final String TEXT_SUFFIX = '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION;
     private DeploymentDirectory directory;
 
     public DirectoryFileDiscoverer(DeploymentDirectory directory) {
@@ -56,19 +58,19 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
         List<DeploymentFile> result = new ArrayList<DeploymentFile>();
 
         if (files.length == 0) {
-            throw new NotApplicableException("There were no XML files in " + directory + ".");
+            throw new NotApplicableException("There were no content files in " + directory + ".");
         }
 
         int fileCount = 0;
 
         for (DeploymentObject file : files) {
-            if (file instanceof DeploymentFile && file.getName().endsWith(XML_SUFFIX)) {
+            if (file instanceof DeploymentFile && isContent(file)) {
                 result.add((DeploymentFile) file);
                 fileCount++;
             }
         }
 
-        logger.log(Level.INFO, "Found " + fileCount + " XML files in " + directory + ".");
+        logger.log(Level.INFO, "Found " + fileCount + " content files in " + directory + ".");
 
         // make sure we import files with "template" in their names first,
         // since the content import is likely to be dependent on presence
@@ -79,7 +81,7 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
 
         for (DeploymentObject file : files) {
             if (file instanceof DeploymentDirectory) {
-                try { 
+                try {
                     logger.log(Level.FINE, "Recursing into " + file);
 
                     getFilesToImport((DeploymentDirectory) file, collector);
@@ -87,6 +89,11 @@ public class DirectoryFileDiscoverer implements FileDiscoverer {
                 }
             }
         }
+    }
+
+    private boolean isContent(DeploymentObject file) {
+        return file.getName().endsWith(XML_SUFFIX) ||
+            file.getName().endsWith(TEXT_SUFFIX);
     }
 
     /**

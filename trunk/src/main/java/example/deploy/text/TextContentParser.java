@@ -1,5 +1,5 @@
 
-package example.deploy.hotdeploy.text;
+package example.deploy.text;
 
 import static com.polopoly.cm.server.ServerNames.CONTENT_ATTRG_SYSTEM;
 import static com.polopoly.cm.server.ServerNames.CONTENT_ATTR_NAME;
@@ -14,6 +14,8 @@ import com.polopoly.cm.server.ServerNames;
 public class TextContentParser {
     private static final char SEPARATOR_CHAR = ':';
 
+    public static final String TEXT_CONTENT_FILE_EXTENSION = "content";
+
     private static final String ID_PREFIX = "id";
     private static final String INPUT_TEMPLATE_PREFIX = "inputtemplate";
     private static final String NAME_PREFIX = "name";
@@ -22,6 +24,7 @@ public class TextContentParser {
     private static final String REFERENCE_PREFIX = "ref";
     private static final String LIST_PREFIX = "list";
     private static final String TEMPLATE_PREFIX = "template";
+    private static final String PUBLISH_PREFIX = "publish";
 
     private BufferedReader reader;
 
@@ -110,12 +113,29 @@ public class TextContentParser {
                     " (rather than the provided " + (fields.length-1) + ").");
             }
 
-            currentContent.getList(group).add(new ExternalIdReference(fields[2]));
+            currentContent.getList(group).add(new ExternalIdReference(fields[fields.length-1]));
         }
         else if (prefix.equals(TEMPLATE_PREFIX)) {
             assertFields(2, fields);
 
             currentContent.setTemplateId(fields[1]);
+        }
+        else if (prefix.equals(PUBLISH_PREFIX)) {
+            String group = null;
+
+            if (fields.length == 2) {
+                group = ServerNames.DEPARTMENT_ATTRG_SYSTEM;
+            }
+            else if (fields.length == 3) {
+                group = fields[1];
+            }
+            else {
+                fail("Expected one or two parameters for operation " + fields[0] +
+                    " (rather than the provided " + (fields.length-1) + ").");
+            }
+
+            currentContent.setPublishIn(new ExternalIdReference(fields[fields.length-1]));
+            currentContent.setPublishInGroup(group);
         }
         else {
             fail("Line should start with " + ID_PREFIX + ", " + INPUT_TEMPLATE_PREFIX + ", " +

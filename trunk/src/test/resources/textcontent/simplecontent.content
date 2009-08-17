@@ -19,4 +19,5 @@ name:Test Site
 ref:pageLayout:selected:example.DefaultPageLayout
 list:polopoly.Department:textcontent.simplearticle
 list:polopoly.Department:textcontent.simplearticle2
+publish:p.siteengine.Sites.d
 
