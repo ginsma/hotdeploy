@@ -49,6 +49,10 @@ public class TextContentParser {
     }
 
     private void parseLine(String line) throws ParseException {
+        if (line.startsWith("#")) {
+            return;
+        }
+
         String[] fields = line.split(""+SEPARATOR_CHAR);
 
         if (fields.length < 2) {
