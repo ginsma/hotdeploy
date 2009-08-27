@@ -158,13 +158,16 @@ public class TextContentDeployer {
     private void createPublishInVersion(TextContent textContent,
             Map<String, Policy> newVersionById) throws CMException {
         Reference publishIn = textContent.getPublishIn();
-        String publishInExternalId = ((ExternalIdReference) publishIn).getExternalId();
 
-        if (publishIn != null && !newVersionById.containsKey(publishInExternalId)) {
-            Policy newPublishInVersion =
-                createNewVersionOfExistingContent(publishIn.resolve(server));
+        if (publishIn != null) {
+            String publishInExternalId = ((ExternalIdReference) publishIn).getExternalId();
 
-            newVersionById.put(publishInExternalId, newPublishInVersion);
+            if (!newVersionById.containsKey(publishInExternalId)) {
+                Policy newPublishInVersion =
+                    createNewVersionOfExistingContent(publishIn.resolve(server));
+
+                newVersionById.put(publishInExternalId, newPublishInVersion);
+            }
         }
     }
 
@@ -335,7 +338,10 @@ public class TextContentDeployer {
         String majorString = inputTemplate.getComponent("polopoly.Client", "major");
 
         if (majorString == null) {
-            throw new DeployException("The input template " + inputTemplate.getName() + " did not specify its major (type). Assuming \"Article\".");
+            logger.log(Level.WARNING, "The input template " + inputTemplate.getName() +
+                " did not specify its major (type). Assuming \"Article\".");
+
+            majorString = "Article";
         }
 
         try {
