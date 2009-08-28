@@ -66,7 +66,7 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 
             textContent.validate(new CMServerValidationContext(server));
 
-            for(Policy createdPolicy : new TextContentDeployer(textContent, server).deploy()) {
+            for (Policy createdPolicy : new TextContentDeployer(textContent, server).deploy()) {
                contentCommitted(createdPolicy.getContentId());
             }
 
@@ -178,6 +178,12 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
                 logger.log(Level.INFO, "Retrying import...");
 
                 return importAndHandleException(fileToImport);
+            }
+
+            String message = e.getMessage();
+
+            if (message == null) {
+                message = e.toString();
             }
 
             logger.log(Level.WARNING,

@@ -92,6 +92,14 @@ class TemplateDefinitionParser extends AbstractParser {
                     }
                 }
             }
+            else if (nodeName.equals("idparam")) {
+                parseContentIdReference(context, field);
+            }
+            else if (nodeName.equals("idparam-list")) {
+                for (Element id : children(field)) {
+                    parseContentIdReference(context, id);
+                }
+            }
         }
     }
 

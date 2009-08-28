@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import example.deploy.hotdeploy.client.Major;
+
 public class TextContent {
+    private Major major = Major.UNKNOWN;
     private String id;
     private Reference securityParent;
     private Reference inputTemplate;
@@ -16,8 +19,7 @@ public class TextContent {
     private Map<String, List<Reference>> lists = new HashMap<String, List<Reference>>();
     private Map<String, byte[]> files = new HashMap<String, byte[]>();
 
-    private Reference publishIn;
-    private String publishInGroup;
+    private List<Publishing> publishings = new ArrayList<Publishing>();
 
     private String templateId;
 
@@ -164,9 +166,9 @@ public class TextContent {
             }
         }
 
-        if (publishIn != null) {
+        for (Publishing publishing : publishings) {
             try {
-                publishIn.validate(context);
+                publishing.getPublishIn().validate(context);
             }
             catch (ValidationException v) {
                 v.setContext("publish content of " + this);
@@ -184,20 +186,20 @@ public class TextContent {
         this.templateId = templateId;
     }
 
-    public Reference getPublishIn() {
-        return publishIn;
+    public List<Publishing> getPublishings() {
+        return publishings;
     }
 
-    public void setPublishIn(Reference publishIn) {
-        this.publishIn = publishIn;
+    public void addPublishing(Publishing publishing) {
+        publishings.add(publishing);
     }
 
-    public String getPublishInGroup() {
-        return publishInGroup;
+    public Major getMajor() {
+        return major;
     }
 
-    public void setPublishInGroup(String publishInGroup) {
-        this.publishInGroup = publishInGroup;
+    public void setMajor(Major major) {
+        this.major = major;
     }
 
     @Override

@@ -11,19 +11,20 @@ import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.Content;
 import com.polopoly.cm.client.impl.exceptions.EJBFinderException;
 import com.polopoly.cm.client.impl.exceptions.LockException;
+import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 
 public class DefaultFileChecksums implements FileChecksums {
     public static final String CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME = "hotdeploy.FileChecksumsSingleton";
-    public static final String FILE_CHECKSUMS_INPUT_TEMPLATE_NAME = "hotdeploy.FileChecksums";
+    public static final String FILE_CHECKSUMS_INPUT_TEMPLATE_NAME = "p.SystemConfig";
 
     private static final Logger logger =
         Logger.getLogger(DefaultFileChecksums.class.getName());
 
     private PolicyCMServer server;
-    private FileChecksumsPolicy checksumsPolicy;
+    private FileChecksumsPseudoPolicy checksumsPolicy;
 
     private Map<DeploymentFile, Checksums> changes = new HashMap<DeploymentFile, Checksums>();
 
@@ -32,13 +33,13 @@ public class DefaultFileChecksums implements FileChecksums {
         private long slowChecksum;
     }
 
-    private FileChecksumsPolicy getLatestChecksumsPolicy(PolicyCMServer server)
+    private FileChecksumsPseudoPolicy getLatestChecksumsPolicy(PolicyCMServer server)
             throws CouldNotFetchChecksumsException {
         try {
-            return (FileChecksumsPolicy)
+            return new FileChecksumsPseudoPolicy(
                 PolicySingletonUtil.getSingleton(server, 17,
                     CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME, FILE_CHECKSUMS_INPUT_TEMPLATE_NAME,
-                    FileChecksumsPolicy.class);
+                    Policy.class));
         } catch (CMException e) {
             throw new CouldNotFetchChecksumsException(e.getMessage(), e);
         }
@@ -56,7 +57,7 @@ public class DefaultFileChecksums implements FileChecksums {
             checksumsPolicy = getLatestChecksumsPolicy(server);
 
             try {
-                checksumsPolicy = (FileChecksumsPolicy) server.createContentVersion(checksumsId);
+                checksumsPolicy = new FileChecksumsPseudoPolicy(server.createContentVersion(checksumsId));
 
                 changes.clear();
                 checksumsPolicy.clear();
@@ -154,7 +155,7 @@ public class DefaultFileChecksums implements FileChecksums {
         VersionedContentId checksumsId = getLatestChecksumVersion();
 
         try {
-            checksumsPolicy = (FileChecksumsPolicy) server.createContentVersion(checksumsId);
+            checksumsPolicy = new FileChecksumsPseudoPolicy(server.createContentVersion(checksumsId));
 
             for (Map.Entry<DeploymentFile, Checksums> change : changes.entrySet()) {
                 DeploymentFile changedFile = change.getKey();
@@ -184,7 +185,7 @@ public class DefaultFileChecksums implements FileChecksums {
 
     private void failPersisting(Exception e) throws CouldNotUpdateStateException {
         try {
-            server.abortContent(checksumsPolicy, true);
+            server.abortContent(checksumsPolicy.getDelegatePolicy(), true);
         } catch (CMException cmException) {
             logger.log(Level.WARNING, "Failed aborting new version of checksums: " + cmException.getMessage(), cmException);
         }

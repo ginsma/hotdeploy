@@ -20,7 +20,7 @@ public class TextContentParseCallbackAdapter {
         for (TextContent content : contentSet) {
             if (content.getInputTemplate() != null) {
                 String inputTemplateExternalId = ((ExternalIdReference) content.getInputTemplate()).getExternalId();
-                callback.contentFound(context, content.getId(), Major.UNKNOWN, inputTemplateExternalId);
+                callback.contentFound(context, content.getId(), content.getMajor(), inputTemplateExternalId);
             }
         }
 
@@ -50,8 +50,8 @@ public class TextContentParseCallbackAdapter {
             }
         }
 
-        if (content.getPublishIn() != null) {
-            callback(content.getPublishIn(), context, callback);
+        for (Publishing publishing : content.getPublishings()) {
+            callback(publishing.getPublishIn(), context, callback);
         }
     }
 

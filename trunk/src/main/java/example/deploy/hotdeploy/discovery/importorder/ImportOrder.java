@@ -73,6 +73,8 @@ public class ImportOrder extends ArrayList<DeploymentFile>{
 
             int versionStartsAtIndex = jarFileNameWithoutExtension.lastIndexOf('-');
 
+// TODO            THIS IS WRONG FOR 1.0-SNAPSHOT VERSION
+
             if (versionStartsAtIndex != -1) {
                 return jarFileNameWithoutExtension.substring(0, versionStartsAtIndex);
             }

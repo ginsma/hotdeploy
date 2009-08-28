@@ -8,8 +8,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.polopoly.cm.server.ServerNames;
+
+import example.deploy.hotdeploy.client.Major;
 
 public class TextContentParser {
     private static final char SEPARATOR_CHAR = ':';
@@ -25,6 +29,7 @@ public class TextContentParser {
     private static final String LIST_PREFIX = "list";
     private static final String TEMPLATE_PREFIX = "template";
     private static final String PUBLISH_PREFIX = "publish";
+    private static final String MAJOR_PREFIX = "major";
 
     private BufferedReader reader;
 
@@ -36,7 +41,7 @@ public class TextContentParser {
     private int atLine;
 
     public TextContentParser(InputStream inputStream) throws IOException {
-        reader = new BufferedReader(new InputStreamReader(inputStream));
+        reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
     }
 
     public TextContentSet parse() throws IOException, ParseException {
@@ -53,7 +58,7 @@ public class TextContentParser {
             return;
         }
 
-        String[] fields = line.split(""+SEPARATOR_CHAR);
+        String[] fields = split(line);
 
         if (fields.length < 2) {
             if (!line.trim().equals("")) {
@@ -124,6 +129,25 @@ public class TextContentParser {
 
             currentContent.setTemplateId(fields[1]);
         }
+        else if (prefix.equals(MAJOR_PREFIX)) {
+            assertFields(2, fields);
+
+            String majorString = fields[1].trim();
+
+            try {
+                int intMajor = Integer.parseInt(majorString);
+
+                currentContent.setMajor(Major.getMajor(intMajor));
+            } catch (NumberFormatException e) {
+                Major major = Major.getMajor(majorString);
+
+                if (major == Major.UNKNOWN) {
+                    fail("Unknown major \"" + majorString + "\".");
+                }
+
+                currentContent.setMajor(major);
+            }
+        }
         else if (prefix.equals(PUBLISH_PREFIX)) {
             String group = null;
 
@@ -138,14 +162,45 @@ public class TextContentParser {
                     " (rather than the provided " + (fields.length-1) + ").");
             }
 
-            currentContent.setPublishIn(new ExternalIdReference(fields[fields.length-1]));
-            currentContent.setPublishInGroup(group);
+            Publishing publishing = new Publishing(
+                new ExternalIdReference(fields[fields.length-1]),
+                group);
+
+            currentContent.addPublishing(publishing);
         }
         else {
             fail("Line should start with " + ID_PREFIX + ", " + INPUT_TEMPLATE_PREFIX + ", " +
                     NAME_PREFIX + ", " + SECURITY_PARENT_PREFIX + ", "+ COMPONENT_PREFIX + ", " +
-                    REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
+                    MAJOR_PREFIX + ", " + REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
         }
+    }
+
+    private String[] split(String line) {
+        List<String>result = new ArrayList<String>();
+
+        boolean quote = false;
+
+        StringBuffer current = new StringBuffer(100);
+
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
+
+            if (ch == SEPARATOR_CHAR && !quote) {
+                result.add(current.toString());
+                current.setLength(0);
+            }
+            else if (ch == '\\' && !quote) {
+                quote = true;
+            }
+            else {
+                current.append(ch);
+                quote = false;
+            }
+        }
+
+        result.add(current.toString());
+
+        return result.toArray(new String[result.size()]);
     }
 
     private void fail(String message) throws ParseException {

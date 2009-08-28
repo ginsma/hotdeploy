@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.file.DeploymentFile;
@@ -12,6 +13,8 @@ import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
 
 public class BootstrapGatherer implements ParseCallback {
+    private static final Logger logger = Logger.getLogger(BootstrapGatherer.class.getName());
+
     private Set<String> definedExternalIds = new HashSet<String>();
     private Map<String, BootstrapContent> bootstrapByExternalId = new HashMap<String, BootstrapContent>();
 
@@ -22,6 +25,10 @@ public class BootstrapGatherer implements ParseCallback {
         BootstrapContent bootstrapContent = bootstrapByExternalId.get(externalId);
 
         if (bootstrapContent != null) {
+            if (logger.isLoggable(Level.FINE) && bootstrapContent.getMajor() == Major.UNKNOWN) {
+                logger.log(Level.FINE,  "We now know the major of " + externalId + ": " + major + ".");
+            }
+
             bootstrapContent.setMajor(major);
             bootstrapContent.setInputTemplate(inputTemplate);
         }
@@ -29,6 +36,10 @@ public class BootstrapGatherer implements ParseCallback {
 
     public void contentFound(ParseContext context, String externalId,
             Major major, String inputTemplate) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE,  "Found content " + externalId + " of major " + major + " in " + context.getFile() + ".");
+        }
+
         definedExternalIds.add(externalId);
 
         // this content might been have referenced before, so we will need to bootstrap it.
@@ -38,8 +49,16 @@ public class BootstrapGatherer implements ParseCallback {
 
     public void contentReferenceFound(ParseContext context, Major major, String externalId) {
         if (isNotYetDefined(externalId)) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE,  "Found reference to " + externalId + " of major " + major + " in " + context.getFile() + " which needs bootstrapping.");
+            }
+
             bootstrap(context.getFile(), major, externalId);
         }
+        else if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINER, "Found reference to " + externalId + " of major " + major + " in " + context.getFile() + " which has been defined and therefore needs no bootstrapping.");
+        }
+
     }
 
     private void bootstrap(DeploymentFile file, Major major, String externalId) {

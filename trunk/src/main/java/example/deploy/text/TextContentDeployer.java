@@ -25,6 +25,7 @@ import com.polopoly.cm.collections.ContentList;
 import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
 
+import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
 
@@ -72,13 +73,13 @@ public class TextContentDeployer {
             // to another object in the same batch.
             for (TextContent textContent : contentSet) {
                 try {
-                    if (textContent.getPublishIn() != null) {
-                        String publishInExternalId = ((ExternalIdReference) textContent.getPublishIn()).getExternalId();
+                    for (Publishing publishing : textContent.getPublishings()) {
+                        String publishInExternalId = ((ExternalIdReference) publishing.getPublishIn()).getExternalId();
 
                         Policy newVersion = newVersionById.get(textContent.getId());
                         Policy publishInVersion = newVersionById.get(publishInExternalId);
 
-                        publish(newVersion, publishInVersion, textContent.getPublishInGroup());
+                        publish(newVersion, publishInVersion, publishing.getPublishInGroup());
                     }
                 } catch (CMException e) {
                     throw new DeployException("While publishing " + textContent.getId() + ": " + e, e);
@@ -157,9 +158,8 @@ public class TextContentDeployer {
 
     private void createPublishInVersion(TextContent textContent,
             Map<String, Policy> newVersionById) throws CMException {
-        Reference publishIn = textContent.getPublishIn();
-
-        if (publishIn != null) {
+        for (Publishing publishing : textContent.getPublishings()) {
+            Reference publishIn = publishing.getPublishIn();
             String publishInExternalId = ((ExternalIdReference) publishIn).getExternalId();
 
             if (!newVersionById.containsKey(publishInExternalId)) {
@@ -275,7 +275,16 @@ public class TextContentDeployer {
         if (contentId == null) {
             InputTemplate inputTemplate = getInputTemplate(textContent);
 
-            newVersionPolicy = server.createContent(getMajor(server, inputTemplate), inputTemplate.getContentId());
+            int major;
+
+            if (textContent.getMajor() == Major.UNKNOWN) {
+                major = getMajor(server, inputTemplate);
+            }
+            else {
+                major = textContent.getMajor().getIntegerMajor();
+            }
+
+            newVersionPolicy = server.createContent(major, inputTemplate.getContentId());
             newVersionPolicy.getContent().setExternalId(textContent.getId());
         }
         else {

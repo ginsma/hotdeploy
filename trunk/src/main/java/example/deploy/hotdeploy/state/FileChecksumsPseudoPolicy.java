@@ -4,25 +4,39 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.polopoly.cm.client.CMException;
-import com.polopoly.cm.policy.ContentPolicy;
+import com.polopoly.cm.client.Content;
+import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.server.ServerNames;
 import com.polopoly.cm.xml.hotdeploy.util.LongComponent;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 
-@Deprecated
+@SuppressWarnings("deprecation")
 /**
- * Replaced by {@link FileChecksumsPseudoPolicy}.
+ * TODO: remove policy parent class. it's not a policy anymore but a pseudo-policy in order
+ * to avoid needing an input template.
  */
-public class FileChecksumsPolicy extends ContentPolicy {
+public class FileChecksumsPseudoPolicy {
     private static final Logger logger =
-        Logger.getLogger(FileChecksumsPolicy.class.getName());
+        Logger.getLogger(FileChecksumsPseudoPolicy.class.getName());
 
     public static final int ATTRIBGROUP_MAXLEN = 60;
     private static final int HALF_ATTRIB_GROUP_MAXLEN = ATTRIBGROUP_MAXLEN / 2;
 
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
     private static final String SLOW_CHECKSUM_COMPONENT = "slow";
+
+    private Content content;
+    private Policy delegatePolicy;
+
+    @Deprecated
+    public FileChecksumsPseudoPolicy() {
+    }
+
+    public FileChecksumsPseudoPolicy(Policy delegatePolicy) {
+        this.delegatePolicy = delegatePolicy;
+        this.content = delegatePolicy.getContent();
+    }
 
     private String getAttributeGroup(DeploymentFile file) {
         String result = file.getName();
@@ -46,31 +60,32 @@ public class FileChecksumsPolicy extends ContentPolicy {
             SLOW_CHECKSUM_COMPONENT, -1);
     }
 
-    @Override
-    public void postCreateSelf() throws CMException {
-        if (getName() == null) {
-            setName("Hot Deploy Content State");
+    public void commit() throws CMException {
+        if (content.getName() == null) {
+            content.setName("Hot Deploy Content State");
 
-            getContentUnwrapped().setMetaDataComponent(
+            content.setMetaDataComponent(
                     ServerNames.CMD_ATTRG_SYSTEM,
                     ServerNames.CMD_ATTR_MAXVERSIONS,
                     "1");
         }
+
+        content.commit();
     }
 
     public long getQuickChecksum(DeploymentFile file) {
-        return getQuickChecksumComponent(file).getLongValue(this);
+        return getQuickChecksumComponent(file).getLongValue(delegatePolicy);
     }
 
     public long getSlowChecksum(DeploymentFile file) {
-        return getSlowChecksumComponent(file).getLongValue(this);
+        return getSlowChecksumComponent(file).getLongValue(delegatePolicy);
     }
 
     public void setChecksums(DeploymentFile file, long quickChecksum,
             long slowChecksum) throws CouldNotUpdateStateException {
         try {
-            getQuickChecksumComponent(file).setLongValue(this, quickChecksum);
-            getSlowChecksumComponent(file).setLongValue(this, slowChecksum);
+            getQuickChecksumComponent(file).setLongValue(delegatePolicy, quickChecksum);
+            getSlowChecksumComponent(file).setLongValue(delegatePolicy, slowChecksum);
         } catch (CMException e) {
             throw new CouldNotUpdateStateException("While saving deployment state of " + file + ": " + e, e);
         }
@@ -78,16 +93,20 @@ public class FileChecksumsPolicy extends ContentPolicy {
 
     public void clear() {
         try {
-            for (String componentGroup : getComponentGroupNames()) {
-                for (String component : getComponentNames(componentGroup)) {
+            for (String componentGroup : content.getComponentGroupNames()) {
+                for (String component : content.getComponentNames(componentGroup)) {
                     if (component.equals(QUICK_CHECKSUM_COMPONENT) ||
                             component.equals(SLOW_CHECKSUM_COMPONENT)) {
-                        setComponent(componentGroup, component, null);
+                        content.setComponent(componentGroup, component, null);
                     }
                 }
             }
         } catch (CMException e) {
             logger.log(Level.WARNING, "While clearing file checksums: " + e.getMessage(), e);
         }
+    }
+
+    public Policy getDelegatePolicy() {
+        return delegatePolicy;
     }
 }

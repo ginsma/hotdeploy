@@ -5,6 +5,7 @@ import static com.polopoly.cm.server.ServerNames.CONTENT_ATTR_NAME;
 
 import java.io.InputStream;
 
+import junit.framework.TestCase;
 import example.deploy.text.ExternalIdReference;
 import example.deploy.text.Reference;
 import example.deploy.text.StandAloneValidationContext;
@@ -12,8 +13,6 @@ import example.deploy.text.TextContent;
 import example.deploy.text.TextContentParser;
 import example.deploy.text.TextContentSet;
 import example.deploy.text.ValidationException;
-
-import junit.framework.TestCase;
 
 public class TestTextContentParser extends TestCase {
     private TextContentSet parsed;
@@ -52,7 +51,7 @@ public class TestTextContentParser extends TestCase {
         assertEquals(2, article.getList("polopoly.Department").size());
         assertEqualsReference("textcontent.simplearticle", article.getList("polopoly.Department").get(0));
         assertEqualsReference("textcontent.simplearticle2", article.getList("polopoly.Department").get(1));
-        assertEqualsReference("p.siteengine.Sites.d", article.getPublishIn());
+        assertEqualsReference("p.siteengine.Sites.d", article.getPublishings().get(0).getPublishIn());
     }
 
     private void assertEqualsReference(String string, Reference reference) {
