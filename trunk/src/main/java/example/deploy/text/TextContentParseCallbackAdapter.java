@@ -18,8 +18,17 @@ public class TextContentParseCallbackAdapter {
         // first call content found for all object so validation tool understands that it is ok
         // to have objects in any order in a text content file.
         for (TextContent content : contentSet) {
-            if (content.getInputTemplate() != null) {
-                String inputTemplateExternalId = ((ExternalIdReference) content.getInputTemplate()).getExternalId();
+            Reference inputTemplate = content.getInputTemplate();
+
+            if (inputTemplate == null && content.getTemplateId() != null) {
+                TextContent template =
+                    contentSet.get(content.getTemplateId());
+
+                inputTemplate = template.getInputTemplate();
+            }
+
+            if (inputTemplate != null) {
+                String inputTemplateExternalId = ((ExternalIdReference) inputTemplate).getExternalId();
                 callback.contentFound(context, content.getId(), content.getMajor(), inputTemplateExternalId);
             }
         }
