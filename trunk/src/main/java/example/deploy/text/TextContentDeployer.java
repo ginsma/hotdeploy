@@ -51,11 +51,20 @@ public class TextContentDeployer {
                     Policy newVersionPolicy = createNewVersion(textContent);
 
                     newVersionById.put(textContent.getId(), newVersionPolicy);
-
-                    createPublishInVersion(textContent, newVersionById);
                 }
                 catch (CMException e) {
                     throw new DeployException("While creating " + textContent.getId() + ": " + e, e);
+                }
+            }
+
+            for (TextContent textContent : contentSet) {
+                try {
+                    // do this in a second step since one of the objects in the set might
+                    // be the publish content.
+                    createPublishInVersion(textContent, newVersionById);
+                }
+                catch (CMException e) {
+                    throw new DeployException("While creating object to publish " + textContent.getId() + " in: " + e, e);
                 }
             }
 
