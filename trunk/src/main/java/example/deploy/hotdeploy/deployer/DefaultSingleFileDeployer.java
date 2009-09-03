@@ -136,6 +136,12 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
                     lockedId = lockException.getLockInfo().getLocked();
                 }
                 else {
+                    // there are two locked exceptions: something being locked by someone else
+                    // and something not being locked while trying to modify.
+                    if (e.getMessage().indexOf("is not locked") != -1) {
+                        throw new FatalDeployException(e);
+                    }
+
                     int i = e.getMessage().indexOf("ContentId(");
 
                     if (i != -1) {
@@ -162,6 +168,10 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
                 try {
                     Content content = (Content) server.getContent(
                             new VersionedContentId(lockedId, VersionedContentId.LATEST_VERSION));
+
+                    if (content.getLockInfo() == null) {
+                        throw new FatalDeployException(e);
+                    }
 
                     logger.log(Level.WARNING, lockedId.getContentIdString() +
                         " was locked. Trying to unlock it.");
