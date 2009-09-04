@@ -183,12 +183,19 @@ public class TextContentDeployer {
     private void deploy(TextContent textContent, Policy policy) throws CMException, DeployException {
         Content content = policy.getContent();
 
-        if (textContent.getTemplateId() != null) {
-            TextContent template = contentSet.get(textContent.getTemplateId());
+        String templateId = textContent.getTemplateId();
+
+        if (templateId != null) {
+            TextContent template = contentSet.get(templateId);
 
             if (template == null) {
-                throw new DeployException("The object \"" + textContent.getTemplateId() +
+                throw new DeployException("The object \"" + templateId +
                     "\" specified as template of " + textContent + " must be defined in the same file.");
+            }
+
+            if (template.getTemplateId() != null) {
+                throw new DeployException("Cannot use the object \"" + templateId +
+                        "\" as template of " + textContent + " since it in turn also has a template.");
             }
 
             deploy(template, policy);
@@ -284,17 +291,28 @@ public class TextContentDeployer {
         if (contentId == null) {
             InputTemplate inputTemplate = getInputTemplate(textContent);
 
-            int major;
+            Major major = textContent.getMajor();
+
+            TextContent atTemplate = textContent;
+
+            while (major == Major.UNKNOWN && atTemplate.getTemplateId() != null) {
+                atTemplate = contentSet.get(atTemplate.getTemplateId());
+
+                if (atTemplate != null) {
+                    major = atTemplate.getMajor();
+                }
+            }
 
             if (textContent.getMajor() == Major.UNKNOWN) {
                 major = getMajor(server, inputTemplate);
             }
             else {
-                major = textContent.getMajor().getIntegerMajor();
+                major = textContent.getMajor();
             }
 
-            newVersionPolicy = server.createContent(major, inputTemplate.getContentId());
+            newVersionPolicy = server.createContent(major.getIntegerMajor(), inputTemplate.getContentId());
             newVersionPolicy.getContent().setExternalId(textContent.getId());
+            newVersionPolicy.getContent().setName(textContent.getId());
         }
         else {
             newVersionPolicy = createNewVersionOfExistingContent(contentId);
@@ -327,7 +345,7 @@ public class TextContentDeployer {
         TextContent atTemplate = textContent;
 
         while (inputTemplateReference == null && atTemplate.getTemplateId() != null) {
-            atTemplate = contentSet.get(textContent.getTemplateId());
+            atTemplate = contentSet.get(atTemplate.getTemplateId());
 
             if (atTemplate != null) {
                 inputTemplateReference = atTemplate.getInputTemplate();
@@ -351,7 +369,7 @@ public class TextContentDeployer {
         return inputTemplate;
     }
 
-    private int getMajor(PolicyCMServer server,
+    private Major getMajor(PolicyCMServer server,
             InputTemplate inputTemplate) throws CMException, DeployException {
         String majorString = inputTemplate.getComponent("polopoly.Client", "major");
 
@@ -362,11 +380,12 @@ public class TextContentDeployer {
             majorString = "Article";
         }
 
-        try {
-            return server.getMajorByName(majorString);
-        }
-        catch (EJBFinderException e) {
+        Major result = Major.getMajor(majorString);
+
+        if (result == Major.UNKNOWN) {
             throw new DeployException("The input template " + inputTemplate.getName() + " specified the unknown major \"" + majorString + "\".");
         }
+
+        return result;
     }
 }
