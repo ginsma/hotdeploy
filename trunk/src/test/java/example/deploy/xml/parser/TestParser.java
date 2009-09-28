@@ -121,7 +121,7 @@ public class TestParser extends TestCase {
         parserAsserts.assertFoundTemplates("example.Article", "example.NewsletterContentListWrapper");
         parserAsserts.assertFoundContent();
         parserAsserts.assertFoundClassReferences("com.polopoly.cm.app.policy.ConfigurableContentListWrapper");
-        parserAsserts.assertFoundContentReferences(contentId(UNKNOWN, "example.Image"));
+        parserAsserts.assertFoundContentReferences(contentId(UNKNOWN, "example.Image"), contentId(UNKNOWN, "example.Newsletter"));
         parserAsserts.assertFoundTemplateReferences("example.Image", "it.wid.ContentCreator");
     }
 
