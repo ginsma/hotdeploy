@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.file.DeploymentDirectory;
@@ -47,40 +46,7 @@ public class ImportOrder extends ArrayList<DeploymentFile>{
         if (directory instanceof JarDeploymentDirectory) {
             String jarAbsolutePath = ((JarDeploymentDirectory) directory).getJarFileName();
 
-            int i = jarAbsolutePath.lastIndexOf(File.separator);
-
-            String jarFileName;
-
-            if (i != -1) {
-                jarFileName = jarAbsolutePath.substring(i+1);
-            }
-            else {
-                jarFileName = jarAbsolutePath;
-            }
-
-            int extensionStartsAtIndex = jarFileName.lastIndexOf(".jar");
-
-            String jarFileNameWithoutExtension;
-
-            if (extensionStartsAtIndex != -1) {
-                jarFileNameWithoutExtension = jarFileName.substring(0, extensionStartsAtIndex);
-            }
-            else {
-                logger.log(Level.WARNING, "The JAR file " + jarAbsolutePath + " did not have the extension \".jar\".");
-
-                jarFileNameWithoutExtension = jarFileName;
-            }
-
-            int versionStartsAtIndex = jarFileNameWithoutExtension.lastIndexOf('-');
-
-// TODO            THIS IS WRONG FOR 1.0-SNAPSHOT VERSION
-
-            if (versionStartsAtIndex != -1) {
-                return jarFileNameWithoutExtension.substring(0, versionStartsAtIndex);
-            }
-            else {
-                return jarFileNameWithoutExtension;
-            }
+            return new JarFileBaseNameFinder().getBaseName(jarAbsolutePath);
         }
         else {
             return directory.getName();
