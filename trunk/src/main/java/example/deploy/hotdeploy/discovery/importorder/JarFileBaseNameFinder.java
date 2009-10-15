@@ -15,18 +15,20 @@ public class JarFileBaseNameFinder {
         String jarFileNameWithoutExtension =
             stripExtension(jarAbsolutePath, jarFileName);
 
-        Pattern pattern = Pattern.compile(".*(-\\d+(\\.\\d+)*).*"); //");
+        Pattern pattern = Pattern.compile(".*(-\\d+(\\.\\d+)*(-SNAPSHOT)?).*"); //");
 
         Matcher matcher = pattern.matcher(jarFileNameWithoutExtension);
 
         if (matcher.matches()) {
-            int versionStart = jarFileNameWithoutExtension.indexOf(matcher.group(1));
+            String versionString = matcher.group(1);
+            int versionStart = jarFileNameWithoutExtension.indexOf(versionString);
 
             if (versionStart != -1) {
-                return jarFileNameWithoutExtension.substring(0, versionStart);
+                return jarFileNameWithoutExtension.substring(0, versionStart) +
+                    jarFileNameWithoutExtension.substring(versionStart + versionString.length());
             }
             else {
-                logger.log(Level.WARNING, "Funny, could not find \"" + matcher.group(1) + "\" in \"" + jarFileNameWithoutExtension + "\".");
+                logger.log(Level.WARNING, "Funny, could not find \"" + versionString + "\" in \"" + jarFileNameWithoutExtension + "\".");
             }
         }
 
@@ -67,5 +69,4 @@ public class JarFileBaseNameFinder {
         }
         return jarFileName;
     }
-
 }

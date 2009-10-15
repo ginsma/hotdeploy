@@ -20,11 +20,11 @@ public class TestJarFileBaseNameFinder extends TestCase {
         assertBaseName("basename", "/foo/hej/basename-1.0.jar");
         assertBaseName("basename", "basename-1.0.jar");
         assertBaseName("base-name", "/foo/hej/base-name-1.jar");
-        assertBaseName("base-name", "/foo/hej/base-name-1.0.0.jar");
+        assertBaseName("base-name", "/foo/hej/base-name-1.10.0.jar");
         assertBaseName("base-name", "/foo/hej/base-name-1.0-SNAPSHOT.jar");
-        assertBaseName("base-name", "/foo/hej/base-name-1.0-SNAPSHOT-tests.jar");
-        assertBaseName("basename", "/foo/hej/basename-1.0-SNAPSHOT-tests.jar");
-        assertBaseName("basename", "basename-1.0-SNAPSHOT-tests.jar");
+        assertBaseName("base-name-tests", "/foo/hej/base-name-1.0.12-SNAPSHOT-tests.jar");
+        assertBaseName("basename-tests", "/foo/hej/basename-1.0-SNAPSHOT-tests.jar");
+        assertBaseName("basename-tests", "basename-1.0-SNAPSHOT-tests.jar");
     }
 
     private void assertBaseName(String baseName, String path) {
