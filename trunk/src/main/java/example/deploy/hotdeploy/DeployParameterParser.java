@@ -44,7 +44,7 @@ public class DeployParameterParser implements ArgumentConsumer {
                 deploy.setConnectionUrl(value);
             }
             else if (parameter.equals("dir")) {
-                deploy.setDirectoryName(value);
+                deploy.addDirectoryName(value);
             }
             else if (parameter.equals("considerjar")) {
                 deploy.setConsiderDirectoryJar(value);

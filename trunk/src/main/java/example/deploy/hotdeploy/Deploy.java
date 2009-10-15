@@ -40,7 +40,7 @@ public class Deploy {
 
     private DirectoryState directoryState;
 
-    private File directory;
+    private List<File> directories = new ArrayList<File>();
 
     public static void main(String[] args) {
         Deploy deploy = new Deploy();
@@ -74,11 +74,14 @@ public class Deploy {
     }
 
     private void validateDirectory() {
-        if (directory == null) {
+        if (directories.isEmpty()) {
             System.err.println("--dir not specified. Only importing resource files.");
         }
-        else if (!directory.exists() || !directory.canRead() || !directory.isDirectory()) {
-            System.err.println(directory.getAbsolutePath() + " is not a readable directory. Only importing resource files.");
+
+        for (File directory : directories) {
+            if (!directory.exists() || !directory.canRead() || !directory.isDirectory()) {
+                System.err.println(directory.getAbsolutePath() + " is not a readable directory. Cannot import it.");
+            }
         }
     }
 
@@ -86,7 +89,7 @@ public class Deploy {
         validateDirectory();
 
         System.err.println("Importing content in " +
-                (directory == null ? "resource files" : directory.getAbsolutePath()) +
+                (directories.isEmpty() ? "resource files" : getDirectoryString()) +
                 " to Polopoly server " + connectionUrl + ".");
 
         PolopolyClient polopolyClient = getPolopolyClient();
@@ -101,8 +104,15 @@ public class Deploy {
             DirectoryState directoryState = getDirectoryState(server);
 
             if (considerDirectoryJar != null) {
+                List<FileDeploymentDirectory> deploymentDirectories =
+                    new ArrayList<FileDeploymentDirectory>(directories.size());
+
+                for (File directory : directories) {
+                    deploymentDirectories.add(new FileDeploymentDirectory(directory));
+                }
+
                 directoryState = new DirectoryWillBecomeJarDirectoryState(directoryState,
-                        new FileDeploymentDirectory(directory), considerDirectoryJar);
+                        deploymentDirectories, considerDirectoryJar);
             }
 
             SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(server);
@@ -116,7 +126,7 @@ public class Deploy {
                 discoverers.add(new ResourceFileDiscoverer(onlyJarResources));
             }
 
-            if (directory != null) {
+            for (File directory : directories) {
                 discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
             }
 
@@ -132,6 +142,25 @@ public class Deploy {
         }
 
         return success;
+    }
+
+    private String getDirectoryString() {
+        StringBuffer result = new StringBuffer(100);
+
+        boolean first = true;
+
+        for (File directory : directories) {
+            if (first) {
+                first = false;
+            }
+            else {
+                result.append(", ");
+            }
+
+            result.append(directory.getAbsolutePath());
+        }
+
+        return result.toString();
     }
 
     /**
@@ -166,8 +195,8 @@ public class Deploy {
         this.connectionUrl = connectionUrl;
     }
 
-    public void setDirectoryName(String directoryName) {
-        directory = new File(directoryName);
+    public void addDirectoryName(String directoryName) {
+        directories.add(new File(directoryName));
     }
 
     public String getUser() {
