@@ -39,7 +39,7 @@ public class ContentXmlParser implements DeploymentFileParser {
 
             if (file.getName().endsWith('.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
                 ParseContext parseContext = new ParseContext(file);
-                TextContentSet contentSet = new TextContentParser(inputStream).parse();
+                TextContentSet contentSet = new TextContentParser(inputStream, file.getBaseUrl()).parse();
                 new TextContentParseCallbackAdapter(contentSet).callback(callback, parseContext);
             }
             else {

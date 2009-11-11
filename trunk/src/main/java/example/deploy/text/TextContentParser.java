@@ -8,6 +8,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class TextContentParser {
     private static final String TEMPLATE_PREFIX = "template";
     private static final String PUBLISH_PREFIX = "publish";
     private static final String MAJOR_PREFIX = "major";
+    private static final String FILE_PREFIX = "file";
 
     private BufferedReader reader;
 
@@ -40,8 +43,11 @@ public class TextContentParser {
 
     private int atLine;
 
-    public TextContentParser(InputStream inputStream) throws IOException {
+    private URL contentUrl;
+
+    public TextContentParser(InputStream inputStream, URL contentUrl) throws IOException {
         reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        this.contentUrl = contentUrl;
     }
 
     public TextContentSet parse() throws IOException, ParseException {
@@ -107,6 +113,19 @@ public class TextContentParser {
             assertFields(4, fields);
 
             currentContent.setReference(fields[1], fields[2], new ExternalIdReference(fields[3]));
+        }
+        else if (prefix.equals(FILE_PREFIX)) {
+            assertFields(3, fields);
+
+            try {
+                URL fileUrl = new URL(contentUrl, fields[2]);
+
+                currentContent.addFile(fields[1], fileUrl.openStream());
+            } catch (MalformedURLException e) {
+                fail("Could not read file " +  fields[2] + " relative to " + contentUrl + ".");
+            } catch (IOException e) {
+                fail("Could not read file " +  fields[2] + " relative to " + contentUrl + ".");
+            }
         }
         else if (prefix.equals(LIST_PREFIX)) {
             String group = null;

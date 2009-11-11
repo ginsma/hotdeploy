@@ -14,7 +14,7 @@ public class VerifyXMLConsistency {
 
         parser.parse();
 
-        for (File xmlDirectory : parser.getXMLDirectories()) {
+        for (File xmlDirectory : verifier.getDirectories()) {
             new PresentFileReader(xmlDirectory, verifier).read();
         }
 

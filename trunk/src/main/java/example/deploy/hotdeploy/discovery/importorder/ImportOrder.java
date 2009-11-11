@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 import example.deploy.hotdeploy.file.DeploymentDirectory;
 import example.deploy.hotdeploy.file.DeploymentFile;
@@ -12,9 +11,6 @@ import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.file.JarDeploymentDirectory;
 
 public class ImportOrder extends ArrayList<DeploymentFile>{
-    private static final Logger logger =
-        Logger.getLogger(ImportOrder.class.getName());
-
     private List<String> dependencies = new ArrayList<String>();
     private DeploymentDirectory directory;
 

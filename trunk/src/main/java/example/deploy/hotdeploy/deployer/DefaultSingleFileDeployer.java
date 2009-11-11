@@ -62,7 +62,7 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 
     private void importFile(DeploymentFile fileToImport) throws Exception {
         if (fileToImport.getName().endsWith('.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
-            TextContentSet textContent = new TextContentParser(fileToImport.getInputStream()).parse();
+            TextContentSet textContent = new TextContentParser(fileToImport.getInputStream(), fileToImport.getBaseUrl()).parse();
 
             textContent.validate(new CMServerValidationContext(server));
 
@@ -197,7 +197,7 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
             }
 
             logger.log(Level.WARNING,
-                "Import of " + fileToImport + " failed: " + e.getMessage(), e);
+                "Import of " + fileToImport + " failed: " + message, (e instanceof RuntimeException ? e : null));
 
             return false;
         }

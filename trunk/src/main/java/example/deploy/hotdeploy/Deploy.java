@@ -2,6 +2,7 @@ package example.deploy.hotdeploy;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -14,9 +15,6 @@ import example.deploy.hotdeploy.client.PolopolyClient;
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
 import example.deploy.hotdeploy.deployer.SingleFileDeployer;
-import example.deploy.hotdeploy.discovery.FileDiscoverer;
-import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
-import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.state.DirectoryState;
@@ -26,7 +24,7 @@ import example.deploy.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
 /**
  * A deploy client with a main method that connects to Polopoly and does a deploy of all content.
  */
-public class Deploy {
+public class Deploy extends DiscovererMainClass {
     private static final Logger logger =
         Logger.getLogger(Deploy.class.getName());
 
@@ -35,17 +33,13 @@ public class Deploy {
     private String user = null;
     private String password = null;
     private String considerDirectoryJar = null;
-    private boolean discoverResources = true;
-    private boolean onlyJarResources = true;
 
     private DirectoryState directoryState;
 
-    private List<File> directories = new ArrayList<File>();
-
     public static void main(String[] args) {
         Deploy deploy = new Deploy();
-        DeployParameterParser parameterParser = new DeployParameterParser();
-        parameterParser.parseParameters(deploy, args);
+        DeployParameterParser parameterParser = new DeployParameterParser(deploy);
+        parameterParser.parseParameters(args);
 
         try {
             boolean success = deploy.deploy();
@@ -73,20 +67,10 @@ public class Deploy {
         return polopolyClient;
     }
 
-    private void validateDirectory() {
-        if (directories.isEmpty()) {
-            System.err.println("--dir not specified. Only importing resource files.");
-        }
-
-        for (File directory : directories) {
-            if (!directory.exists() || !directory.canRead() || !directory.isDirectory()) {
-                System.err.println(directory.getAbsolutePath() + " is not a readable directory. Cannot import it.");
-            }
-        }
-    }
-
     public boolean deploy() throws ConnectException {
-        validateDirectory();
+        validateDirectories();
+
+        Collection<File> directories = getDirectories();
 
         System.err.println("Importing content in " +
                 (directories.isEmpty() ? "resource files" : getDirectoryString()) +
@@ -120,18 +104,8 @@ public class Deploy {
             MultipleFileDeployer deployer =
                 new MultipleFileDeployer(singleFileDeployer, directoryState);
 
-            List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
-
-            if (discoverResources) {
-                discoverers.add(new ResourceFileDiscoverer(onlyJarResources));
-            }
-
-            for (File directory : directories) {
-                discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
-            }
-
             Set<DeploymentFile> failingFiles =
-                deployer.discoverAndDeploy(discoverers);
+                deployer.discoverAndDeploy(getDiscoverers());
 
             success = failingFiles.isEmpty();
         } catch (Exception e) {
@@ -142,25 +116,6 @@ public class Deploy {
         }
 
         return success;
-    }
-
-    private String getDirectoryString() {
-        StringBuffer result = new StringBuffer(100);
-
-        boolean first = true;
-
-        for (File directory : directories) {
-            if (first) {
-                first = false;
-            }
-            else {
-                result.append(", ");
-            }
-
-            result.append(directory.getAbsolutePath());
-        }
-
-        return result.toString();
     }
 
     /**
@@ -195,10 +150,6 @@ public class Deploy {
         this.connectionUrl = connectionUrl;
     }
 
-    public void addDirectoryName(String directoryName) {
-        directories.add(new File(directoryName));
-    }
-
     public String getUser() {
         return user;
     }
@@ -225,21 +176,5 @@ public class Deploy {
 
     public void setConsiderDirectoryJar(String considerDirectoryJar) {
         this.considerDirectoryJar = considerDirectoryJar;
-    }
-
-    public boolean isDiscoverResources() {
-        return discoverResources;
-    }
-
-    public void setDiscoverResources(boolean discoverResources) {
-        this.discoverResources = discoverResources;
-    }
-
-    public boolean isOnlyJarResources() {
-        return onlyJarResources;
-    }
-
-    public void setOnlyJarResources(boolean onlyJarResources) {
-        this.onlyJarResources = onlyJarResources;
     }
 }

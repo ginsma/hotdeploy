@@ -19,13 +19,14 @@ public class TestTextContentParser extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        InputStream is = getClass().getResourceAsStream("/textcontent/simplecontent.content");
+        String resourceName = "/textcontent/simplecontent.content";
+        InputStream is = getClass().getResourceAsStream(resourceName);
 
         if (is == null) {
             fail("resource not found.");
         }
 
-        TextContentParser parser = new TextContentParser(is);
+        TextContentParser parser = new TextContentParser(is, getClass().getResource(resourceName));
 
         parsed = parser.parse();
     }

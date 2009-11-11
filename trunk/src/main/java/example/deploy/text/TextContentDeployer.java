@@ -2,6 +2,8 @@ package example.deploy.text;
 
 import static com.polopoly.cm.VersionedContentId.LATEST_VERSION;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -210,6 +212,22 @@ public class TextContentDeployer {
         setSecurityParent(textContent, content);
 
         setInputTemplate(textContent, content);
+
+        addFiles(textContent, content);
+    }
+
+    private void addFiles(TextContent textContent, Content content) throws CMException, DeployException {
+        for (Entry<String, byte[]> fileEntry :  textContent.getFiles().entrySet()) {
+            byte[] fileData = fileEntry.getValue();
+            String fileName = fileEntry.getKey();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(fileData);
+            try {
+                content.importFile(fileName, inputStream);
+            } catch (IOException e) {
+                throw new DeployException("Could not read file while importing: " + e.getMessage(), e);
+            }
+        }
+
     }
 
     private void setInputTemplate(TextContent textContent, Content content)

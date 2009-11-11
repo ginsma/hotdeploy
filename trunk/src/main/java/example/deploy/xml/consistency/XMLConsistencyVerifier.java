@@ -1,6 +1,7 @@
 package example.deploy.xml.consistency;
 
 import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+import static example.deploy.xml.consistency.ParameterConstants.DIRECTORY_ARGUMENT;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import example.deploy.hotdeploy.DiscovererMainClass;
 import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
@@ -27,7 +29,7 @@ import example.deploy.xml.present.PresentContentAware;
  * non-existing fields are referenced.
  * @author AndreasE
  */
-public class XMLConsistencyVerifier implements ParseCallback, PresentContentAware {
+public class XMLConsistencyVerifier extends DiscovererMainClass implements ParseCallback, PresentContentAware {
     private static final Logger logger =
         Logger.getLogger(XMLConsistencyVerifier.class.getName());
 
@@ -42,7 +44,7 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
 
     private Collection<File> classDirectories = new ArrayList<File>();
 
-    private Collection<DeploymentFile> filesToVerify;
+    private Collection<DeploymentFile> filesToVerify = new ArrayList<DeploymentFile>()                                                                                                          ;
 
     private boolean validateClassReferences = true;
 
@@ -57,7 +59,12 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
     public XMLConsistencyVerifier() {
     }
 
-    public void discoverFiles(FileDiscoverer discoverer) {
+    @Override
+    protected void addDirectory(File directory) {
+        super.addDirectory(directory);
+    }
+
+    void discoverFiles(FileDiscoverer discoverer) {
         try {
             List<DeploymentFile> theseFiles = discoverer.getFilesToImport();
 
@@ -68,7 +75,7 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
                 logger.log(Level.INFO, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
             }
 
-            filesToVerify = theseFiles;
+            filesToVerify.addAll(theseFiles);
         } catch (NotApplicableException e) {
             logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
         }
@@ -83,6 +90,17 @@ public class XMLConsistencyVerifier implements ParseCallback, PresentContentAwar
      * @return true if the XML is consistent, false if it is not.
      */
     public VerifyResult verify() {
+        validateDirectories();
+
+        for (FileDiscoverer discoverer : getDiscoverers()) {
+            discoverFiles(discoverer);
+        }
+
+        if (filesToVerify == null || filesToVerify.isEmpty()) {
+            System.err.println("No files found. Did you specify the parameter --"+ DIRECTORY_ARGUMENT + "?");
+            System.exit(1);
+        }
+
         logger.log(Level.INFO, "Starting verification of content XML in " + filesToVerify.size() + " file(s).");
 
         for (DeploymentFile file : filesToVerify) {

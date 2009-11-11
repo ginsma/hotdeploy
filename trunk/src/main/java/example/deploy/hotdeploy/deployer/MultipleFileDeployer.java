@@ -143,7 +143,7 @@ public class MultipleFileDeployer
         return result.toString();
     }
 
-    public Set<DeploymentFile> discoverAndDeploy(Collection<FileDiscoverer> discoverers)
+    public Set<DeploymentFile> discoverAndDeploy(Iterable<FileDiscoverer> discoverers)
             throws FatalDeployException {
         List<DeploymentFile> files = new ArrayList<DeploymentFile>();
 

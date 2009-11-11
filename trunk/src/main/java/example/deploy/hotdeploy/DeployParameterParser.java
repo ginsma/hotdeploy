@@ -1,37 +1,36 @@
 package example.deploy.hotdeploy;
 
-import example.deploy.hotdeploy.client.ArgumentConsumer;
 import example.deploy.hotdeploy.client.ArgumentParser;
 
-public class DeployParameterParser implements ArgumentConsumer {
+public class DeployParameterParser extends DiscovererParameterParser {
     private Deploy deploy;
 
-    void parseParameters(Deploy deploy, String[] args) {
+    public DeployParameterParser(Deploy deploy) {
+        super(deploy);
+
         this.deploy = deploy;
+    }
+
+    void parseParameters(String[] args) {
         new ArgumentParser(this, args).parse();
     }
 
-    public void argumentFound(String parameter, String value) {
-        if (parameter.equals("discoverresources")) {
-            deploy.setDiscoverResources((value == null ? true : Boolean.parseBoolean(value)));
-        }
-        else if (parameter.equals("onlyjarresources")) {
-            deploy.setOnlyJarResources((value == null ? true : Boolean.parseBoolean(value)));
+    @Override
+    public boolean argumentFound(String parameter, String value) {
+        if (super.argumentFound(parameter, value)) {
+            // handled by superclass.
+            return true;
         }
         else if (parameter.equals("force")) {
-            deploy.setForce(true);
-
             if (value != null) {
-                System.err.println("Force parameter does not take value (value \"" + value + "\" was provided).");
-                printParameterHelp();
-                System.exit(1);
+                noValueAccepted(parameter, value);
             }
+
+            deploy.setForce(true);
         }
         else {
             if (value == null) {
-                System.err.println("Parameter " + parameter + " required a value. Provide it using --" + parameter + "=<value>.");
-                printParameterHelp();
-                System.exit(1);
+                valueRequired(parameter);
             }
 
             if (parameter.equals("user")) {
@@ -43,9 +42,6 @@ public class DeployParameterParser implements ArgumentConsumer {
             else if (parameter.equals("server")) {
                 deploy.setConnectionUrl(value);
             }
-            else if (parameter.equals("dir")) {
-                deploy.addDirectoryName(value);
-            }
             else if (parameter.equals("considerjar")) {
                 deploy.setConsiderDirectoryJar(value);
             }
@@ -55,9 +51,12 @@ public class DeployParameterParser implements ArgumentConsumer {
                 System.exit(1);
             }
         }
+
+        return true;
     }
 
-    void printParameterHelp() {
+    @Override
+    protected void printParameterHelp() {
         System.err.println();
         System.err.println("Accepted parameters:");
         System.err.println("  --dir The directory where the _import_order_ file or the content to import is located.");

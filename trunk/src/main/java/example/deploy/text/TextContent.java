@@ -1,5 +1,8 @@
 package example.deploy.text;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -188,6 +191,22 @@ public class TextContent {
 
     public List<Publishing> getPublishings() {
         return publishings;
+    }
+
+    void addFile(String fileName, InputStream fileData) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
+
+        int ch;
+
+        while ((ch = fileData.read()) != -1) {
+            baos.write(ch);
+        }
+
+        files.put(fileName, baos.toByteArray());
+    }
+
+    Map<String, byte[]> getFiles() {
+        return files;
     }
 
     public void addPublishing(Publishing publishing) {

@@ -3,16 +3,13 @@ package example.deploy.xml.consistency;
 import static example.deploy.xml.consistency.ParameterConstants.DIRECTORY_ARGUMENT;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import example.deploy.hotdeploy.client.ArgumentConsumer;
+import example.deploy.hotdeploy.DiscovererParameterParser;
 import example.deploy.hotdeploy.client.ArgumentParser;
-import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 
-public class VerifierParameterParser implements ArgumentConsumer {
+public class VerifierParameterParser extends DiscovererParameterParser {
     private static final Logger logger =
         Logger.getLogger(VerifierParameterParser.class.getName());
 
@@ -20,35 +17,28 @@ public class VerifierParameterParser implements ArgumentConsumer {
 
     private XMLConsistencyVerifier verifier;
 
-    private Collection<File> xmlDirectories = new ArrayList<File>();
-
     public VerifierParameterParser(
             XMLConsistencyVerifier verifier,
             String[] args) {
+        super(verifier);
         this.verifier = verifier;
         this.args = args;
     }
 
     public void parse() {
         new ArgumentParser(this, args).parse();
-
-        if (verifier.getFiles() == null || verifier.getFiles().isEmpty()) {
-            System.err.println("No files found. Did you specify the parameter --"+ DIRECTORY_ARGUMENT + "?");
-            System.exit(1);
-        }
     }
 
-    public void argumentFound(String parameter, String value) {
-        if (value == null) {
-            System.err.println("Parameter " + parameter + " required a value. Provide it using --" + parameter + "=<value>.");
-            printParameterHelp();
-            System.exit(1);
-        }
-
-        if (parameter.equals(DIRECTORY_ARGUMENT)) {
-            parseDirectory(value);
+    @Override
+    public boolean argumentFound(String parameter, String value) {
+        if (super.argumentFound(parameter, value)) {
+            return true;
         }
         else if (parameter.equals("classdir")) {
+            if (value == null) {
+                valueRequired(parameter);
+            }
+
             parseClassDirectoryNames(value);
         }
         else {
@@ -56,21 +46,8 @@ public class VerifierParameterParser implements ArgumentConsumer {
             printParameterHelp();
             System.exit(1);
         }
-    }
 
-    private void parseDirectory(String directoryName) {
-        File xmlDirectory = new File(directoryName);
-
-        if (!xmlDirectory.canRead()) {
-            logger.log(Level.WARNING,
-                "The directory " + xmlDirectory.getAbsolutePath() + " does not exist.");
-
-            System.exit(1);
-        }
-
-        xmlDirectories.add(xmlDirectory);
-
-        verifier.discoverFiles(new ImportOrderOrDirectoryFileDiscoverer(xmlDirectory));
+        return true;
     }
 
     private void parseClassDirectoryNames(String classDirectoryNames) {
@@ -91,14 +68,11 @@ public class VerifierParameterParser implements ArgumentConsumer {
         }
     }
 
+    @Override
     public void printParameterHelp() {
         System.err.println();
         System.err.println("Accepted parameters:");
         System.err.println("  --" + DIRECTORY_ARGUMENT + " The directory where the _import_order_ file or the content to import is located.");
         System.err.println("  --classdir The directory where the project classes are built to (optional).");
-    }
-
-    public Collection<File> getXMLDirectories() {
-        return xmlDirectories;
     }
 }

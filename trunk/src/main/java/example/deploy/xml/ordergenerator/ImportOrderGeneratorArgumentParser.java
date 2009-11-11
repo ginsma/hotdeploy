@@ -23,7 +23,7 @@ public class ImportOrderGeneratorArgumentParser implements ArgumentConsumer {
         new ArgumentParser(this, args).parse();
     }
 
-    public void argumentFound(String argument, String value) {
+    public boolean argumentFound(String argument, String value) {
         if (argument.equals(DIRECTORY_ARGUMENT)) {
             File directory = new File(value);
 
@@ -39,6 +39,8 @@ public class ImportOrderGeneratorArgumentParser implements ArgumentConsumer {
             printParameterHelp();
             System.exit(1);
         }
+
+        return true;
     }
 
     private void printParameterHelp() {

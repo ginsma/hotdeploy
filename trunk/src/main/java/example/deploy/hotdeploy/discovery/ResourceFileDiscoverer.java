@@ -2,6 +2,8 @@ package example.deploy.hotdeploy.discovery;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,6 +85,12 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
                 }
             }
         }
+
+        Collections.sort(foundImportOrderFiles, new Comparator<ImportOrder>() {
+            public int compare(ImportOrder o1, ImportOrder o2) {
+                return o1.toString().compareTo(o2.toString());
+            }
+        });
 
         topologicalSort(foundImportOrderFiles);
 
@@ -177,8 +185,10 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
 
         for (ImportOrder importOrderFile : foundImportOrderFiles) {
             if (first) {
-                result.append(", ");
                 first = false;
+            }
+            else {
+                result.append(", ");
             }
 
             result.append(importOrderFile.calculateDependencyName());
@@ -206,4 +216,8 @@ public class ResourceFileDiscoverer implements FileDiscoverer {
         logger.log(Level.WARNING, "Thought directory " + directory + " would have content, but could not find it: " + e.getMessage());
     }
 
+    @Override
+    public String toString() {
+        return "resource file discoverer";
+    }
 }
