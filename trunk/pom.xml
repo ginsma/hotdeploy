@@ -4,7 +4,7 @@
   <artifactId>hotdeploy</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy</name>
-  <version>9.13.0.12</version>
+  <version>9.13.0.12-SNAPSHOT</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
