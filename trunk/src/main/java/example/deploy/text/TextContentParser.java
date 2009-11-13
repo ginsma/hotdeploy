@@ -129,19 +129,29 @@ public class TextContentParser {
         }
         else if (prefix.equals(LIST_PREFIX)) {
             String group = null;
+            String referredId = null;
+            String metadata = null;
 
             if (fields.length == 2) {
                 group = ServerNames.DEPARTMENT_ATTRG_SYSTEM;
+                referredId = fields[1];
             }
             else if (fields.length == 3) {
                 group = fields[1];
+                referredId = fields[2];
+            }
+            else if (fields.length == 4) {
+                metadata = fields[3];
+                referredId = fields[2];
             }
             else {
-                fail("Expected one or two parameters for operation " + fields[0] +
-                    " (rather than the provided " + (fields.length-1) + ").");
+                fail("Expected one, two or three parameters for operation " + fields[0] +
+                    " (rather than the provided " + (fields.length-1) + "). " +
+                    "The parameters are: group (optionalunless reference metadata is provided), " +
+                    "referred object, reference metadata (optional).");
             }
 
-            currentContent.getList(group).add(new ExternalIdReference(fields[fields.length-1]));
+            currentContent.getList(group).add(new ExternalIdReference(referredId, metadata));
         }
         else if (prefix.equals(TEMPLATE_PREFIX)) {
             assertFields(2, fields);
@@ -169,20 +179,31 @@ public class TextContentParser {
         }
         else if (prefix.equals(PUBLISH_PREFIX)) {
             String group = null;
+            String publishIn = null;
+            String metadata = null;
 
             if (fields.length == 2) {
                 group = ServerNames.DEPARTMENT_ATTRG_SYSTEM;
+                publishIn = fields[1];
             }
             else if (fields.length == 3) {
                 group = fields[1];
+                publishIn = fields[2];
+            }
+            else if (fields.length == 4) {
+                group = fields[1];
+                publishIn = fields[2];
+                metadata = fields[3];
             }
             else {
-                fail("Expected one or two parameters for operation " + fields[0] +
-                    " (rather than the provided " + (fields.length-1) + ").");
+                fail("Expected one, two or three parameters for operation " + fields[0] +
+                    " (rather than the provided " + (fields.length-1) + "). The parameters are: " +
+                    "group (optional unless reference metadata is provided), object to publish in, " +
+                    "reference metadata (optional).");
             }
 
             Publishing publishing = new Publishing(
-                new ExternalIdReference(fields[fields.length-1]),
+                new ExternalIdReference(publishIn, metadata),
                 group);
 
             currentContent.addPublishing(publishing);

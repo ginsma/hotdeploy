@@ -1,6 +1,7 @@
 package example.deploy.text;
 
 import com.polopoly.cm.ContentId;
+import com.polopoly.cm.ContentReference;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.policy.PolicyCMServer;
 
@@ -10,5 +11,7 @@ public interface Reference {
 
     void validateTemplate(ValidationContext context) throws ValidationException;
 
-    ContentId resolve(PolicyCMServer server) throws CMException;
+    ContentId resolveId(PolicyCMServer server) throws CMException;
+
+    ContentReference resolveReference(PolicyCMServer server) throws CMException;
 }
