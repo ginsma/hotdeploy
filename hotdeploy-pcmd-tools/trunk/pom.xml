@@ -4,7 +4,7 @@
   <artifactId>hotdeploy-pcmd-tools</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy PCMD Tools</name>
-  <version>9.13.0.2</version>
+  <version>9.13.0.7</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
@@ -71,12 +71,12 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>pcmd</artifactId>
-      <version>9.13.0.0</version>
+      <version>9.13.0.6-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>hotdeploy</artifactId>
-      <version>9.13.0.2</version>
+      <version>9.13.0.12-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>jboss</groupId>

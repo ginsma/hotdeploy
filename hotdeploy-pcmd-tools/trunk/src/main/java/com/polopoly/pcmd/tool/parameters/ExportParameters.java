@@ -13,6 +13,7 @@ import com.polopoly.pcmd.argument.Parameters;
 import com.polopoly.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.pcmd.parser.ExistingDirectoryParser;
+import com.polopoly.pcmd.tool.export.ContentFileFormat;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.collection.FetchingIterator;
 
@@ -21,12 +22,15 @@ public class ExportParameters extends ListExportableParameters implements Parame
     public static final String EXPORT_PRESENT_OPTION = "exportpresent";
     private static final String FILTER_REFERENCES = "filterreferences";
     private static final String INCLUDE_REFERRERS_OPTION = "includereferrers";
+    private static final String TEXT_OPTION = "textformat";
 
     private File outputDirectory;
     private boolean exportPresent;
     private boolean idsAreArguments;
     private boolean filterReferences;
     private boolean includeReferrers;
+
+    private ContentFileFormat format = ContentFileFormat.XML;
 
     private ContentIdListParameters idListParameters = new ContentIdListParameters() {
         @Override
@@ -62,7 +66,9 @@ public class ExportParameters extends ListExportableParameters implements Parame
                 "Whether to remove references to content that is neither project content nor part of the export (defaults to true).");
 
         help.addOption(INCLUDE_REFERRERS_OPTION, new BooleanParser(),
-                "Whether to search for and include all content that has references to the specified content (will only retain content that is project content if " + FILTER_REFERENCES + " is true).");
+                "Whether to search for and include all content that has references to the specified content (will only retain content that is project content if " + EXPORT_PRESENT_OPTION + " is true).");
+
+        help.addOption(TEXT_OPTION, new BooleanParser(), "Whether to export the content in text format.");
     }
 
     @Override
@@ -87,6 +93,10 @@ public class ExportParameters extends ListExportableParameters implements Parame
         exportPresent = args.getFlag(EXPORT_PRESENT_OPTION, false);
 
         filterReferences = args.getFlag(FILTER_REFERENCES, true);
+
+        if (args.getFlag(TEXT_OPTION, false)) {
+            format = ContentFileFormat.TEXT;
+        }
 
         setIncludeReferrers(args.getFlag(INCLUDE_REFERRERS_OPTION, false));
     }
@@ -134,5 +144,9 @@ public class ExportParameters extends ListExportableParameters implements Parame
 
     public boolean isFilterReferences() {
         return filterReferences;
+    }
+
+    public ContentFileFormat getFormat() {
+        return format;
     }
 }

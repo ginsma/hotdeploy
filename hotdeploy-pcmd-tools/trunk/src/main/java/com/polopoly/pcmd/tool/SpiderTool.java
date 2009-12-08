@@ -30,7 +30,7 @@ public class SpiderTool implements Tool<SpiderParameters> {
     }
 
     public void execute(PolopolyContext context, SpiderParameters parameters)
-    throws FatalToolException {
+            throws FatalToolException {
         List<File> projectContentDirectories = parameters.getProjectContentDirectories();
 
         if (!projectContentDirectories.isEmpty()) {
