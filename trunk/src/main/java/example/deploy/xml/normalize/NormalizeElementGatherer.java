@@ -25,13 +25,15 @@ import example.deploy.xml.parser.ParseContext;
 public class NormalizeElementGatherer implements ParseCallback {
 
     private static final String TEMPLATE_ROOT_NAME = "template-definition";
+
     private static final String CONTENT_ROOT_NAME = "batch";
 
     private Set<File> writtenFiles = new HashSet<File>();
+
     private NormalizationNamingStrategy namingStrategy;
 
     public NormalizeElementGatherer(File directory) {
-        this(new DefaultNormalizationNamingStrategy(directory));
+        this(new DefaultNormalizationNamingStrategy(directory, "xml"));
     }
 
     public NormalizeElementGatherer(NormalizationNamingStrategy namingStrategy) {
@@ -49,10 +51,12 @@ public class NormalizeElementGatherer implements ParseCallback {
 
     public void contentFound(ParseContext context, String externalId,
             Major major, String inputTemplate) {
-        File outputFile = namingStrategy.getFileName(major, externalId, inputTemplate);
+        File outputFile = namingStrategy.getFileName(major, externalId,
+                inputTemplate);
 
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory
+                    .newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             Element rootElement;
@@ -64,23 +68,27 @@ public class NormalizeElementGatherer implements ParseCallback {
 
                 document = builder.newDocument();
 
-                rootElement = (Element) document.adoptNode(existingDocument.getDocumentElement());
-            }
-            else {
+                rootElement = (Element) document.adoptNode(existingDocument
+                        .getDocumentElement());
+            } else {
                 document = builder.newDocument();
 
                 if (isTemplate(major)) {
                     rootElement = document.createElement(TEMPLATE_ROOT_NAME);
 
                     rootElement.setAttribute("version", "1.0");
-                    rootElement.setAttribute("xmlns", "http://www.polopoly.com/polopoly/cm/app/xml");
-                    rootElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                    rootElement.setAttribute("xsi:schemaLocation", "http://www.polopoly.com/polopoly/cm/app/xml ../../xsd/template.xsd");
-                }
-                else {
+                    rootElement.setAttribute("xmlns",
+                            "http://www.polopoly.com/polopoly/cm/app/xml");
+                    rootElement.setAttribute("xmlns:xsi",
+                            "http://www.w3.org/2001/XMLSchema-instance");
+                    rootElement
+                            .setAttribute("xsi:schemaLocation",
+                                    "http://www.polopoly.com/polopoly/cm/app/xml ../../xsd/template.xsd");
+                } else {
                     rootElement = document.createElement(CONTENT_ROOT_NAME);
 
-                    rootElement.setAttribute("xmlns", "http://www.polopoly.com/polopoly/cm/xmlio");
+                    rootElement.setAttribute("xmlns",
+                            "http://www.polopoly.com/polopoly/cm/xmlio");
                 }
             }
 
@@ -88,15 +96,15 @@ public class NormalizeElementGatherer implements ParseCallback {
 
             document.appendChild(rootElement);
 
-            rootElement.appendChild(
-                document.adoptNode(context.getXmlElement()));
+            rootElement
+                    .appendChild(document.adoptNode(context.getXmlElement()));
 
             DOMSource domSource = new DOMSource(document);
             StreamResult streamResult = new StreamResult(outputStream);
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer serializer = tf.newTransformer();
-            serializer.setOutputProperty(OutputKeys.ENCODING,"ISO-8859-1");
-            serializer.setOutputProperty(OutputKeys.INDENT,"yes");
+            serializer.setOutputProperty(OutputKeys.ENCODING, "ISO-8859-1");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
             serializer.transform(domSource, streamResult);
 
             outputStream.close();
@@ -104,7 +112,8 @@ public class NormalizeElementGatherer implements ParseCallback {
 
             System.out.println("Wrote " + outputFile.getAbsolutePath() + ".");
         } catch (Exception e) {
-            System.err.println("While writing " + externalId + " to " + outputFile.getAbsolutePath() + ": " + e.toString());
+            System.err.println("While writing " + externalId + " to "
+                    + outputFile.getAbsolutePath() + ": " + e.toString());
         }
     }
 

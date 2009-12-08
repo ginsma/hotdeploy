@@ -6,17 +6,21 @@ import java.io.File;
 
 import example.deploy.hotdeploy.client.Major;
 
-public class DefaultNormalizationNamingStrategy implements NormalizationNamingStrategy {
+public class DefaultNormalizationNamingStrategy implements
+        NormalizationNamingStrategy {
     public static final String CONTENT_DIRECTORY = "content";
 
     private static final String SYSTEM_TEMPLATE_PREFIX = "p.";
-    public static final String XML_EXTENSION = ".xml";
 
     private File contentDirectory;
+
     private File templateDirectory;
 
-    public DefaultNormalizationNamingStrategy(File directory) {
+    private String extension;
+
+    public DefaultNormalizationNamingStrategy(File directory, String extension) {
         templateDirectory = directory;
+        this.extension = extension;
 
         contentDirectory = new File(directory, CONTENT_DIRECTORY);
         mkdir(contentDirectory);
@@ -25,7 +29,8 @@ public class DefaultNormalizationNamingStrategy implements NormalizationNamingSt
     private static void mkdir(File directory) {
         if (!directory.exists()) {
             if (!directory.mkdir()) {
-                System.err.println("Could not create directory " + directory.getAbsolutePath());
+                System.err.println("Could not create directory "
+                        + directory.getAbsolutePath());
                 System.exit(1);
             }
         }
@@ -34,8 +39,7 @@ public class DefaultNormalizationNamingStrategy implements NormalizationNamingSt
     public File getFileName(Major major, String externalId, String inputTemplate) {
         if (major == INPUT_TEMPLATE) {
             return getTemplateFileName(externalId);
-        }
-        else {
+        } else {
             return getContentFileName(externalId, inputTemplate);
         }
     }
@@ -47,12 +51,11 @@ public class DefaultNormalizationNamingStrategy implements NormalizationNamingSt
             directory = new File(contentDirectory, inputTemplate);
 
             mkdir(directory);
-        }
-        else {
+        } else {
             directory = contentDirectory;
         }
 
-        return new File(directory, externalId + XML_EXTENSION);
+        return new File(directory, externalId + '.' + extension);
     }
 
     private File getTemplateFileName(String externalId) {
@@ -64,7 +67,7 @@ public class DefaultNormalizationNamingStrategy implements NormalizationNamingSt
             mkdir(directory);
         }
 
-        return new File(directory, externalId + XML_EXTENSION);
+        return new File(directory, externalId + '.' + extension);
     }
 
 }

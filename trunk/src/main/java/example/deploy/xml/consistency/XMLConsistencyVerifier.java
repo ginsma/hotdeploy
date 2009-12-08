@@ -19,44 +19,62 @@ import example.deploy.hotdeploy.client.Major;
 import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
 import example.deploy.hotdeploy.file.DeploymentFile;
+import example.deploy.xml.allcontent.AllContent;
 import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.ParseCallback;
 import example.deploy.xml.parser.ParseContext;
 import example.deploy.xml.present.PresentContentAware;
+import example.deploy.xml.present.PresentFileWriter;
 
 /**
- * Verifies that content XML is consistent and warns in
- * non-existing fields are referenced.
+ * Verifies that content XML is consistent and warns in non-existing fields are
+ * referenced.
+ * 
  * @author AndreasE
  */
-public class XMLConsistencyVerifier extends DiscovererMainClass implements ParseCallback, PresentContentAware {
-    private static final Logger logger =
-        Logger.getLogger(XMLConsistencyVerifier.class.getName());
+public class XMLConsistencyVerifier extends DiscovererMainClass implements
+        ParseCallback, PresentContentAware {
+    private static final Logger logger = Logger
+            .getLogger(XMLConsistencyVerifier.class.getName());
 
     private Set<String> inputTemplates = new HashSet<String>(100);
-    private Map<String, String> contentTemplateByExternalId = new HashMap<String,String>(100);
+
+    private Map<String, String> contentTemplateByExternalId = new HashMap<String, String>(
+            100);
 
     private Set<String> nonFoundContent = new HashSet<String>(100);
+
     private Set<String> nonFoundTemplates = new HashSet<String>(100);
+
     private Set<String> nonFoundClasses = new HashSet<String>(100);
 
     private Set<String> unusedTemplates = new HashSet<String>(100);
 
     private Collection<File> classDirectories = new ArrayList<File>();
 
-    private Collection<DeploymentFile> filesToVerify = new ArrayList<DeploymentFile>()                                                                                                          ;
+    private Collection<DeploymentFile> filesToVerify = new ArrayList<DeploymentFile>();
 
     private boolean validateClassReferences = true;
 
-    XMLConsistencyVerifier(XMLConsistencyVerifier verifier, List<DeploymentFile> filesToVerify) {
+    private AllContent allContent = new AllContent();
+
+    private File writePresentFilesDirectory;
+
+    XMLConsistencyVerifier(XMLConsistencyVerifier verifier,
+            List<DeploymentFile> filesToVerify) {
         this(filesToVerify);
 
-        contentTemplateByExternalId.putAll(verifier.contentTemplateByExternalId);
+        contentTemplateByExternalId
+                .putAll(verifier.contentTemplateByExternalId);
         inputTemplates.addAll(verifier.inputTemplates);
         this.classDirectories.addAll(verifier.classDirectories);
     }
 
     public XMLConsistencyVerifier() {
+    }
+
+    public void setWritePresentFilesDirectory(File directory) {
+        this.writePresentFilesDirectory = directory;
     }
 
     @Override
@@ -69,15 +87,17 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
             List<DeploymentFile> theseFiles = discoverer.getFilesToImport();
 
             if (theseFiles.isEmpty()) {
-                logger.log(Level.WARNING, "Found no files to verify using " + discoverer + ".");
-            }
-            else {
-                logger.log(Level.INFO, discoverer + " identified " + theseFiles.size() + " file(s) to verify.");
+                logger.log(Level.WARNING, "Found no files to verify using "
+                        + discoverer + ".");
+            } else {
+                logger.log(Level.INFO, discoverer + " identified "
+                        + theseFiles.size() + " file(s) to verify.");
             }
 
             filesToVerify.addAll(theseFiles);
         } catch (NotApplicableException e) {
-            logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage(), e);
+            logger.log(Level.INFO, "Cannot apply discovery strategy "
+                    + discoverer + ": " + e.getMessage(), e);
         }
     }
 
@@ -86,7 +106,9 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
     }
 
     /**
-     * Verify all XML files specified in the _import_order file in the specified directory.
+     * Verify all XML files specified in the _import_order file in the specified
+     * directory.
+     * 
      * @return true if the XML is consistent, false if it is not.
      */
     public VerifyResult verify() {
@@ -97,11 +119,14 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
         }
 
         if (filesToVerify == null || filesToVerify.isEmpty()) {
-            System.err.println("No files found. Did you specify the parameter --"+ DIRECTORY_ARGUMENT + "?");
+            System.err
+                    .println("No files found. Did you specify the parameter --"
+                            + DIRECTORY_ARGUMENT + "?");
             System.exit(1);
         }
 
-        logger.log(Level.INFO, "Starting verification of content XML in " + filesToVerify.size() + " file(s).");
+        logger.log(Level.INFO, "Starting verification of content XML in "
+                + filesToVerify.size() + " file(s).");
 
         for (DeploymentFile file : filesToVerify) {
             logger.log(Level.FINE, "Parsing " + file + "...");
@@ -109,7 +134,8 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
             new ContentXmlParser().parse(file, this);
         }
 
-        logger.log(Level.INFO, "Verification of " + filesToVerify.size() + " content XML files finished.");
+        logger.log(Level.INFO, "Verification of " + filesToVerify.size()
+                + " content XML files finished.");
 
         VerifyResult result = new VerifyResult();
 
@@ -118,41 +144,56 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
         result.nonFoundClasses = nonFoundClasses;
         result.unusedTemplates = unusedTemplates;
 
+        writePresentFiles();
+
         return result;
     }
 
-    public void contentFound(ParseContext context, String externalId, Major major, String inputTemplate) {
+    private void writePresentFiles() {
+        if (writePresentFilesDirectory == null) {
+            return;
+        }
+
+        new PresentFileWriter(writePresentFilesDirectory)
+                .writePresentFiles(allContent);
+    }
+
+    public void contentFound(ParseContext context, String externalId,
+            Major major, String inputTemplate) {
         if (major == INPUT_TEMPLATE) {
             if (inputTemplates.add(externalId)) {
                 unusedTemplates.add(externalId);
             }
-        }
-        else {
+        } else {
             if (inputTemplate != null && !inputTemplate.equals("")) {
                 contentReferenceFound(context, INPUT_TEMPLATE, inputTemplate);
             }
 
-            logger.log(Level.FINE, "Found content " + externalId + " with input template " + inputTemplate + ".");
+            logger.log(Level.FINE, "Found content " + externalId
+                    + " with input template " + inputTemplate + ".");
 
             contentTemplateByExternalId.put(externalId, inputTemplate);
         }
+
+        allContent.add(major, externalId);
     }
 
-    public void contentReferenceFound(ParseContext context, Major major, String externalId) {
+    public void contentReferenceFound(ParseContext context, Major major,
+            String externalId) {
         if (major == INPUT_TEMPLATE) {
             if (!inputTemplates.contains(externalId)) {
                 nonFoundTemplates.add(externalId);
-                logger.log(Level.WARNING, "Undefined template " + externalId + " was referenced in " + context.getFile());
+                logger.log(Level.WARNING, "Undefined template " + externalId
+                        + " was referenced in " + context.getFile());
             }
             unusedTemplates.remove(externalId);
-        }
-        else if (!contentTemplateByExternalId.containsKey(externalId)) {
+        } else if (!contentTemplateByExternalId.containsKey(externalId)) {
             if (inputTemplates.contains(externalId)) {
                 unusedTemplates.remove(externalId);
-            }
-            else {
+            } else {
                 nonFoundContent.add(externalId);
-                logger.log(Level.WARNING, "Undefined content " + externalId + " was referenced in " + context.getFile());
+                logger.log(Level.WARNING, "Undefined content " + externalId
+                        + " was referenced in " + context.getFile());
             }
         }
     }
@@ -173,8 +214,7 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
 
             if (ch == '.') {
                 fileName.append(File.separatorChar);
-            }
-            else {
+            } else {
                 fileName.append(ch);
             }
         }
@@ -194,7 +234,8 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
             try {
                 Class.forName(className);
             } catch (ClassNotFoundException e) {
-                logger.log(Level.WARNING, "Unknown class " + className + " was referenced in file " + file + ".");
+                logger.log(Level.WARNING, "Unknown class " + className
+                        + " was referenced in file " + file + ".");
                 nonFoundClasses.add(className);
             }
         }
@@ -205,13 +246,12 @@ public class XMLConsistencyVerifier extends DiscovererMainClass implements Parse
     }
 
     public boolean areErrorsFound() {
-        return !nonFoundContent.isEmpty() ||
-            !nonFoundTemplates.isEmpty() ||
-            !nonFoundClasses.isEmpty();
+        return !nonFoundContent.isEmpty() || !nonFoundTemplates.isEmpty()
+                || !nonFoundClasses.isEmpty();
     }
 
     public void presentContent(String externalId) {
-         contentTemplateByExternalId.put(externalId, null);
+        contentTemplateByExternalId.put(externalId, null);
     }
 
     public void presentTemplate(String inputTemplate) {

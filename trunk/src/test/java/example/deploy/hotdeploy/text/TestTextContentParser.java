@@ -5,6 +5,7 @@ import static com.polopoly.cm.server.ServerNames.CONTENT_ATTR_NAME;
 
 import java.io.InputStream;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 import example.deploy.text.ExternalIdReference;
 import example.deploy.text.Reference;
@@ -26,7 +27,10 @@ public class TestTextContentParser extends TestCase {
             fail("resource not found.");
         }
 
-        TextContentParser parser = new TextContentParser(is, getClass().getResource(resourceName));
+        TextContentParser parser = new TextContentParser(is, getClass()
+                .getResource(resourceName), resourceName);
+
+        Assert.assertEquals("simplecontent", parser.getFileName());
 
         parsed = parser.parse();
     }
@@ -39,20 +43,29 @@ public class TestTextContentParser extends TestCase {
         TextContent article = parsed.get("textcontent.simplearticle");
 
         assertEquals("textcontent.simplearticle", article.getId());
-        assertEquals("Test Page", article.getComponent(CONTENT_ATTRG_SYSTEM, CONTENT_ATTR_NAME));
+        assertEquals("Test Page: name", article.getComponent(
+                CONTENT_ATTRG_SYSTEM, CONTENT_ATTR_NAME));
         assertEqualsReference("p.siteengine.Page", article.getInputTemplate());
+
+        assertEquals("line1\nline2", article.getComponent("group", "name"));
 
         article = parsed.get("textcontent.simplecontenttest");
 
         assertEquals("textcontent.simplecontenttest", article.getId());
-        assertEquals("Test Site", article.getComponent(CONTENT_ATTRG_SYSTEM, CONTENT_ATTR_NAME));
+        assertEquals("Test Site", article.getComponent(CONTENT_ATTRG_SYSTEM,
+                CONTENT_ATTR_NAME));
         assertEqualsReference("p.siteengine.Site", article.getInputTemplate());
-        assertEqualsReference("p.siteengine.Sites.d", article.getSecurityParent());
-        assertEqualsReference("example.DefaultPageLayout", article.getReference("pageLayout","selected"));
+        assertEqualsReference("p.siteengine.Sites.d", article
+                .getSecurityParent());
+        assertEqualsReference("example.DefaultPageLayout", article
+                .getReference("pageLayout", "selected"));
         assertEquals(2, article.getList("polopoly.Department").size());
-        assertEqualsReference("textcontent.simplearticle", article.getList("polopoly.Department").get(0));
-        assertEqualsReference("textcontent.simplearticle2", article.getList("polopoly.Department").get(1));
-        assertEqualsReference("p.siteengine.Sites.d", article.getPublishings().get(0).getPublishIn());
+        assertEqualsReference("textcontent.simplearticle", article.getList(
+                "polopoly.Department").get(0));
+        assertEqualsReference("textcontent.simplearticle2", article.getList(
+                "polopoly.Department").get(1));
+        assertEqualsReference("p.siteengine.Sites.d", article.getPublishings()
+                .get(0).getPublishIn());
     }
 
     private void assertEqualsReference(String string, Reference reference) {

@@ -4,13 +4,13 @@ import java.io.File;
 
 import example.deploy.xml.present.PresentFileReader;
 
-
 public class VerifyXMLConsistency {
 
     public static void main(String[] args) {
         XMLConsistencyVerifier verifier = new XMLConsistencyVerifier();
 
-        VerifierParameterParser parser = new VerifierParameterParser(verifier, args);
+        VerifierParameterParser parser = new VerifierParameterParser(verifier,
+                args);
 
         parser.parse();
 

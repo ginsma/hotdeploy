@@ -8,6 +8,7 @@ import com.polopoly.cm.policy.PolicyCMServer;
 
 public class ExternalIdReference implements Reference {
     private String externalId;
+
     private String metadataExternalId;
 
     public String getExternalId() {
@@ -20,6 +21,8 @@ public class ExternalIdReference implements Reference {
 
     public ExternalIdReference(String externalId, String metadataExternalId) {
         this(externalId);
+
+        this.metadataExternalId = metadataExternalId;
     }
 
     public ExternalIdReference(String externalId) {
@@ -34,7 +37,8 @@ public class ExternalIdReference implements Reference {
         }
     }
 
-    public void validateTemplate(ValidationContext context) throws ValidationException {
+    public void validateTemplate(ValidationContext context)
+            throws ValidationException {
         context.validateTemplateExistence(externalId);
     }
 
@@ -43,23 +47,28 @@ public class ExternalIdReference implements Reference {
         return externalId;
     }
 
-    public ContentReference resolveReference(PolicyCMServer server) throws CMException {
+    public ContentReference resolveReference(PolicyCMServer server)
+            throws CMException {
         VersionedContentId referredId = resolveId(server);
 
         VersionedContentId metadata = null;
 
         if (metadataExternalId != null) {
-            metadata = server.findContentIdByExternalId(new ExternalContentId(metadataExternalId));
+            metadata = server.findContentIdByExternalId(new ExternalContentId(
+                    metadataExternalId));
         }
 
         return new ContentReference(referredId.getContentId(), metadata);
     }
 
-    public VersionedContentId resolveId(PolicyCMServer server) throws CMException {
-        VersionedContentId referredId = server.findContentIdByExternalId(new ExternalContentId(externalId));
+    public VersionedContentId resolveId(PolicyCMServer server)
+            throws CMException {
+        VersionedContentId referredId = server
+                .findContentIdByExternalId(new ExternalContentId(externalId));
 
         if (referredId == null) {
-            throw new CMException("Could not find content with external ID \"" + externalId + "\".");
+            throw new CMException("Could not find content with external ID \""
+                    + externalId + "\".");
         }
 
         return referredId;

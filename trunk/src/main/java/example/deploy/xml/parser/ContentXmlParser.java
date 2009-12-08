@@ -21,14 +21,15 @@ import example.deploy.text.TextContentParser;
 import example.deploy.text.TextContentSet;
 
 public class ContentXmlParser implements DeploymentFileParser {
-    private static final Logger logger =
-        Logger.getLogger(ContentXmlParser.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(ContentXmlParser.class.getName());
 
     public ContentXmlParser() {
     }
 
     private void handleException(DeploymentFile file, Exception e) {
-        logger.log(Level.WARNING, "While parsing " + file + ": " + e.getMessage(), e);
+        logger.log(Level.WARNING, "While parsing " + file + ": "
+                + e.getMessage(), e);
     }
 
     public void parse(DeploymentFile file, ParseCallback callback) {
@@ -37,13 +38,16 @@ public class ContentXmlParser implements DeploymentFileParser {
         try {
             inputStream = file.getInputStream();
 
-            if (file.getName().endsWith('.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
+            if (file.getName().endsWith(
+                    '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
                 ParseContext parseContext = new ParseContext(file);
-                TextContentSet contentSet = new TextContentParser(inputStream, file.getBaseUrl()).parse();
-                new TextContentParseCallbackAdapter(contentSet).callback(callback, parseContext);
-            }
-            else {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                TextContentSet contentSet = new TextContentParser(inputStream,
+                        file.getBaseUrl(), file.getName()).parse();
+                new TextContentParseCallbackAdapter(contentSet).callback(
+                        callback, parseContext);
+            } else {
+                DocumentBuilderFactory factory = DocumentBuilderFactory
+                        .newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 Document document = builder.parse(inputStream);
 
@@ -53,12 +57,11 @@ public class ContentXmlParser implements DeploymentFileParser {
 
                 if (rootName.equals("template-definition")) {
                     new TemplateDefinitionParser(file, root, callback);
-                }
-                else if (rootName.equals("batch")) {
+                } else if (rootName.equals("batch")) {
                     new XmlIoParser(file, root, callback);
-                }
-                else {
-                    logger.log(Level.WARNING, "File " + file + " was of unknown type.");
+                } else {
+                    logger.log(Level.WARNING, "File " + file
+                            + " was of unknown type.");
                 }
             }
         } catch (FileNotFoundException e) {

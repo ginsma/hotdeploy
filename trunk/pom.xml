@@ -60,7 +60,7 @@
     <repository>
       <id>local</id>
       <name>Test resources</name>
-      <url>${basedir}/repository</url>
+      <url>file://${basedir}/repository</url>
     </repository>
   </repositories>
   <dependencies>

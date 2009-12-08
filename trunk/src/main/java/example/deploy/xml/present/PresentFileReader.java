@@ -22,17 +22,21 @@ import example.deploy.hotdeploy.util.CheckedClassCastException;
 import example.deploy.xml.parser.ContentXmlParser;
 
 public class PresentFileReader {
-    private static final Logger logger =
-        Logger.getLogger(PresentFileReader.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(PresentFileReader.class.getName());
 
     private static final String PRESENT_FILES_RESOURCE_DIRECTORY = "/content/";
-    private static final String PRESENT_CONTENT_FILE = "presentContent.txt";
-    private static final String PRESENT_TEMPLATES_FILE = "presentTemplates.txt";
+
+    public static final String PRESENT_CONTENT_FILE = "presentContent.txt";
+
+    public static final String PRESENT_TEMPLATES_FILE = "presentTemplates.txt";
 
     private File rootDirectory;
+
     private PresentContentAware presentFilesAware;
 
-    public PresentFileReader(File rootDirectory, PresentContentAware presentFilesAware) {
+    public PresentFileReader(File rootDirectory,
+            PresentContentAware presentFilesAware) {
         this.rootDirectory = rootDirectory;
         this.presentFilesAware = presentFilesAware;
     }
@@ -61,13 +65,12 @@ public class PresentFileReader {
         try {
             new PresentFileReader(rootDirectory, presentFilesAware).read();
 
-            List<DeploymentFile> deploymentFiles =
-                discoverFilesInDirectory(rootDirectory);
+            List<DeploymentFile> deploymentFiles = discoverFilesInDirectory(rootDirectory);
 
             ContentXmlParser parser = new ContentXmlParser();
 
-            PresentContentAwareToParseCallbackAdapter callback =
-                new PresentContentAwareToParseCallbackAdapter(presentFilesAware);
+            PresentContentAwareToParseCallbackAdapter callback = new PresentContentAwareToParseCallbackAdapter(
+                    presentFilesAware);
 
             int fileCount = 0;
 
@@ -79,37 +82,45 @@ public class PresentFileReader {
                 }
             }
         } catch (NotApplicableException e) {
-            logger.log(Level.INFO, "The directory " + rootDirectory.getAbsolutePath() + " did not contain any content files.");
+            logger.log(Level.INFO, "The directory "
+                    + rootDirectory.getAbsolutePath()
+                    + " did not contain any content files.");
         }
     }
 
-    public static List<DeploymentFile> discoverFilesInDirectory(File directory) throws NotApplicableException {
-        FallbackDiscoverer discoverer =
-            new ImportOrderOrDirectoryFileDiscoverer(directory);
+    public static List<DeploymentFile> discoverFilesInDirectory(File directory)
+            throws NotApplicableException {
+        FallbackDiscoverer discoverer = new ImportOrderOrDirectoryFileDiscoverer(
+                directory);
 
         return discoverer.getFilesToImport();
     }
 
     private void readFromResource() {
-        DeploymentFile presentContentResourceFile = new ResourceFile(PRESENT_FILES_RESOURCE_DIRECTORY + PRESENT_CONTENT_FILE);
+        DeploymentFile presentContentResourceFile = new ResourceFile(
+                PRESENT_FILES_RESOURCE_DIRECTORY + PRESENT_CONTENT_FILE);
         readPresentContent(presentContentResourceFile);
 
-        DeploymentFile presentTemplatesResourceFile = new ResourceFile(PRESENT_FILES_RESOURCE_DIRECTORY + PRESENT_TEMPLATES_FILE);
+        DeploymentFile presentTemplatesResourceFile = new ResourceFile(
+                PRESENT_FILES_RESOURCE_DIRECTORY + PRESENT_TEMPLATES_FILE);
         readPresentTemplates(presentTemplatesResourceFile);
     }
 
-    private void readFromRootDirectory() {
-        FileDeploymentDirectory directory = new FileDeploymentDirectory(rootDirectory);
+    public void readFromRootDirectory() {
+        FileDeploymentDirectory directory = new FileDeploymentDirectory(
+                rootDirectory);
 
         try {
-            DeploymentObject presentContentFile = directory.getFile(PRESENT_CONTENT_FILE);
+            DeploymentObject presentContentFile = directory
+                    .getFile(PRESENT_CONTENT_FILE);
             readPresentContent(presentContentFile);
         } catch (FileNotFoundException e) {
             // fine.
         }
 
         try {
-            DeploymentObject presentTemplatesFile = directory.getFile(PRESENT_TEMPLATES_FILE);
+            DeploymentObject presentTemplatesFile = directory
+                    .getFile(PRESENT_TEMPLATES_FILE);
             readPresentTemplates(presentTemplatesFile);
         } catch (FileNotFoundException e) {
             // fine.
@@ -126,11 +137,11 @@ public class PresentFileReader {
 
     private void readListOfExternalIds(DeploymentObject file, Major major) {
         try {
-            DeploymentFile presentContent =
-                CheckedCast.cast(file, DeploymentFile.class);
+            DeploymentFile presentContent = CheckedCast.cast(file,
+                    DeploymentFile.class);
 
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(presentContent.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    presentContent.getInputStream()));
 
             String line = reader.readLine();
 
@@ -140,8 +151,7 @@ public class PresentFileReader {
                 if (!ignoreLine(line)) {
                     if (major == Major.INPUT_TEMPLATE) {
                         presentFilesAware.presentTemplate(line);
-                    }
-                    else {
+                    } else {
                         presentFilesAware.presentContent(line);
                     }
                 }
@@ -153,7 +163,8 @@ public class PresentFileReader {
         } catch (FileNotFoundException e) {
             // ignore
         } catch (CheckedClassCastException e) {
-            logger.log(Level.WARNING, file + " does not seem to be an ordinary file.");
+            logger.log(Level.WARNING, file
+                    + " does not seem to be an ordinary file.");
         } catch (IOException e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
@@ -164,4 +175,3 @@ public class PresentFileReader {
     }
 
 }
-

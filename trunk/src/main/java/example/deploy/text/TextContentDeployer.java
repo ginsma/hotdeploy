@@ -32,10 +32,11 @@ import example.deploy.hotdeploy.util.CheckedCast;
 import example.deploy.hotdeploy.util.CheckedClassCastException;
 
 public class TextContentDeployer {
-    private static final Logger logger =
-        Logger.getLogger(TextContentDeployer.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(TextContentDeployer.class.getName());
 
     private TextContentSet contentSet;
+
     private PolicyCMServer server;
 
     public TextContentDeployer(TextContentSet contentSet, PolicyCMServer server) {
@@ -53,20 +54,22 @@ public class TextContentDeployer {
                     Policy newVersionPolicy = createNewVersion(textContent);
 
                     newVersionById.put(textContent.getId(), newVersionPolicy);
-                }
-                catch (CMException e) {
-                    throw new DeployException("While creating " + textContent.getId() + ": " + e, e);
+                } catch (CMException e) {
+                    throw new DeployException("While creating "
+                            + textContent.getId() + ": " + e, e);
                 }
             }
 
             for (TextContent textContent : contentSet) {
                 try {
-                    // do this in a second step since one of the objects in the set might
+                    // do this in a second step since one of the objects in the
+                    // set might
                     // be the publish content.
                     createPublishInVersion(textContent, newVersionById);
-                }
-                catch (CMException e) {
-                    throw new DeployException("While creating object to publish " + textContent.getId() + " in: " + e, e);
+                } catch (CMException e) {
+                    throw new DeployException(
+                            "While creating object to publish "
+                                    + textContent.getId() + " in: " + e, e);
                 }
             }
 
@@ -76,29 +79,38 @@ public class TextContentDeployer {
 
                     deploy(textContent, newVersion);
                 } catch (CMException e) {
-                    throw new DeployException("While importing " + textContent.getId() + ": " + e, e);
+                    throw new DeployException("While importing "
+                            + textContent.getId() + ": " + e, e);
                 }
             }
 
-            // do this in a separate step since the deploy step clears content lists and we might be deploying
+            // do this in a separate step since the deploy step clears content
+            // lists and we might be deploying
             // to another object in the same batch.
             for (TextContent textContent : contentSet) {
                 try {
                     for (Publishing publishing : textContent.getPublishings()) {
-                        String publishInExternalId = ((ExternalIdReference) publishing.getPublishIn()).getExternalId();
+                        String publishInExternalId = ((ExternalIdReference) publishing
+                                .getPublishIn()).getExternalId();
 
-                        Policy newVersion = newVersionById.get(textContent.getId());
-                        Policy publishInVersion = newVersionById.get(publishInExternalId);
+                        Policy newVersion = newVersionById.get(textContent
+                                .getId());
+                        Policy publishInVersion = newVersionById
+                                .get(publishInExternalId);
 
-                        publish(newVersion, publishInVersion, publishing.getPublishInGroup(),
-                            publishing.getPublishIn().resolveReference(server).getReferenceMetaDataId());
+                        publish(newVersion, publishInVersion, publishing
+                                .getPublishInGroup(), publishing.getPublishIn()
+                                .resolveReference(server)
+                                .getReferenceMetaDataId());
                     }
                 } catch (CMException e) {
-                    throw new DeployException("While publishing " + textContent.getId() + ": " + e, e);
+                    throw new DeployException("While publishing "
+                            + textContent.getId() + ": " + e, e);
                 }
             }
 
-            Iterator<Policy> newVersionIterator = newVersionById.values().iterator();
+            Iterator<Policy> newVersionIterator = newVersionById.values()
+                    .iterator();
             Collection<Policy> result = new ArrayList<Policy>();
 
             while (newVersionIterator.hasNext()) {
@@ -109,12 +121,15 @@ public class TextContentDeployer {
                 } catch (CMException e) {
                     String externalId;
                     try {
-                        externalId = newVersion.getContent().getExternalId().getExternalId();
+                        externalId = newVersion.getContent().getExternalId()
+                                .getExternalId();
                     } catch (CMException e1) {
-                        externalId = newVersion.getContentId().getContentId().getContentIdString();
+                        externalId = newVersion.getContentId().getContentId()
+                                .getContentIdString();
                     }
 
-                    throw new DeployException("While committing " + externalId + ": " + e, e);
+                    throw new DeployException("While committing " + externalId
+                            + ": " + e, e);
                 }
 
                 newVersionIterator.remove();
@@ -124,17 +139,18 @@ public class TextContentDeployer {
             success = true;
 
             return result;
-        }
-        finally {
+        } finally {
             if (!success) {
-                for (Entry<String, Policy> newVersionEntry : newVersionById.entrySet()) {
+                for (Entry<String, Policy> newVersionEntry : newVersionById
+                        .entrySet()) {
                     Policy newVersion = newVersionEntry.getValue();
                     String id = newVersionEntry.getKey();
 
                     try {
                         server.abortContent(newVersion, true);
                     } catch (CMException e) {
-                        logger.log(Level.WARNING, "While aborting " + id + " after failure: " + e.getMessage(), e);
+                        logger.log(Level.WARNING, "While aborting " + id
+                                + " after failure: " + e.getMessage(), e);
                     }
                 }
             }
@@ -148,19 +164,21 @@ public class TextContentDeployer {
 
         if (publishInGroup != null) {
             contentList = publishInContent.getContentList(publishInGroup);
-        }
-        else {
+        } else {
             contentList = publishInContent.getContentList();
         }
 
         if (!contains(contentList, publish.getContentId())) {
-            contentList.add(contentList.size(), new ContentReference(publish.getContentId().getContentId(), metadata));
+            contentList.add(contentList.size(), new ContentReference(publish
+                    .getContentId().getContentId(), metadata));
         }
     }
 
-    private boolean contains(ContentList contentList, ContentId contentId) throws CMException {
-        for (int i = contentList.size()-1; i >= 0; i--) {
-            if (contentList.getEntry(i).getReferredContentId().equalsIgnoreVersion(contentId)) {
+    private boolean contains(ContentList contentList, ContentId contentId)
+            throws CMException {
+        for (int i = contentList.size() - 1; i >= 0; i--) {
+            if (contentList.getEntry(i).getReferredContentId()
+                    .equalsIgnoreVersion(contentId)) {
                 return true;
             }
         }
@@ -172,18 +190,20 @@ public class TextContentDeployer {
             Map<String, Policy> newVersionById) throws CMException {
         for (Publishing publishing : textContent.getPublishings()) {
             Reference publishIn = publishing.getPublishIn();
-            String publishInExternalId = ((ExternalIdReference) publishIn).getExternalId();
+            String publishInExternalId = ((ExternalIdReference) publishIn)
+                    .getExternalId();
 
             if (!newVersionById.containsKey(publishInExternalId)) {
-                Policy newPublishInVersion =
-                    createNewVersionOfExistingContent(publishIn.resolveId(server));
+                Policy newPublishInVersion = createNewVersionOfExistingContent(publishIn
+                        .resolveId(server));
 
                 newVersionById.put(publishInExternalId, newPublishInVersion);
             }
         }
     }
 
-    private void deploy(TextContent textContent, Policy policy) throws CMException, DeployException {
+    private void deploy(TextContent textContent, Policy policy)
+            throws CMException, DeployException {
         Content content = policy.getContent();
 
         String templateId = textContent.getTemplateId();
@@ -192,13 +212,15 @@ public class TextContentDeployer {
             TextContent template = contentSet.get(templateId);
 
             if (template == null) {
-                throw new DeployException("The object \"" + templateId +
-                    "\" specified as template of " + textContent + " must be defined in the same file.");
+                throw new DeployException("The object \"" + templateId
+                        + "\" specified as template of " + textContent
+                        + " must be defined in the same file.");
             }
 
             if (template.getTemplateId() != null) {
-                throw new DeployException("Cannot use the object \"" + templateId +
-                        "\" as template of " + textContent + " since it in turn also has a template.");
+                throw new DeployException("Cannot use the object \""
+                        + templateId + "\" as template of " + textContent
+                        + " since it in turn also has a template.");
             }
 
             deploy(template, policy);
@@ -217,7 +239,8 @@ public class TextContentDeployer {
         addFiles(textContent, content);
     }
 
-    private void addFiles(TextContent textContent, Content content) throws CMException, DeployException {
+    private void addFiles(TextContent textContent, Content content)
+            throws CMException, DeployException {
         for (Entry<String, byte[]> fileEntry : textContent.getFiles()
                 .entrySet()) {
             byte[] fileData = fileEntry.getValue();
@@ -231,28 +254,30 @@ public class TextContentDeployer {
             } catch (IOException e) {
                 throw new DeployException(
                         "Could not read file while importing: "
-                        + e.getMessage(), e);
+                                + e.getMessage(), e);
             }
         }
 
     }
 
-    private void ensureDirectoryExists(Content content, String fileName) throws CMException {
+    private void ensureDirectoryExists(Content content, String fileName)
+            throws CMException {
         String path = getDirPath(fileName);
-        logger.log(Level.FINE, "Ensuring that content file directory " + path + " exists.");
+        logger.log(Level.FINE, "Ensuring that content file directory " + path
+                + " exists.");
+
         try {
             content.createDirectory(path, true);
         } catch (IOException e1) {
-            logger.log(Level.FINE, "Did not create content file directory " + path + " because it already exists.");
+            logger.log(Level.FINE, "Did not create content file directory "
+                    + path + " because it already exists.");
         }
     }
 
     private String getDirPath(String path) {
         // Find last index of '/'
         int dirIndex = path.lastIndexOf("/");
-        return (dirIndex > -1)
-        ? path.substring(0, dirIndex)
-                : "";
+        return (dirIndex > -1) ? path.substring(0, dirIndex) : "";
     }
 
     private void setInputTemplate(TextContent textContent, Content content)
@@ -275,12 +300,13 @@ public class TextContentDeployer {
 
     private void setLists(TextContent textContent, Content content)
             throws CMException {
-        for (Entry<String, List<Reference>> groupEntry : textContent.getLists().entrySet()) {
+        for (Entry<String, List<Reference>> groupEntry : textContent.getLists()
+                .entrySet()) {
             String group = groupEntry.getKey();
 
             ContentList contentList = content.getContentList(group);
 
-            for (int i = contentList.size()-1; i >= 0; i--) {
+            for (int i = contentList.size() - 1; i >= 0; i--) {
                 contentList.remove(0);
             }
 
@@ -294,10 +320,12 @@ public class TextContentDeployer {
 
     private void setComponents(TextContent textContent, Content content)
             throws CMException {
-        for (Entry<String, Map<String, String>> groupEntry : textContent.getComponents().entrySet()) {
+        for (Entry<String, Map<String, String>> groupEntry : textContent
+                .getComponents().entrySet()) {
             String group = groupEntry.getKey();
 
-            for (Entry<String, String> componentEntry : groupEntry.getValue().entrySet()) {
+            for (Entry<String, String> componentEntry : groupEntry.getValue()
+                    .entrySet()) {
                 String component = componentEntry.getKey();
                 String value = componentEntry.getValue();
 
@@ -308,14 +336,17 @@ public class TextContentDeployer {
 
     private void setReferences(TextContent textContent, Content content)
             throws CMException {
-        for (Entry<String, Map<String, Reference>> groupEntry : textContent.getReferences().entrySet()) {
+        for (Entry<String, Map<String, Reference>> groupEntry : textContent
+                .getReferences().entrySet()) {
             String group = groupEntry.getKey();
 
-            for (Entry<String, Reference> componentEntry : groupEntry.getValue().entrySet()) {
+            for (Entry<String, Reference> componentEntry : groupEntry
+                    .getValue().entrySet()) {
                 String component = componentEntry.getKey();
                 Reference reference = componentEntry.getValue();
 
-                content.setContentReference(group, component, reference.resolveId(server));
+                content.setContentReference(group, component, reference
+                        .resolveId(server));
             }
         }
     }
@@ -325,7 +356,8 @@ public class TextContentDeployer {
         VersionedContentId contentId = null;
 
         try {
-            contentId = server.findContentIdByExternalId(new ExternalContentId(textContent.getId()));
+            contentId = server.findContentIdByExternalId(new ExternalContentId(
+                    textContent.getId()));
         } catch (EJBFinderException e) {
         }
 
@@ -348,31 +380,33 @@ public class TextContentDeployer {
 
             if (textContent.getMajor() == Major.UNKNOWN) {
                 major = getMajor(server, inputTemplate);
-            }
-            else {
+            } else {
                 major = textContent.getMajor();
             }
 
-            newVersionPolicy = server.createContent(major.getIntegerMajor(), inputTemplate.getContentId());
+            newVersionPolicy = server.createContent(major.getIntegerMajor(),
+                    inputTemplate.getContentId());
             newVersionPolicy.getContent().setExternalId(textContent.getId());
             newVersionPolicy.getContent().setName(textContent.getId());
-        }
-        else {
+        } else {
             newVersionPolicy = createNewVersionOfExistingContent(contentId);
         }
 
         return newVersionPolicy;
     }
 
-    private Policy createNewVersionOfExistingContent(ContentId contentId) throws CMException {
-        VersionedContentId latestVersion = new VersionedContentId(contentId, LATEST_VERSION);
+    private Policy createNewVersionOfExistingContent(ContentId contentId)
+            throws CMException {
+        VersionedContentId latestVersion = new VersionedContentId(contentId,
+                LATEST_VERSION);
 
         latestVersion = server.translateSymbolicContentId(latestVersion);
 
         Policy newVersionPolicy;
         LockInfo lockInfo = server.getContent(latestVersion).getLockInfo();
 
-        if (lockInfo != null && !lockInfo.getLocker().equals(server.getCurrentCaller())) {
+        if (lockInfo != null
+                && !lockInfo.getLocker().equals(server.getCurrentCaller())) {
             ((Content) server.getContent(contentId)).forcedUnlock();
         }
 
@@ -387,7 +421,8 @@ public class TextContentDeployer {
 
         TextContent atTemplate = textContent;
 
-        while (inputTemplateReference == null && atTemplate.getTemplateId() != null) {
+        while (inputTemplateReference == null
+                && atTemplate.getTemplateId() != null) {
             atTemplate = contentSet.get(atTemplate.getTemplateId());
 
             if (atTemplate != null) {
@@ -396,8 +431,9 @@ public class TextContentDeployer {
         }
 
         if (inputTemplateReference == null) {
-            throw new DeployException(textContent.getId() + " needs to specify an input " +
-                "template since the object did not already exist.");
+            throw new DeployException(textContent.getId()
+                    + " needs to specify an input "
+                    + "template since the object did not already exist.");
         }
 
         ContentId inputTemplateId = inputTemplateReference.resolveId(server);
@@ -405,20 +441,28 @@ public class TextContentDeployer {
         InputTemplate inputTemplate;
 
         try {
-            inputTemplate = CheckedCast.cast(server.getContent(inputTemplateId), InputTemplate.class);
+            inputTemplate = CheckedCast.cast(
+                    server.getContent(inputTemplateId), InputTemplate.class);
         } catch (CheckedClassCastException e) {
-            throw new DeployException("The input template " + inputTemplateReference + " did not have InputTemplate as policy.");
+            throw new DeployException("The input template "
+                    + inputTemplateReference
+                    + " did not have InputTemplate as policy.");
         }
         return inputTemplate;
     }
 
-    private Major getMajor(PolicyCMServer server,
-            InputTemplate inputTemplate) throws CMException, DeployException {
-        String majorString = inputTemplate.getComponent("polopoly.Client", "major");
+    private Major getMajor(PolicyCMServer server, InputTemplate inputTemplate)
+            throws CMException, DeployException {
+        String majorString = inputTemplate.getComponent("polopoly.Client",
+                "major");
 
         if (majorString == null) {
-            logger.log(Level.WARNING, "The input template " + inputTemplate.getName() +
-                " did not specify its major (type). Assuming \"Article\".");
+            logger
+                    .log(
+                            Level.WARNING,
+                            "The input template "
+                                    + inputTemplate.getName()
+                                    + " did not specify its major (type). Assuming \"Article\".");
 
             majorString = "Article";
         }
@@ -426,7 +470,9 @@ public class TextContentDeployer {
         Major result = Major.getMajor(majorString);
 
         if (result == Major.UNKNOWN) {
-            throw new DeployException("The input template " + inputTemplate.getName() + " specified the unknown major \"" + majorString + "\".");
+            throw new DeployException("The input template "
+                    + inputTemplate.getName()
+                    + " specified the unknown major \"" + majorString + "\".");
         }
 
         return result;
