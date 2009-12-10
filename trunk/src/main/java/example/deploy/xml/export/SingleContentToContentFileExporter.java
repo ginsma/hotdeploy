@@ -77,16 +77,23 @@ public class SingleContentToContentFileExporter implements
 
     private void writeId(ContentRead content, Writer writer)
             throws CMException, IOException, ExportException {
-        ExternalContentId externalId = content.getExternalId();
+        writeln(writer, ID_PREFIX + SEPARATOR_CHAR + getId(content));
+    }
 
-        if (externalId != null) {
-            writeln(writer, ID_PREFIX + SEPARATOR_CHAR
-                    + externalId.getExternalId());
-        } else {
-            throw new ExportException(
-                    toString(content)
-                            + " did not have an external ID and therefore cannot be exported to .content format.");
+    private String getId(ContentRead content) {
+        ExternalContentId externalId;
+
+        try {
+            externalId = content.getExternalId();
+            if (externalId != null) {
+                return externalId.getExternalId();
+            }
+        } catch (CMException e) {
+            LOGGER.log(Level.WARNING, "Getting external ID of "
+                    + toString(content) + ": " + e.getMessage(), e);
         }
+
+        return content.getContentId().getContentId().getContentIdString();
     }
 
     private void writeFiles(ContentRead content, File file, Writer writer)
@@ -98,9 +105,8 @@ public class SingleContentToContentFileExporter implements
                 continue;
             }
 
-            File outputFile = new File(file.getParent(), content
-                    .getExternalId().getExternalId()
-                    + "." + contentFile.getName());
+            File outputFile = new File(file.getParent(), getId(content) + "."
+                    + contentFile.getName());
 
             FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 
@@ -263,20 +269,7 @@ public class SingleContentToContentFileExporter implements
 
             ContentRead referredContent = server.getContent(contentId);
 
-            ExternalContentId externalId = referredContent.getExternalId();
-
-            if (externalId == null) {
-                String message = "Content "
-                        + toString(referredContent)
-                        + " had no external ID. Cannot export it to .content format.";
-
-                LOGGER.log(Level.WARNING, "While exporting "
-                        + toString(referredContent) + ": " + message);
-
-                throw new NotExportableException(message);
-            }
-
-            return externalId.getExternalId();
+            return getId(referredContent);
         } catch (CMException e) {
             throw new ExportException("Getting external ID of "
                     + contentId.getContentIdString() + ":  " + e.getMessage(),
