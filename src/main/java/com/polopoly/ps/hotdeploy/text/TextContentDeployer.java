@@ -331,20 +331,22 @@ public class TextContentDeployer {
 
 	private void addFiles(TextContent textContent, Content content)
 			throws CMException, DeployException {
-		for (Entry<String, byte[]> fileEntry : textContent.getFiles()
-				.entrySet()) {
-			byte[] fileData = fileEntry.getValue();
-			String fileName = fileEntry.getKey();
-
-			ensureDirectoryExists(content, fileName);
-			ByteArrayInputStream inputStream = new ByteArrayInputStream(
-					fileData);
+		for (String fileName  : textContent.getFileNames()) {
 			try {
-				content.importFile(fileName, inputStream);
-			} catch (IOException e) {
-				throw new DeployException(
-						"Could not read file while importing: "
-								+ e.getMessage(), e);
+				byte[] fileData = textContent.getFileData(fileName);
+
+				ensureDirectoryExists(content, fileName);
+				ByteArrayInputStream inputStream = new ByteArrayInputStream(
+						fileData);
+				try {
+					content.importFile(fileName, inputStream);
+				} catch (IOException e) {
+					throw new DeployException(
+							"Could not read file while importing: "
+									+ e.getMessage(), e);
+				}
+			} catch (NoSuchFileException e) {
+				logger.log(Level.WARNING, e.toString(),e);
 			}
 		}
 

@@ -136,7 +136,7 @@ class XmlIoParser extends AbstractParser {
 			InputStream stream = fileUrl.openStream();
 
 			try {
-				content.addFile(storeInFile, stream);
+				content.addFile(storeInFile, stream, fileUrl);
 			} finally {
 				try {
 					stream.close();

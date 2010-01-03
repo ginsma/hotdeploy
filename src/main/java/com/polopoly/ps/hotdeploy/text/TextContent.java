@@ -3,6 +3,7 @@ package com.polopoly.ps.hotdeploy.text;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,7 +30,18 @@ public class TextContent {
 	private Map<String, Map<String, String>> components = new HashMap<String, Map<String, String>>();
 	private Map<String, Map<String, Reference>> references = new HashMap<String, Map<String, Reference>>();
 	private Map<String, List<Reference>> lists = new HashMap<String, List<Reference>>();
-	private Map<String, byte[]> files = new HashMap<String, byte[]>();
+	private Map<String, FileContent> files = new HashMap<String, FileContent>();
+
+	private class FileContent {
+		byte[] data;
+		URL source;
+
+		public FileContent(byte[] data, URL source) {
+			super();
+			this.data = data;
+			this.source = source;
+		}
+	}
 
 	private List<Publishing> publishings = new ArrayList<Publishing>();
 	private List<String> workflowActions = new ArrayList<String>();
@@ -215,8 +227,8 @@ public class TextContent {
 				try {
 					reference.validate(context);
 				} catch (ValidationException v) {
-					result.addFailure(this, reference, "Reference " + group + ":" + name + " to " + reference
-							+ ": " + v.getMessage());
+					result.addFailure(this, reference, "Reference " + group + ":" + name + " to " + reference + ": "
+							+ v.getMessage());
 				}
 			}
 		}
@@ -230,8 +242,8 @@ public class TextContent {
 				try {
 					reference.validate(context);
 				} catch (ValidationException v) {
-					result.addFailure(this, reference, "Reference in list " + listEntry.getKey() + " to "
-							+ reference + ": " + v.getMessage());
+					result.addFailure(this, reference, "Reference in list " + listEntry.getKey() + " to " + reference
+							+ ": " + v.getMessage());
 				}
 			}
 		}
@@ -265,7 +277,7 @@ public class TextContent {
 		return publishings;
 	}
 
-	public void addFile(String fileName, InputStream fileData) throws IOException {
+	public void addFile(String fileName, InputStream fileData, URL fileUrl) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
 
 		int ch;
@@ -274,25 +286,31 @@ public class TextContent {
 			baos.write(ch);
 		}
 
-		files.put(fileName, baos.toByteArray());
+		files.put(fileName, new FileContent(baos.toByteArray(), fileUrl));
 	}
 
-	Map<String, byte[]> getFiles() {
-		return files;
+	public Iterable<String> getFileNames() {
+		return files.keySet();
 	}
 
-	public Iterator<String> getFileNames() {
-		return files.keySet().iterator();
-	}
-
-	public byte[] getFile(String fileName) throws NoSuchFileException {
-		byte[] result = files.get(fileName);
+	public URL getFileSource(String fileName) throws NoSuchFileException {
+		FileContent result = files.get(fileName);
 
 		if (result == null) {
 			throw new NoSuchFileException("The file " + fileName + " was not defined in " + this + ".");
 		}
 
-		return result;
+		return result.source;
+	}
+
+	public byte[] getFileData(String fileName) throws NoSuchFileException {
+		FileContent result = files.get(fileName);
+
+		if (result == null) {
+			throw new NoSuchFileException("The file " + fileName + " was not defined in " + this + ".");
+		}
+
+		return result.data;
 	}
 
 	public void addPublishing(Publishing publishing) {

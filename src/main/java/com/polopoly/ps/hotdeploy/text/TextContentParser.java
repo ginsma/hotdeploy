@@ -18,8 +18,7 @@ import com.polopoly.cm.server.ServerNames;
 import com.polopoly.ps.hotdeploy.client.Major;
 
 public class TextContentParser {
-	private static final Logger LOGGER = Logger
-			.getLogger(TextContentParser.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(TextContentParser.class.getName());
 
 	public static final char SEPARATOR_CHAR = ':';
 
@@ -65,8 +64,7 @@ public class TextContentParser {
 
 	private boolean readFiles = true;
 
-	public TextContentParser(InputStream inputStream, URL contentUrl,
-			String fileName) throws IOException {
+	public TextContentParser(InputStream inputStream, URL contentUrl, String fileName) throws IOException {
 		reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
 		this.contentUrl = contentUrl;
 
@@ -82,11 +80,10 @@ public class TextContentParser {
 		}
 
 		if (fileName.endsWith('.' + TEXT_CONTENT_FILE_EXTENSION)) {
-			fileName = fileName.substring(0, fileName.length()
-					- TEXT_CONTENT_FILE_EXTENSION.length() - 1);
+			fileName = fileName.substring(0, fileName.length() - TEXT_CONTENT_FILE_EXTENSION.length() - 1);
 		} else {
-			LOGGER.log(Level.WARNING, "Expected file name " + fileName
-					+ " to end with ." + TEXT_CONTENT_FILE_EXTENSION + ".");
+			LOGGER.log(Level.WARNING, "Expected file name " + fileName + " to end with ." + TEXT_CONTENT_FILE_EXTENSION
+					+ ".");
 		}
 
 		this.fileName = fileName;
@@ -124,7 +121,7 @@ public class TextContentParser {
 			assertFields(2, fields);
 			currentContent = new TextContent();
 
-			currentContent.setId(expandId(fields[1]));
+			currentContent.setId(expandId(fields[1].trim()));
 			parsed.add(currentContent);
 
 			return;
@@ -142,12 +139,10 @@ public class TextContentParser {
 		} else if (prefix.equals(NAME_PREFIX)) {
 			assertFields(2, fields);
 			// TODO: replace with constants.
-			currentContent.setComponent(CONTENT_ATTRG_SYSTEM,
-					CONTENT_ATTR_NAME, fields[1]);
+			currentContent.setComponent(CONTENT_ATTRG_SYSTEM, CONTENT_ATTR_NAME, fields[1]);
 		} else if (prefix.equals(SECURITY_PARENT_PREFIX)) {
 			assertFields(2, fields);
-			currentContent.setSecurityParent(new ExternalIdReference(
-					expandId(fields[1])));
+			currentContent.setSecurityParent(new ExternalIdReference(expandId(fields[1])));
 		} else if (prefix.equals(COMPONENT_PREFIX)) {
 			assertFields(4, fields);
 
@@ -155,15 +150,14 @@ public class TextContentParser {
 		} else if (prefix.equals(REFERENCE_PREFIX)) {
 			assertFields(4, fields);
 
-			currentContent.setReference(fields[1], fields[2],
-					new ExternalIdReference(expandId(fields[3])));
+			currentContent.setReference(fields[1], fields[2], new ExternalIdReference(expandId(fields[3])));
 		} else if (prefix.equals(FILE_PREFIX)) {
 			assertFields(3, fields);
 
 			if (readFiles) {
 				String fileToImport = fields[2];
 				String importAsName = fields[1];
-				
+
 				importFile(fileToImport, importAsName);
 			}
 		} else if (prefix.equals(LIST_PREFIX)) {
@@ -182,18 +176,13 @@ public class TextContentParser {
 				referredId = fields[2];
 				metadata = fields[3];
 			} else {
-				fail("Expected one, two or three parameters for operation "
-						+ fields[0]
-						+ " (rather than the provided "
-						+ (fields.length - 1)
-						+ "). "
+				fail("Expected one, two or three parameters for operation " + fields[0] + " (rather than the provided "
+						+ (fields.length - 1) + "). "
 						+ "The parameters are: group (optionalunless reference metadata is provided), "
 						+ "referred object, reference metadata (optional).");
 			}
 
-			currentContent.getList(group).add(
-					new ExternalIdReference(expandId(referredId),
-							expandId(metadata)));
+			currentContent.getList(group).add(new ExternalIdReference(expandId(referredId), expandId(metadata)));
 		} else if (prefix.equals(TEMPLATE_PREFIX)) {
 			assertFields(2, fields);
 
@@ -232,54 +221,45 @@ public class TextContentParser {
 				publishIn = fields[2];
 				metadata = fields[3];
 			} else {
-				fail("Expected one, two or three parameters for operation "
-						+ fields[0]
-						+ " (rather than the provided "
-						+ (fields.length - 1)
-						+ "). The parameters are: "
+				fail("Expected one, two or three parameters for operation " + fields[0] + " (rather than the provided "
+						+ (fields.length - 1) + "). The parameters are: "
 						+ "group (optional unless reference metadata is provided), object to publish in, "
 						+ "reference metadata (optional).");
 			}
 
-			Publishing publishing = new Publishing(new ExternalIdReference(
-					expandId(publishIn), expandId(metadata)), group);
+			Publishing publishing = new Publishing(new ExternalIdReference(expandId(publishIn), expandId(metadata)),
+					group);
 
 			currentContent.addPublishing(publishing);
 		} else if (prefix.equals(WORKFLOW_ACTION_PREFIX)) {
 			assertFields(2, fields);
 			currentContent.addWorkflowAction(fields[1]);
 		} else {
-			fail("Line should start with " + ID_PREFIX + ", "
-					+ INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "
-					+ SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", "
-					+ PUBLISH_PREFIX + ", " + MAJOR_PREFIX + ", "
-					+ REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
+			fail("Line should start with " + ID_PREFIX + ", " + INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "
+					+ SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", " + PUBLISH_PREFIX + ", " + MAJOR_PREFIX
+					+ ", " + REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
 		}
 	}
 
-	private void importFile(String fileToImport, String importAsName)
-			throws ParseException {
+	private void importFile(String fileToImport, String importAsName) throws ParseException {
 		try {
 			URL fileUrl = new URL(contentUrl, fileToImport);
 
 			InputStream stream = fileUrl.openStream();
 
 			try {
-				currentContent.addFile(importAsName, stream);
+				currentContent.addFile(importAsName, stream, fileUrl);
 			} finally {
 				try {
 					stream.close();
 				} catch (Exception e) {
-					LOGGER.log(Level.WARNING, "While closing input stream "
-							+ contentUrl + ": " + e.getMessage(), e);
+					LOGGER.log(Level.WARNING, "While closing input stream " + contentUrl + ": " + e.getMessage(), e);
 				}
 			}
 		} catch (MalformedURLException e) {
-			fail("Could not read file " + fileToImport + " relative to "
-					+ contentUrl + ".");
+			fail("Could not read file " + fileToImport + " relative to " + contentUrl + ".");
 		} catch (IOException e) {
-			fail("Could not read file " + fileToImport + " relative to "
-					+ contentUrl + ".");
+			fail("Could not read file " + fileToImport + " relative to " + contentUrl + ".");
 		}
 	}
 
@@ -330,13 +310,10 @@ public class TextContentParser {
 		throw new ParseException(message, line, atLine);
 	}
 
-	private void assertFields(int expectedFields, String[] fields)
-			throws ParseException {
+	private void assertFields(int expectedFields, String[] fields) throws ParseException {
 		if (fields.length != expectedFields) {
-			fail("Expected " + (expectedFields - 1)
-					+ " parameters for operation " + fields[0]
-					+ " (rather than the provided " + (fields.length - 1)
-					+ ").");
+			fail("Expected " + (expectedFields - 1) + " parameters for operation " + fields[0]
+					+ " (rather than the provided " + (fields.length - 1) + ").");
 		}
 
 	}
