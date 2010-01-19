@@ -173,6 +173,7 @@ public class TextContentParser {
                 group = fields[1];
                 referredId = fields[2];
             } else if (fields.length == 4) {
+            	group = fields[1];
                 metadata = fields[3];
                 referredId = fields[2];
             } else {
