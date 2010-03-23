@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
+import com.polopoly.pcmd.argument.NotProvidedException;
 import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.pcmd.argument.Parameters;
 import com.polopoly.pcmd.parser.ExistingFileParser;
@@ -30,7 +31,12 @@ public class FilesToDeployParameters implements Parameters {
 
     public void parseParameters(Arguments args, PolopolyContext context)
             throws ArgumentException {
-        setFileOrDirectory(args.getArgument(0, new ExistingFileParser()));
+        try {
+            setFileOrDirectory(args.getArgument(0, new ExistingFileParser()));
+        }
+        catch (NotProvidedException e) {
+            // optional.
+        }
     }
 
     public void setFileOrDirectory(File directoryOrFile) {
@@ -51,7 +57,10 @@ public class FilesToDeployParameters implements Parameters {
 
         List<DeploymentFile> result;
 
-        if (fileOrDirectory.isDirectory()) {
+        if (fileOrDirectory == null) {
+            result = Collections.emptyList();
+        }
+        else if (fileOrDirectory.isDirectory()) {
             result = discoverFilesInDirectory(fileOrDirectory);
         }
         else {

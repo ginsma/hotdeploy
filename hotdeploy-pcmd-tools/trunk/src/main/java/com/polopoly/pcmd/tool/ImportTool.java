@@ -172,15 +172,17 @@ public class ImportTool implements Tool<ImportParameters> {
                 createBootstrap(parameters, files);
             }
 
-            System.out.println(files.size() + " content file" + plural(files.size()) +
-                    " found in " + parameters.getFileOrDirectory().getAbsolutePath() + "...");
+            if (parameters.getFileOrDirectory() != null) {
+                System.out.println(files.size() + " content file" + plural(files.size()) +
+                        " found in " + parameters.getFileOrDirectory().getAbsolutePath() + "...");
 
-            MultipleFileDeployer deployer =
-                createDeployer(context, files.size());
+                MultipleFileDeployer deployer =
+                    createDeployer(context, files.size());
 
-            deployer.deploy(files);
+                deployer.deploy(files);
 
-            System.out.println(deployer.getResultMessage(files));
+                System.out.println(deployer.getResultMessage(files));
+            }
         } catch (FatalDeployException e) {
             System.err.println("Deployment could not be performed: " + e.getMessage());
         } finally {
@@ -202,6 +204,9 @@ public class ImportTool implements Tool<ImportParameters> {
             if (resourceFiles.isEmpty()) {
                 return;
             }
+
+            System.out.println(resourceFiles.size() + " content file" + plural(resourceFiles.size()) +
+                    " found in the classpath.");
 
             MultipleFileDeployer deployer =
                 createDeployer(context, resourceFiles.size());
