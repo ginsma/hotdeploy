@@ -119,17 +119,11 @@ public class TextContentDeployer {
                 try {
                     newVersion.getContent().commit();
                 } catch (CMException e) {
-                    String externalId;
-                    try {
-                        externalId = newVersion.getContent().getExternalId()
-                                .getExternalId();
-                    } catch (CMException e1) {
-                        externalId = newVersion.getContentId().getContentId()
-                                .getContentIdString();
-                    }
-
-                    throw new DeployException("While committing " + externalId
-                            + ": " + e, e);
+                    throw new DeployCommitException("While committing "
+                            + toString(newVersion) + ": " + e, e);
+                } catch (Exception e) {
+                    throw new DeployCommitException("While committing "
+                            + toString(newVersion) + ": " + e, e);
                 }
 
                 newVersionIterator.remove();
@@ -157,6 +151,14 @@ public class TextContentDeployer {
         }
     }
 
+    private String toString(Policy policy) {
+        try {
+            return policy.getContent().getExternalId().getExternalId();
+        } catch (CMException externalIdException) {
+            return policy.getContentId().getContentId().getContentIdString();
+        }
+    }
+
     private void publish(Policy publish, Policy publishIn,
             String publishInGroup, ContentId metadata) throws CMException {
         Content publishInContent = publishIn.getContent();
@@ -177,8 +179,11 @@ public class TextContentDeployer {
     private boolean contains(ContentList contentList, ContentId contentId)
             throws CMException {
         for (int i = contentList.size() - 1; i >= 0; i--) {
-            if (contentList.getEntry(i).getReferredContentId()
-                    .equalsIgnoreVersion(contentId)) {
+            ContentId referredContentId = contentList.getEntry(i)
+                    .getReferredContentId();
+
+            if (referredContentId != null
+                    && referredContentId.equalsIgnoreVersion(contentId)) {
                 return true;
             }
         }
@@ -203,7 +208,7 @@ public class TextContentDeployer {
     }
 
     private void deploy(TextContent textContent, Policy policy)
-            throws CMException, DeployException {
+            throws DeployException, CMException {
         Content content = policy.getContent();
 
         String templateId = textContent.getTemplateId();

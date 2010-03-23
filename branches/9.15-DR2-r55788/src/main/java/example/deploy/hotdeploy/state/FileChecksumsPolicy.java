@@ -15,35 +15,23 @@ import example.deploy.hotdeploy.file.DeploymentFile;
  * Replaced by {@link FileChecksumsPseudoPolicy}.
  */
 public class FileChecksumsPolicy extends ContentPolicy {
-    private static final Logger logger =
-        Logger.getLogger(FileChecksumsPolicy.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(FileChecksumsPolicy.class.getName());
 
     public static final int ATTRIBGROUP_MAXLEN = 60;
-    private static final int HALF_ATTRIB_GROUP_MAXLEN = ATTRIBGROUP_MAXLEN / 2;
 
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
+
     private static final String SLOW_CHECKSUM_COMPONENT = "slow";
 
-    private String getAttributeGroup(DeploymentFile file) {
-        String result = file.getName();
-
-        if (result.length() > ATTRIBGROUP_MAXLEN) {
-            result =
-                result.substring(0, HALF_ATTRIB_GROUP_MAXLEN) + "..." +
-                result.substring(result.length() - HALF_ATTRIB_GROUP_MAXLEN);
-        }
-
-        return result;
-    }
-
     private LongComponent getQuickChecksumComponent(DeploymentFile file) {
-        return new LongComponent(getAttributeGroup(file),
-            QUICK_CHECKSUM_COMPONENT, -1);
+        return new LongComponent(FileChecksumsPseudoPolicy
+                .getAttributeGroup(file), QUICK_CHECKSUM_COMPONENT, -1);
     }
 
     private LongComponent getSlowChecksumComponent(DeploymentFile file) {
-        return new LongComponent(getAttributeGroup(file),
-            SLOW_CHECKSUM_COMPONENT, -1);
+        return new LongComponent(FileChecksumsPseudoPolicy
+                .getAttributeGroup(file), SLOW_CHECKSUM_COMPONENT, -1);
     }
 
     @Override
@@ -53,8 +41,7 @@ public class FileChecksumsPolicy extends ContentPolicy {
 
             getContentUnwrapped().setMetaDataComponent(
                     ServerNames.CMD_ATTRG_SYSTEM,
-                    ServerNames.CMD_ATTR_MAXVERSIONS,
-                    "1");
+                    ServerNames.CMD_ATTR_MAXVERSIONS, "1");
         }
     }
 
@@ -72,7 +59,8 @@ public class FileChecksumsPolicy extends ContentPolicy {
             getQuickChecksumComponent(file).setLongValue(this, quickChecksum);
             getSlowChecksumComponent(file).setLongValue(this, slowChecksum);
         } catch (CMException e) {
-            throw new CouldNotUpdateStateException("While saving deployment state of " + file + ": " + e, e);
+            throw new CouldNotUpdateStateException(
+                    "While saving deployment state of " + file + ": " + e, e);
         }
     }
 
@@ -80,14 +68,15 @@ public class FileChecksumsPolicy extends ContentPolicy {
         try {
             for (String componentGroup : getComponentGroupNames()) {
                 for (String component : getComponentNames(componentGroup)) {
-                    if (component.equals(QUICK_CHECKSUM_COMPONENT) ||
-                            component.equals(SLOW_CHECKSUM_COMPONENT)) {
+                    if (component.equals(QUICK_CHECKSUM_COMPONENT)
+                            || component.equals(SLOW_CHECKSUM_COMPONENT)) {
                         setComponent(componentGroup, component, null);
                     }
                 }
             }
         } catch (CMException e) {
-            logger.log(Level.WARNING, "While clearing file checksums: " + e.getMessage(), e);
+            logger.log(Level.WARNING, "While clearing file checksums: "
+                    + e.getMessage(), e);
         }
     }
 }

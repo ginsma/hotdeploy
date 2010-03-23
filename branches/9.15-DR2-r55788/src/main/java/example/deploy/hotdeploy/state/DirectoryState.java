@@ -1,11 +1,10 @@
 package example.deploy.hotdeploy.state;
 
-
 import example.deploy.hotdeploy.file.DeploymentFile;
 
 /**
  * Describes the modified state of files in a directory.
- *
+ * 
  * @author AndreasE
  */
 public interface DirectoryState {
@@ -17,8 +16,8 @@ public interface DirectoryState {
 
     /**
      * Store the file's current state as reference for whether it has changed.
-     * Immediately after the call, {@link #hasFileChanged(DeploymentFile)} will return
-     * false.
+     * Immediately after the call, {@link #hasFileChanged(DeploymentFile)} will
+     * return false.
      */
     void reset(DeploymentFile file, boolean failed);
 
