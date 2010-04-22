@@ -6,29 +6,38 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JarFileBaseNameFinder {
-    private static final Logger logger =
-        Logger.getLogger(JarFileBaseNameFinder.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(JarFileBaseNameFinder.class.getName());
 
     public String getBaseName(String jarAbsolutePath) {
         String jarFileName = stripPath(jarAbsolutePath);
 
-        String jarFileNameWithoutExtension =
-            stripExtension(jarAbsolutePath, jarFileName);
+        String jarFileNameWithoutExtension = stripExtension(jarAbsolutePath,
+                jarFileName);
 
-        Pattern pattern = Pattern.compile(".*(-\\d+(\\.\\d+)*(-SNAPSHOT)?).*"); //");
+        Pattern pattern = Pattern.compile("[^\\d]*(-\\d+(\\.\\d+)*).*?");
 
         Matcher matcher = pattern.matcher(jarFileNameWithoutExtension);
 
         if (matcher.matches()) {
             String versionString = matcher.group(1);
-            int versionStart = jarFileNameWithoutExtension.indexOf(versionString);
+            int versionStart = jarFileNameWithoutExtension
+                    .indexOf(versionString);
 
             if (versionStart != -1) {
-                return jarFileNameWithoutExtension.substring(0, versionStart) +
-                    jarFileNameWithoutExtension.substring(versionStart + versionString.length());
-            }
-            else {
-                logger.log(Level.WARNING, "Funny, could not find \"" + versionString + "\" in \"" + jarFileNameWithoutExtension + "\".");
+                String afterVersion = jarFileNameWithoutExtension
+                        .substring(versionStart + versionString.length());
+
+                if (afterVersion.startsWith("-SNAPSHOT")) {
+                    afterVersion = afterVersion.substring("-SNAPSHOT".length());
+                }
+
+                return jarFileNameWithoutExtension.substring(0, versionStart)
+                        + (afterVersion.equals("-tests") ? afterVersion : "");
+            } else {
+                logger.log(Level.WARNING, "Funny, could not find \""
+                        + versionString + "\" in \""
+                        + jarFileNameWithoutExtension + "\".");
             }
         }
 
@@ -41,10 +50,11 @@ public class JarFileBaseNameFinder {
         String jarFileNameWithoutExtension;
 
         if (extensionStartsAtIndex != -1) {
-            jarFileNameWithoutExtension = jarFileName.substring(0, extensionStartsAtIndex);
-        }
-        else {
-            logger.log(Level.WARNING, "The JAR file " + jarAbsolutePath + " did not have the extension \".jar\".");
+            jarFileNameWithoutExtension = jarFileName.substring(0,
+                    extensionStartsAtIndex);
+        } else {
+            logger.log(Level.WARNING, "The JAR file " + jarAbsolutePath
+                    + " did not have the extension \".jar\".");
 
             jarFileNameWithoutExtension = jarFileName;
         }
@@ -62,9 +72,8 @@ public class JarFileBaseNameFinder {
         String jarFileName;
 
         if (i != -1) {
-            jarFileName = jarAbsolutePath.substring(i+1);
-        }
-        else {
+            jarFileName = jarAbsolutePath.substring(i + 1);
+        } else {
             jarFileName = jarAbsolutePath;
         }
         return jarFileName;

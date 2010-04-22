@@ -1,7 +1,9 @@
 <projectDescription>
   <name>hotdeploy</name>
   <comment/>
-  <projects/>
+  <projects>
+    <project>pcmd</project>
+  </projects>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>
