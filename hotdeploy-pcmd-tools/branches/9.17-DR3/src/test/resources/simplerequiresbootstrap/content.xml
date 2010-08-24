@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<batch xmlns="http://www.polopoly.com/polopoly/cm/xmlio">
+  <content>
+    <metadata>
+      <contentid>
+        <major>Department</major>
+        <externalid>test.Department</externalid>
+      </contentid>
+      <input-template>
+        <externalid>p.DefaultDepartment</externalid>
+      </input-template>
+    </metadata>
+    <component group="polopoly.Content" name="name">Security parent for field department</component>
+  </content>
+  <content>
+    <metadata>
+      <contentid>
+        <major>Article</major>
+        <externalid>test.FirstArticle</externalid>
+      </contentid>
+      <input-template>
+        <externalid>test.Article</externalid>
+      </input-template>
+      <security-parent>
+	<externalid>test.Department</externalid>
+      </security-parent>
+    </metadata>
+    <component group="polopoly.Content" name="name">My First Article</component>
+  </content>
+</batch>
