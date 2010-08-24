@@ -97,13 +97,16 @@ public class PresentFileReader {
     }
 
     private void readFromResource() {
-        DeploymentFile presentContentResourceFile = new ResourceFile(
-                PRESENT_FILES_RESOURCE_DIRECTORY + PRESENT_CONTENT_FILE);
-        readPresentContent(presentContentResourceFile);
+        for (String directory : new String[] {
+                PRESENT_FILES_RESOURCE_DIRECTORY, "/" }) {
+            DeploymentFile presentContentResourceFile = new ResourceFile(
+                    directory + PRESENT_CONTENT_FILE);
+            readPresentContent(presentContentResourceFile);
 
-        DeploymentFile presentTemplatesResourceFile = new ResourceFile(
-                PRESENT_FILES_RESOURCE_DIRECTORY + PRESENT_TEMPLATES_FILE);
-        readPresentTemplates(presentTemplatesResourceFile);
+            DeploymentFile presentTemplatesResourceFile = new ResourceFile(
+                    directory + PRESENT_TEMPLATES_FILE);
+            readPresentTemplates(presentTemplatesResourceFile);
+        }
     }
 
     public void readFromRootDirectory() {

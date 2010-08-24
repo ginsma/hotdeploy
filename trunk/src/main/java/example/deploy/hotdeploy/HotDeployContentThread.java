@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import com.polopoly.cm.client.impl.exceptions.PermissionDeniedException;
 import com.polopoly.cm.policy.PolicyCMServer;
-import com.polopoly.cm.xml.hotdeploy.util.UserUtil.LoginFailedException;
+import com.polopoly.community.util.content.AdminUserUtil.LoginFailedException;
 import com.polopoly.common.lang.PolopolyThread;
 import com.polopoly.user.server.UserServer;
 

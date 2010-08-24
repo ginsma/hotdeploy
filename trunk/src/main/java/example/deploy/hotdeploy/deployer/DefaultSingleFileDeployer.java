@@ -26,6 +26,7 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
 import example.deploy.text.CMServerValidationContext;
+import example.deploy.text.DeployCommitException;
 import example.deploy.text.TextContentDeployer;
 import example.deploy.text.TextContentParser;
 import example.deploy.text.TextContentSet;
@@ -38,8 +39,14 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 
     private DispatchingDocumentImporter importer;
 
+    private static boolean importing;
+
     public DefaultSingleFileDeployer(PolicyCMServer server) {
         this.server = server;
+    }
+
+    public static boolean isImporting() {
+        return importing;
     }
 
     public void prepare() throws ParserConfigurationException {
@@ -63,35 +70,41 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
     }
 
     private void importFile(DeploymentFile fileToImport) throws Exception {
-        if (fileToImport.getName().endsWith(
-                '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
-            TextContentSet textContent = new TextContentParser(fileToImport
-                    .getInputStream(), fileToImport.getBaseUrl(), fileToImport
-                    .getName()).parse();
+        importing = true;
 
-            textContent.validate(new CMServerValidationContext(server));
+        try {
+            if (fileToImport.getName().endsWith(
+                    '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
+                TextContentSet textContent = new TextContentParser(fileToImport
+                        .getInputStream(), fileToImport.getBaseUrl(),
+                        fileToImport.getName()).parse();
 
-            for (Policy createdPolicy : new TextContentDeployer(textContent,
-                    server).deploy()) {
-                contentCommitted(createdPolicy.getContentId());
+                textContent.validate(new CMServerValidationContext(server));
+
+                for (Policy createdPolicy : new TextContentDeployer(
+                        textContent, server).deploy()) {
+                    contentCommitted(createdPolicy.getContentId());
+                }
+
+                return;
             }
 
-            return;
-        }
+            setImporterBaseUrl(importer, fileToImport);
 
-        setImporterBaseUrl(importer, fileToImport);
+            DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
+            Document xmlDocument = documentBuilder.parse(fileToImport
+                    .getInputStream());
 
-        DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
-        Document xmlDocument = documentBuilder.parse(fileToImport
-                .getInputStream());
-
-        if (fileToImport instanceof JarDeploymentFile) {
-            importer.importXML(xmlDocument, ((JarDeploymentFile) fileToImport)
-                    .getJarFile(), ((JarDeploymentFile) fileToImport)
-                    .getNameWithinJar());
-        } else {
-            importer.importXML(xmlDocument, null,
-                    ((FileDeploymentFile) fileToImport).getDirectory());
+            if (fileToImport instanceof JarDeploymentFile) {
+                importer.importXML(xmlDocument,
+                        ((JarDeploymentFile) fileToImport).getJarFile(),
+                        ((JarDeploymentFile) fileToImport).getNameWithinJar());
+            } else {
+                importer.importXML(xmlDocument, null,
+                        ((FileDeploymentFile) fileToImport).getDirectory());
+            }
+        } finally {
+            importing = false;
         }
     }
 
@@ -204,8 +217,11 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
                 message = e.toString();
             }
 
+            boolean printStackTrace = e instanceof RuntimeException
+                    || e instanceof DeployCommitException;
+
             logger.log(Level.WARNING, "Import of " + fileToImport + " failed: "
-                    + message, (e instanceof RuntimeException ? e : null));
+                    + message, (printStackTrace ? e : null));
 
             return false;
         }

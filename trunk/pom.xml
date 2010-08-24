@@ -4,7 +4,11 @@
   <artifactId>hotdeploy</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy</name>
-  <version>9.13.0.12-SNAPSHOT</version>
+  <properties>
+     <polopoly.version>9.16.1</polopoly.version>
+     <pcmd.version>6</pcmd.version>
+  </properties>
+  <version>${polopoly.version}</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
@@ -67,17 +71,18 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>polopoly</artifactId>
-      <version>9.13.0</version>
+      <version>${polopoly.version}</version>
     </dependency>
     <dependency>
-        <groupId>jboss</groupId>
-        <artifactId>jboss-j2ee</artifactId>
-        <version>4.0.2</version>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-j2ee</artifactId>
+      <version>4.0.2</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <version>2.3</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -100,7 +105,7 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>pcmd</artifactId>
-      <version>9.13.0.6-SNAPSHOT</version>
+      <version>${polopoly.version}.${pcmd.version}-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

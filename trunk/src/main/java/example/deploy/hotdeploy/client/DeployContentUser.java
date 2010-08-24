@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 import javax.ejb.FinderException;
 
 import com.polopoly.cm.policy.PolicyCMServer;
-import com.polopoly.cm.xml.hotdeploy.util.ApplicationUtil.ApplicationNotInitializedException;
-import com.polopoly.cm.xml.hotdeploy.util.UserUtil.LoginFailedException;
+import com.polopoly.community.util.content.ApplicationUtil.ApplicationNotInitializedException;
+import com.polopoly.community.util.content.AdminUserUtil.LoginFailedException;
 import com.polopoly.user.server.AuthenticationFailureException;
 import com.polopoly.user.server.Caller;
 import com.polopoly.user.server.PermissionDeniedException;
