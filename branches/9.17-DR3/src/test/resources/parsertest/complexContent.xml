@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<batch xmlns="http://www.polopoly.com/polopoly/cm/xmlio">
+  <!-- Localized strings -->
+  <content>
+    <metadata>
+      <contentid>
+        <major>Article</major>
+        <externalid>localizedstrings.english</externalid>
+      </contentid>
+      <input-template>
+        <externalid>p.siteengine.LocalizedStrings</externalid>
+      </input-template>
+      <security-parent>
+        <externalid>p.siteengine.Configuration.d</externalid>
+      </security-parent>
+    </metadata>
+    <component name="name" group="polopoly.Content">English</component>
+    <component group="lc" name="value">en</component>
+    <component group="cc" name="value">US</component>
+    <component group="localizedstrings" name="search.search">Search</component>
+    <component group="localizedstrings" name="search.showing">Showing</component>
+    <component group="localizedstrings" name="search.of">of</component>
+    <component group="localizedstrings" name="search.yoursearchfor">Your search for</component>
+    <component group="localizedstrings" name="search.didnotmatch">did not match any documents</component>
+    <component group="localizedstrings" name="search.previous">Previous</component>
+    <component group="localizedstrings" name="search.next">Next</component>
+    <!-- Content comments -->
+    <component group="localizedstrings" name="comments.comment">Comment</component>
+    <component group="localizedstrings" name="comments.writecomment">Add comment</component>
+    <component group="localizedstrings" name="comments.yourname">Your name</component>
+    <component group="localizedstrings" name="comments.next"><![CDATA[Next &raquo;]]></component>
+    <component group="localizedstrings" name="comments.previous"><![CDATA[&laquo; Previous]]></component>
+    <component group="localizedstrings" name="comments.acceptterms">I have read and accepted</component>
+    <component group="localizedstrings" name="comments.licenseandterms">the website's terms for commenting</component>
+    <component group="localizedstrings" name="comments.nofcomments">comments</component>
+    <component group="localizedstrings" name="comments.inputerror">
+      For a comment to be approved the comment and a name must be filled in, the checkbox for accepting the terms must be checked, and the verification entry must be correct if not logged in.
+    </component>
+    <component group="localizedstrings" name="comments.closedforwrite">This article is closed for commenting</component>
+    <component group="localizedstrings" name="comments.bethefirsttocomment">Be the first to comment on this article!</component>
+    <component group="localizedstrings" name="comments.premoderatedpost">Thank you for your comment. It will be shown when it has been approved by a moderator.</component>
+    <component group="localizedstrings" name="comments.reportabuse">Report</component>
+    <component group="localizedstrings" name="comments.report.title">Report comment</component>
+    <component group="localizedstrings" name="comments.report.close">Close</component>
+    <component group="localizedstrings" name="comments.report.reason">Explain briefly why you think the comment should be removed:</component>
+    <component group="localizedstrings" name="comments.report.name">Your name:</component>
+    <component group="localizedstrings" name="comments.report.email">Your email address:</component>
+    <component group="localizedstrings" name="comments.report.send">Send</component>
+    <component group="localizedstrings" name="comments.report.thanks">
+      Thank you! The comment has been reported and will be reviewed by our moderators. They will remove the commen om de finner det olämpligt.
+    </component>
+    <component group="localizedstrings" name="comments.date.format">EEE MMM d yyyy HH:mm</component>
+    <component group="localizedstrings" name="comments.report.email.subject">New report on comment!</component>
+    <component group="localizedstrings" name="comments.report.email.message">Report:</component>
+    <component group="localizedstrings" name="comments.report.email.postid">Posting id:</component>
+    <component group="localizedstrings" name="comments.report.email.authorName">Reported by:</component>
+    <component group="localizedstrings" name="comments.report.email.authorEmail">Email:</component>
+  </content>
+  <content>
+    <metadata>
+      <contentid>
+        <major>Article</major>
+        <externalid>localizedstrings.swedish</externalid>
+      </contentid>
+      <input-template>
+        <externalid>p.siteengine.LocalizedStrings</externalid>
+      </input-template>
+      <security-parent>
+        <externalid>securityparent</externalid>
+        <major>Department</major>
+      </security-parent>
+    </metadata>
+    <component name="name" group="polopoly.Content">Swedish</component>
+    <component group="lc" name="value">sv</component>
+    <component group="cc" name="value">SE</component>
+    <component group="localizedstrings" name="search.search">Sök</component>
+    <component group="localizedstrings" name="search.showing">Visar</component>
+    <component group="localizedstrings" name="search.of">av</component>
+    <component group="localizedstrings" name="search.yoursearchfor">Din sökning</component>
+    <component group="localizedstrings" name="search.didnotmatch">matchade inga dokument</component>
+    <component group="localizedstrings" name="search.previous">Föregående</component>
+    <component group="localizedstrings" name="search.next">Nästa</component>
+    <!-- Content comments -->
+    <component group="localizedstrings" name="comments.comment">Kommentera</component>
+    <component group="localizedstrings" name="comments.writecomment">Skriv din kommentar:</component>
+    <component group="localizedstrings" name="comments.yourname">Ditt namn</component>
+    <component group="localizedstrings" name="comments.next"><![CDATA[Nästa &raquo;]]></component>
+    <component group="localizedstrings" name="comments.previous"><![CDATA[&laquo; Föregående]]></component>
+    <component group="localizedstrings" name="comments.acceptterms">Jag har läst och godkänt</component>
+    <component group="localizedstrings" name="comments.licenseandterms">webbplatsens regler och villkor för kommentarer</component>
+    <component group="localizedstrings" name="comments.nofcomments">kommentarer</component>
+    <component group="localizedstrings" name="comments.inputerror">
+      För att en kommentar ska godkännas måste kommentartexten och ett namn vara ifyllda och kryssrutan för regler och villkor måste vara ikryssad.
+    </component>
+    <component group="localizedstrings" name="comments.closedforwrite">Den här artikeln är redan stängd för kommentering</component>
+    <component group="localizedstrings" name="comments.bethefirsttocomment">Bli den första att kommentera denna artikel!</component>
+    <component group="localizedstrings" name="comments.premoderatedpost">Tack för ditt inlägg, det kommer visas efter att det blivit godkänt av en moderator.</component>
+    <component group="localizedstrings" name="comments.reportabuse">Anmäl</component>
+    <component group="localizedstrings" name="comments.report.title">Anmäl kommentar</component>
+    <component group="localizedstrings" name="comments.report.close">Stäng</component>
+    <component group="localizedstrings" name="comments.report.reason">Beskriv kortfattat varför du tycker att kommentaren ska tas bort:</component>
+    <component group="localizedstrings" name="comments.report.name">Ditt namn:</component>
+    <component group="localizedstrings" name="comments.report.email">Din e-postadress:</component>
+    <component group="localizedstrings" name="comments.report.send">Skicka</component>
+    <component group="localizedstrings" name="comments.report.thanks">
+      Tack! Kommentaren har anmälts och kommer att granskas av våra moderatorer. De kommer att ta bort kommentaren om de finner det olämpligt.
+    </component>
+    <component group="localizedstrings" name="comments.date.format">d MMMMM yyyy 'kl.' HH:mm</component>
+    <component group="localizedstrings" name="comments.report.email.subject">Ny anmälan av inlägg!</component>
+    <component group="localizedstrings" name="comments.report.email.message">Anmälan:</component>
+    <component group="localizedstrings" name="comments.report.email.postid">Inlägg id:</component>
+    <component group="localizedstrings" name="comments.report.email.authorName">Anmäld av:</component>
+    <component group="localizedstrings" name="comments.report.email.authorEmail">E-post:</component>
+  </content>
+  <content>
+    <metadata>
+      <contentid>
+        <major>Department</major>
+        <externalid>p.siteengine.LocalizedStrings.d</externalid>
+      </contentid>
+      <input-template>
+        <externalid>p.siteengine.LocalizedStringsDepartment</externalid>
+      </input-template>
+    </metadata>
+    <contentlist mode="reset">
+      <entry mode="modify" withMetadata="false">
+        <metadata>
+          <referredContent>
+            <contentid>
+              <externalid>localizedstrings.english</externalid>
+            </contentid>
+          </referredContent>
+        </metadata>
+      </entry>
+      <entry mode="modify" withMetadata="false">
+        <metadata>
+          <referredContent>
+            <contentid>
+              <externalid>localizedstrings.swedish</externalid>
+            </contentid>
+          </referredContent>
+        </metadata>
+      </entry>
+    </contentlist>
+  </content>
+  <!-- Community configuration -->
+  <content>
+    <metadata>
+      <contentid>
+        <major>Article</major>
+        <externalid>article.communityconfiguration</externalid>
+      </contentid>
+      <input-template>
+        <externalid>p.siteengine.CommunityConfiguration</externalid>
+      </input-template>
+    </metadata>
+    <component name="name" group="polopoly.Content">Community configuration</component>
+  </content>
+  
+  <!-- Publish the community (content comments conf in the config department) -->
+  <content>
+    <metadata>
+      <contentid>
+        <externalid>p.siteengine.Configuration.d</externalid>
+      </contentid>
+    </metadata>
+    <contentlist>
+     <entry withMetadata="false" mode="modify">
+       <metadata>
+         <referredContent>
+           <contentid>
+             <externalid>article.communityconfiguration</externalid>
+           </contentid>
+         </referredContent>
+       </metadata>
+     </entry>
+    </contentlist>    
+  </content>
+  
+</batch>
