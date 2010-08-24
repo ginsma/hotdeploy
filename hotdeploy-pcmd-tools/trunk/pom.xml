@@ -4,7 +4,11 @@
   <artifactId>hotdeploy-pcmd-tools</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy PCMD Tools</name>
-  <version>9-15-DR4-r56112</version>
+  <properties>
+     <polopoly.version>9.16.1</polopoly.version>
+     <pcmd.version>6</pcmd.version>
+  </properties>
+  <version>${polopoly.version}</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
@@ -28,8 +32,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
       <plugin>
@@ -79,17 +83,17 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>polopoly</artifactId>
-      <version>9-15-DR4-r56112</version>
+      <version>${polopoly.version}</version>
     </dependency>
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>pcmd</artifactId>
-      <version>9-15-DR4-r56112-SNAPSHOT</version>
+      <version>${polopoly.version}.${pcmd.version}-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>hotdeploy</artifactId>
-      <version>9-15-DR4-r56112</version>
+      <version>${polopoly.version}</version>
     </dependency>
     <dependency>
         <groupId>jboss</groupId>
