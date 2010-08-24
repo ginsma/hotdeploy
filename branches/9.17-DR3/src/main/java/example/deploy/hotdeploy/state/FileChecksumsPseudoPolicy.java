@@ -7,7 +7,7 @@ import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.Content;
 import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.server.ServerNames;
-import com.polopoly.cm.xml.hotdeploy.util.LongComponent;
+import com.polopoly.community.component.LongComponent;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 

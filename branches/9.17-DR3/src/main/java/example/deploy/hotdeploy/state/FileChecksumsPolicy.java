@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.policy.ContentPolicy;
 import com.polopoly.cm.server.ServerNames;
-import com.polopoly.cm.xml.hotdeploy.util.LongComponent;
+import com.polopoly.community.component.LongComponent;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 
