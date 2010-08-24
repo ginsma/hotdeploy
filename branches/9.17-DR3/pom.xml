@@ -5,7 +5,7 @@
   <packaging>jar</packaging>
   <name>Hotdeploy</name>
   <properties>
-     <polopoly.version>9.17-DR3</polopoly.version>
+     <polopoly.version>9.16.1</polopoly.version>
      <pcmd.version>6</pcmd.version>
   </properties>
   <version>${polopoly.version}</version>
