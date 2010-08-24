@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import com.polopoly.application.InternalApplicationUtil;
+import com.polopoly.cm.client.impl.LegacyCMApplicationUtil;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.user.server.UserServer;
 
@@ -19,36 +19,40 @@ import example.deploy.hotdeploy.discovery.FileDiscoverer;
  * A {@link javax.servlet.ServletContextListener} that starts a thread
  * monitoring the META-INF/content directory for changes and automatically
  * imports any changed files.
- *
+ * 
  * @author AndreasE
  */
-public class HotDeployContentContextListener extends DeployContentContextListener {
+public class HotDeployContentContextListener extends
+        DeployContentContextListener {
     private HotDeployContentThread thread;
 
-    private static final Logger logger =
-        Logger.getLogger(HotDeployContentContextListener.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(HotDeployContentContextListener.class.getName());
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
         try {
             boolean logout = false;
             try {
-                PolicyCMServer server = InternalApplicationUtil.getPolicyCMServer(event.getServletContext());
-                UserServer userServer = InternalApplicationUtil.getUserServer(event.getServletContext());
+                PolicyCMServer server = LegacyCMApplicationUtil
+                        .getPolicyCMServer(event.getServletContext());
+                UserServer userServer = LegacyCMApplicationUtil
+                        .getUserServer(event.getServletContext());
 
                 logout = DeployContentUser.login(server, userServer);
 
-                MultipleFileDeployer contentDeployer =
-                    getContentDeployer(server, event.getServletContext());
+                MultipleFileDeployer contentDeployer = getContentDeployer(
+                        server, event.getServletContext());
 
                 ServletContext servletContext = event.getServletContext();
 
-                List<FileDiscoverer> discoverers = WebApplicationDiscoverers.getWebAppDiscoverers(servletContext);
+                List<FileDiscoverer> discoverers = WebApplicationDiscoverers
+                        .getWebAppDiscoverers(servletContext);
                 contentDeployer.discoverAndDeploy(discoverers);
 
-                thread = new HotDeployContentThread(server, userServer, contentDeployer, discoverers);
-            }
-            finally {
+                thread = new HotDeployContentThread(server, userServer,
+                        contentDeployer, discoverers);
+            } finally {
                 if (logout) {
                     DeployContentUser.logout();
                 }
@@ -56,7 +60,8 @@ public class HotDeployContentContextListener extends DeployContentContextListene
 
             thread.start();
         }
-        // don't ever throw an exception since it stops the web application deployment.
+        // don't ever throw an exception since it stops the web application
+        // deployment.
         catch (Throwable t) {
             logger.log(Level.WARNING, t.getMessage(), t);
         }
@@ -72,7 +77,8 @@ public class HotDeployContentContextListener extends DeployContentContextListene
                 // contextDestroyed().
                 thread.join(5000);
                 if (thread.isAlive()) {
-                    logger.warning("HotDeployContentThread could not be stopped");
+                    logger
+                            .warning("HotDeployContentThread could not be stopped");
                 }
                 thread = null;
             }

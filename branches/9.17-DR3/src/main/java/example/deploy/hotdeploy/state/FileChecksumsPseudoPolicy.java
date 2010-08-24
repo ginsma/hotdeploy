@@ -17,16 +17,19 @@ import example.deploy.hotdeploy.file.DeploymentFile;
  * to avoid needing an input template.
  */
 public class FileChecksumsPseudoPolicy {
-    private static final Logger logger =
-        Logger.getLogger(FileChecksumsPseudoPolicy.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(FileChecksumsPseudoPolicy.class.getName());
 
-    public static final int ATTRIBGROUP_MAXLEN = 60;
+    public static final int ATTRIBGROUP_MAXLEN = 62;
+
     private static final int HALF_ATTRIB_GROUP_MAXLEN = ATTRIBGROUP_MAXLEN / 2;
 
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
+
     private static final String SLOW_CHECKSUM_COMPONENT = "slow";
 
     private Content content;
+
     private Policy delegatePolicy;
 
     @Deprecated
@@ -38,36 +41,68 @@ public class FileChecksumsPseudoPolicy {
         this.content = delegatePolicy.getContent();
     }
 
-    private String getAttributeGroup(DeploymentFile file) {
+    static String getAttributeGroup(DeploymentFile file) {
         String result = file.getName();
 
         if (result.length() > ATTRIBGROUP_MAXLEN) {
-            result =
-                result.substring(0, HALF_ATTRIB_GROUP_MAXLEN) + "..." +
-                result.substring(result.length() - HALF_ATTRIB_GROUP_MAXLEN);
+            if (result.endsWith(".content")) {
+                // keep ".c"
+                result = result.substring(0, result.length() - 6);
+            }
+        }
+
+        if (result.length() > ATTRIBGROUP_MAXLEN) {
+            result = eliminate(result, ".jar");
+        }
+
+        if (result.length() > ATTRIBGROUP_MAXLEN) {
+            result = eliminate(result, "-1.0-SNAPSHOT");
+        }
+
+        if (result.length() > ATTRIBGROUP_MAXLEN) {
+            int i = result.indexOf('!');
+
+            if (i > 10) {
+                result = result.substring(0, 10) + ".." + result.substring(i);
+            }
+        }
+
+        if (result.length() > ATTRIBGROUP_MAXLEN) {
+            result = result.substring(0, HALF_ATTRIB_GROUP_MAXLEN)
+                    + ".."
+                    + result.substring(result.length()
+                            - HALF_ATTRIB_GROUP_MAXLEN);
         }
 
         return result;
     }
 
+    private static String eliminate(String result, String text) {
+        int i = result.indexOf(text);
+
+        if (i != -1) {
+            result = result.substring(0, i)
+                    + result.substring(i + text.length());
+        }
+        return result;
+    }
+
     private LongComponent getQuickChecksumComponent(DeploymentFile file) {
         return new LongComponent(getAttributeGroup(file),
-            QUICK_CHECKSUM_COMPONENT, -1);
+                QUICK_CHECKSUM_COMPONENT, -1);
     }
 
     private LongComponent getSlowChecksumComponent(DeploymentFile file) {
         return new LongComponent(getAttributeGroup(file),
-            SLOW_CHECKSUM_COMPONENT, -1);
+                SLOW_CHECKSUM_COMPONENT, -1);
     }
 
     public void commit() throws CMException {
         if (content.getName() == null) {
             content.setName("Hot Deploy Content State");
 
-            content.setMetaDataComponent(
-                    ServerNames.CMD_ATTRG_SYSTEM,
-                    ServerNames.CMD_ATTR_MAXVERSIONS,
-                    "1");
+            content.setMetaDataComponent(ServerNames.CMD_ATTRG_SYSTEM,
+                    ServerNames.CMD_ATTR_MAXVERSIONS, "1");
         }
 
         content.commit();
@@ -84,25 +119,30 @@ public class FileChecksumsPseudoPolicy {
     public void setChecksums(DeploymentFile file, long quickChecksum,
             long slowChecksum) throws CouldNotUpdateStateException {
         try {
-            getQuickChecksumComponent(file).setLongValue(delegatePolicy, quickChecksum);
-            getSlowChecksumComponent(file).setLongValue(delegatePolicy, slowChecksum);
+            getQuickChecksumComponent(file).setLongValue(delegatePolicy,
+                    quickChecksum);
+            getSlowChecksumComponent(file).setLongValue(delegatePolicy,
+                    slowChecksum);
         } catch (CMException e) {
-            throw new CouldNotUpdateStateException("While saving deployment state of " + file + ": " + e, e);
+            throw new CouldNotUpdateStateException(
+                    "While saving deployment state of " + file + ": " + e, e);
         }
     }
 
     public void clear() {
         try {
             for (String componentGroup : content.getComponentGroupNames()) {
-                for (String component : content.getComponentNames(componentGroup)) {
-                    if (component.equals(QUICK_CHECKSUM_COMPONENT) ||
-                            component.equals(SLOW_CHECKSUM_COMPONENT)) {
+                for (String component : content
+                        .getComponentNames(componentGroup)) {
+                    if (component.equals(QUICK_CHECKSUM_COMPONENT)
+                            || component.equals(SLOW_CHECKSUM_COMPONENT)) {
                         content.setComponent(componentGroup, component, null);
                     }
                 }
             }
         } catch (CMException e) {
-            logger.log(Level.WARNING, "While clearing file checksums: " + e.getMessage(), e);
+            logger.log(Level.WARNING, "While clearing file checksums: "
+                    + e.getMessage(), e);
         }
     }
 
