@@ -126,7 +126,7 @@ public class PolopolyClient {
         } catch (Exception e) {
             throw new ConnectException(
                     "Error connecting to Polopoly server with connection URL "
-                            + connectionUrl + ": " + e);
+                            + connectionUrl + ": " + e,e);
         }
 
         server = cmClient.getPolicyCMServer();
