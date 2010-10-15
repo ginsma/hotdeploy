@@ -11,6 +11,7 @@ import static example.deploy.text.TextContentParser.NAME_PREFIX;
 import static example.deploy.text.TextContentParser.REFERENCE_PREFIX;
 import static example.deploy.text.TextContentParser.SECURITY_PARENT_PREFIX;
 import static example.deploy.text.TextContentParser.SEPARATOR_CHAR;
+import static example.deploy.text.TextContentParser.MAJOR_PREFIX;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,6 +32,8 @@ import com.polopoly.cm.client.ContentRead;
 import com.polopoly.cm.collections.ContentList;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.server.ServerNames;
+
+import example.deploy.hotdeploy.client.Major;
 
 import example.deploy.xml.export.contentlistentry.ContentReferenceFilter;
 
@@ -57,8 +60,10 @@ public class SingleContentToContentFileExporter implements
 
             writeId(content, writer);
 
-            writeName(content, writer);
+            writeMajor(content, writer);
 
+            writeName(content, writer);
+            
             writeSecurityParent(content, writer);
 
             writeComponents(content, writer);
@@ -75,9 +80,16 @@ public class SingleContentToContentFileExporter implements
         }
     }
 
-    private void writeId(ContentRead content, Writer writer)
+    private void writeMajor(ContentRead content, Writer writer) throws IOException {
+    	Major major = Major.getMajor(content.getContentId().getMajor());
+    	if (major != Major.UNKNOWN) {
+            writeln(writer, MAJOR_PREFIX + SEPARATOR_CHAR + major.getName());
+    	} 
+	}
+
+	private void writeId(ContentRead content, Writer writer)
             throws CMException, IOException, ExportException {
-        writeln(writer, ID_PREFIX + SEPARATOR_CHAR + getId(content));
+        writeln(writer, ID_PREFIX + SEPARATOR_CHAR + escape(getId(content)));
     }
 
     private String getId(ContentRead content) {
@@ -142,23 +154,25 @@ public class SingleContentToContentFileExporter implements
                         if (rmd != null) {
                             writeln(writer, LIST_PREFIX
                                     + SEPARATOR_CHAR
-                                    + group
+                                    + escape(group)
                                     + SEPARATOR_CHAR
-                                    + toContentId(content, rmd)
+                                    + escape(toContentId(content, rmd))
                                     + SEPARATOR_CHAR
-                                    + toContentId(content, entry
-                                            .getReferredContentId()));
+                                    + escape(toContentId(content, entry
+                                            .getReferredContentId())));
                         } else {
                             writeln(writer, LIST_PREFIX
                                     + SEPARATOR_CHAR
-                                    + group
+                                    + escape(group)
                                     + SEPARATOR_CHAR
-                                    + toContentId(content, entry
-                                            .getReferredContentId()));
+                                    + escape(toContentId(content, entry
+                                            .getReferredContentId())));
                         }
                     } catch (NotExportableException e) {
+                    		System.out.println("Skipped reference to " + entry
+							        .getReferredContentId().getContentIdString() + " in " + group + " in " + content.getContentId().getContentIdString() + " because " +e.toString());
+						
                     }
-
                 }
             } else {
                 Arrays.sort(names);
@@ -173,12 +187,12 @@ public class SingleContentToContentFileExporter implements
                     try {
                         writeln(writer, REFERENCE_PREFIX
                                 + SEPARATOR_CHAR
-                                + group
+                                + escape(group)
                                 + ':'
-                                + name
+                                + escape(name)
                                 + SEPARATOR_CHAR
-                                + toContentId(content, content
-                                        .getContentReference(group, name)));
+                                + escape(toContentId(content, content
+                                        .getContentReference(group, name))));
                     } catch (NotExportableException e) {
                     }
                 }
@@ -218,8 +232,8 @@ public class SingleContentToContentFileExporter implements
 
                 String value = content.getComponent(group, name);
 
-                writeln(writer, COMPONENT_PREFIX + SEPARATOR_CHAR + group
-                        + SEPARATOR_CHAR + name + SEPARATOR_CHAR
+                writeln(writer, COMPONENT_PREFIX + SEPARATOR_CHAR + escape(group)
+                        + SEPARATOR_CHAR + escape(name) + SEPARATOR_CHAR
                         + escape(value));
             }
         }
@@ -228,11 +242,11 @@ public class SingleContentToContentFileExporter implements
     private void writeSecurityParent(ContentRead content, Writer writer)
             throws IOException, ExportException {
         ContentId securityParentId = content.getSecurityParentId();
-
+                
         if (securityParentId != null) {
             try {
                 writeln(writer, SECURITY_PARENT_PREFIX + SEPARATOR_CHAR
-                        + toContentId(content, securityParentId));
+                        + escape(toContentId(content, securityParentId)));
             } catch (NotExportableException e) {
             }
         }
@@ -247,12 +261,12 @@ public class SingleContentToContentFileExporter implements
                 CONTENT_ATTR_NAME);
 
         if (contentName != null) {
-            writeln(writer, NAME_PREFIX + SEPARATOR_CHAR + contentName);
+            writeln(writer, NAME_PREFIX + SEPARATOR_CHAR + escape(contentName));
         }
     }
 
     private String escape(String value) {
-        return value.replace(":", "\\:").replace("\n", "\\n");
+        return value.replace("\\", "\\\\").replace(":", "\\:").replace("\n", "\\n").replace("\r", "");
     }
 
     private void writeln(Writer writer, String string) throws IOException {
@@ -263,8 +277,8 @@ public class SingleContentToContentFileExporter implements
     private String toContentId(ContentRead inContent, ContentId contentId)
             throws ExportException, NotExportableException {
         try {
-            if (filter != null && !filter.isAllowed(inContent, contentId)) {
-                throw new NotExportableException("Not allowed by filter.");
+        	if (filter != null && !filter.isAllowed(inContent, contentId)) {
+            	throw new NotExportableException("Not allowed by filter.");
             }
 
             ContentRead referredContent = server.getContent(contentId);
