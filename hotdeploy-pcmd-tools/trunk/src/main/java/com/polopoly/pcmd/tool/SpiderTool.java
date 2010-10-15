@@ -25,7 +25,30 @@ import example.deploy.xml.export.filteredcontent.ProjectContentFilterFactory;
 
 public class SpiderTool implements Tool<SpiderParameters> {
 
-    public SpiderParameters createParameters() {
+    public class QueuedId {
+
+		private ContentId id;
+		private int depth;
+		private ContentId source;
+
+		public QueuedId(ContentId id, int depth, ContentId source) {
+			this.id = id;
+			this.depth = depth;
+			this.source = source;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof QueuedId && ((QueuedId) obj).id.equalsIgnoreVersion(id);
+		}
+
+		@Override
+		public int hashCode() {
+			return id.hashCode();
+		}
+	}
+
+	public SpiderParameters createParameters() {
         return new SpiderParameters();
     }
 
@@ -54,31 +77,34 @@ public class SpiderTool implements Tool<SpiderParameters> {
         }
 
         Set<ContentId> spideredIds = new HashSet<ContentId>();
-        List<ContentId> spiderQueue = new ArrayList<ContentId>();
+        List<QueuedId> spiderQueue = new ArrayList<QueuedId>();
 
-        Iterator<ContentId> it = parameters.getContentIds();
+        Iterator<ContentId> startIdIterator = parameters.getContentIds();
 
-        while (it.hasNext()) {
-            ContentId contentId = it.next();
+        while (startIdIterator.hasNext()) {
+            ContentId startId = startIdIterator.next();
 
-            spiderQueue.add(contentId);
+            spiderQueue.add(new QueuedId(startId, 0, null));
         }
 
-        Map<ContentId, ContentId> sourceFor = new HashMap<ContentId, ContentId>();
-
         while (!spiderQueue.isEmpty()) {
-            ContentId contentId = spiderQueue.remove(0);
-
+        	QueuedId queuedId = spiderQueue.remove(0);
+        	ContentId contentId = queuedId.id;
+        	
             if (filter.accept(contentId)) {
                 spideredIds.add(contentId);
 
-                System.out.print(AbstractContentIdField.get(contentId, context));
+                System.out.print(toString(contentId, context));
 
                 if (parameters.isVerbose()) {
-                    ContentId source = sourceFor.get(contentId);
+                    ContentId source = queuedId.source;
 
                     if (source != null) {
-                        System.out.print(" (from " + AbstractContentIdField.get(source, context) + ")");
+                        System.out.print(" (from " + toString(source, context) + ", depth " + queuedId.depth + ")");
+                    }
+                    
+                    if (spideredIds.size() % 1000 == 0) {
+                    	System.err.println("Spidered " + spideredIds.size() + " objects... " + spiderQueue.size() + " remaining in queue...");
                     }
                 }
 
@@ -86,19 +112,26 @@ public class SpiderTool implements Tool<SpiderParameters> {
             }
 
             try {
-                Set<ContentId> candidateIds = allReferences(contentId, context);
+            	ContentUtil content = context.getContent(queuedId.id);
+            
+            	if (!shouldFollowReferences(queuedId, content, parameters)) {
+            		continue;
+            	}
+            
+                Set<ContentId> candidateIds = allReferences(content);
 
                 for (ContentId candidateId : candidateIds) {
                     candidateId = candidateId.getContentId();
 
-                    if (!spideredIds.contains(candidateId) && !spiderQueue.contains(candidateId) && filter.accept(candidateId)) {
-                        spiderQueue.add(candidateId);
-                        sourceFor.put(candidateId, contentId);
+                    QueuedId idToQueue = new QueuedId(candidateId, queuedId.depth + 1, contentId);
+
+                    if (!spideredIds.contains(candidateId) && !spiderQueue.contains(idToQueue) && filter.accept(candidateId)) {
+						spiderQueue.add(idToQueue);
                     }
                 }
             }
             catch (Exception e) {
-                System.err.println("While handling " + AbstractContentIdField.get(contentId, context) + ": " + e);
+                System.err.println("While handling " + toString(contentId, context) + ": " + e);
 
                 if (parameters.isStopOnException()) {
                     System.exit(1);
@@ -107,14 +140,32 @@ public class SpiderTool implements Tool<SpiderParameters> {
         }
     }
 
-    private Set<ContentId> allReferences(ContentId contentId, PolopolyContext context) throws ContentGetException {
+	private boolean shouldFollowReferences(QueuedId queuedId,
+			ContentUtil content, SpiderParameters parameters) {
+		if (parameters.getDontSpiderTemplates().contains(content.getInputTemplate().getContentId().unversioned())) {
+			return false;
+		}
+		
+		return queuedId.depth < parameters.getMaximumDepth();
+	}
+
+    private Set<ContentId> allReferences(ContentUtil content) throws ContentGetException {
         Set<ContentId> result = new HashSet<ContentId>();
 
-        ContentUtil content = context.getContent(contentId);
+        ContentId contentId = content.getContentId().unversioned();
 
         for (String group : content.getContentReferenceGroupNames()) {
             for (String name : content.getContentReferenceNames(group)) {
-                result.add(content.getContentReference(group, name).unversioned());
+                ContentIdUtil referredId = content.getContentReference(group, name);
+
+                if (exists(referredId)) {
+                	result.add(referredId.unversioned());
+                }
+                else {
+                	System.err.println("The content reference " + group + ":" + name + 
+                			" in " + toString(contentId, content.getContext()) + 
+                			" could not be resolved. It refers to " + toString(referredId, content.getContext()) + "."); 
+                }
             }
         }
 
@@ -126,6 +177,20 @@ public class SpiderTool implements Tool<SpiderParameters> {
 
         return result;
     }
+
+	private boolean exists(ContentIdUtil referredId) {
+		try {
+			referredId.asContent();
+			
+			return true;
+		} catch (ContentGetException e) {
+			return false;
+		}
+	}
+
+	private String toString(ContentId contentId, PolopolyContext context) {
+		return AbstractContentIdField.get(contentId, context);
+	}
 
     public String getHelp() {
         return "Spiders all non-project and non-system content excluding templates starting from a certain object and following content references.";

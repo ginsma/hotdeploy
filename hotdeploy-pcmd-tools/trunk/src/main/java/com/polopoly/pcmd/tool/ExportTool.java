@@ -55,16 +55,18 @@ public class ExportTool extends ListExportableTool {
 
         ContentIdFilter existingObjectsFilter = createExistingObjectsFilter(listParameters);
 
-        PresentContentFilter alreadyExportedObjectsFilter = createAlreadyExportedObjectsFilter(outputDirectory);
-
-        ContentIdFilter existingOrExportedObjectsFilter = or(
-                existingObjectsFilter, alreadyExportedObjectsFilter);
-
         Set<ContentId> contentIdsToExport = getIdsToExport(existingObjectsFilter);
 
         RejectionCollectingContentIdFilter referenceFilter;
 
         if (parameters.isFilterReferences()) {
+            PresentContentFilter alreadyExportedObjectsFilter = createAlreadyExportedObjectsFilter(outputDirectory);
+
+            ContentIdFilter willBeExportedFilter = createWillBeExportedFilter(contentIdsToExport);
+			
+            ContentIdFilter existingOrExportedObjectsFilter = or(
+            		new OrContentIdFilter(existingObjectsFilter, willBeExportedFilter), alreadyExportedObjectsFilter);
+
             RejectionCollectingContentIdFilter collectingExistingOrExportedObjectsFilter = new RejectionCollectingContentIdFilter(
                     existingOrExportedObjectsFilter);
 
@@ -86,7 +88,14 @@ public class ExportTool extends ListExportableTool {
         logRejected(referenceFilter);
     }
 
-    private NormalizedFileExporter createExporter(File outputDirectory,
+    private ContentIdFilter createWillBeExportedFilter(final Set<ContentId> contentIdsToExport) {
+    	return new ContentIdFilter() {
+			public boolean accept(ContentId contentId) {
+				return contentIdsToExport.contains(contentId);
+			}};
+	}
+
+	private NormalizedFileExporter createExporter(File outputDirectory,
             Set<ContentId> contentIdsToExport,
             ContentReferenceFilter contentReferenceFilter) {
         ContentsExporterFactory contentsExporterFactory = new ContentsExporterFactory(
