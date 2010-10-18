@@ -3,6 +3,11 @@ package com.polopoly.pcmd.tool.export;
 import static example.deploy.hotdeploy.util.Plural.count;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,14 +15,11 @@ import java.util.logging.Logger;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import com.polopoly.cm.ContentId;
-import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
-import com.polopoly.cm.xml.util.export.PrefixExternalIdGenerator;
 import com.polopoly.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.collection.ContentIdToContentUtilIterator;
 import com.polopoly.util.content.ContentUtil;
 
-import example.deploy.hotdeploy.client.Major;
 import example.deploy.xml.export.SingleContentToFileExporter;
 import example.deploy.xml.normalize.NormalizationNamingStrategy;
 
@@ -26,76 +28,90 @@ import example.deploy.xml.normalize.NormalizationNamingStrategy;
  * a way adapted to PCMD.
  */
 public class NormalizedFileExporter {
-    private static final Logger logger = Logger
-            .getLogger(NormalizedFileExporter.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(NormalizedFileExporter.class.getName());
 
-    private NormalizationNamingStrategy namingStrategy;
+	private NormalizationNamingStrategy namingStrategy;
 
-    private ExternalIdGenerator externalIdGenerator = new PrefixExternalIdGenerator(
-            "");
+	private SingleContentToFileExporter singleFileExporter;
 
-    private SingleContentToFileExporter singleContentToFileExporter;
+	private PolopolyContext context;
 
-    private PolopolyContext context;
+	private int exportedCount = 0;
 
-    public NormalizedFileExporter(PolopolyContext context,
-            SingleContentToFileExporter singleContentToFileExporter,
-            NormalizationNamingStrategy namingStrategy) {
-        this.context = context;
-        this.namingStrategy = namingStrategy;
-        this.singleContentToFileExporter = singleContentToFileExporter;
-    }
+	public NormalizedFileExporter(PolopolyContext context,
+			SingleContentToFileExporter singleContentToFileExporter,
+			NormalizationNamingStrategy namingStrategy) {
+		this.context = context;
+		this.namingStrategy = namingStrategy;
+		this.singleFileExporter = singleContentToFileExporter;
+	}
 
-    public void export(Set<ContentId> contentIdsToExport) {
-        ContentIdToContentUtilIterator contentToExportIterator = new ContentIdToContentUtilIterator(
-                context, contentIdsToExport.iterator(), false);
+	public void export(Set<ContentId> contentIdsToExport) {
+		ContentIdToContentUtilIterator contentToExportIterator = new ContentIdToContentUtilIterator(
+				context, contentIdsToExport.iterator(), false);
 
-        System.err.println("Exporting " + count(contentIdsToExport, "object")
-                + "...");
+		// We might need to change this to IDs rather than content objects
+		// sometime to save memory.
+		// but for up to a few thousand objects this should be fine.
+		Map<File, List<ContentUtil>> contentByFile = new LinkedHashMap<File, List<ContentUtil>>(
+				500);
 
-        int exportedCount = 0;
+		while (contentToExportIterator.hasNext()) {
+			ContentUtil content = contentToExportIterator.next();
 
-        while (contentToExportIterator.hasNext()) {
-            ContentUtil content = contentToExportIterator.next();
+			add(contentByFile, content);
+		}
 
-            exportSingleContent(content);
+		for (Entry<File, List<ContentUtil>> entry : contentByFile.entrySet()) {
+			File file = entry.getKey();
+			List<ContentUtil> contents = entry.getValue();
 
-            System.out.println(AbstractContentIdField.get(content
-                    .getContentId().getContentId(), context));
+			exportSingleFile(file, contents);
 
-            if (++exportedCount % 100 == 0) {
-                printStatus(exportedCount);
-            }
-        }
+			logExported(contents);
+		}
 
-        printStatus(exportedCount);
-    }
+		printStatus(exportedCount);
+	}
 
-    private void exportSingleContent(ContentUtil content)
-            throws TransformerFactoryConfigurationError {
-        File file = null;
+	private void logExported(List<ContentUtil> contents) {
+		for (ContentUtil content : contents) {
+			System.out.println(AbstractContentIdField.get(content
+					.getContentId().getContentId(), context));
+		}
 
-        try {
-            String externalId = externalIdGenerator.generateExternalId(content);
+		if (++exportedCount % 100 == 0) {
+			printStatus(exportedCount);
+		}
+	}
 
-            file = namingStrategy.getFileName(Major.getMajor(content
-                    .getContentId().getMajor()), externalId, content
-                    .getInputTemplate().getExternalIdString());
+	private void add(Map<File, List<ContentUtil>> contentByFile,
+			ContentUtil content) {
+		File file = namingStrategy.getFileName(content);
 
-            singleContentToFileExporter
-                    .exportSingleContentToFile(content, file);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "While exporting " + content + " to "
-                    + file + ": " + e.getMessage(), e);
-        }
-    }
+		List<ContentUtil> contentList = contentByFile.get(file);
 
-    private void printStatus(int exportedCount) {
-        System.err
-                .println("Exported " + count(exportedCount, "object") + "...");
-    }
+		if (contentList == null) {
+			contentList = new ArrayList<ContentUtil>(1);
+			contentByFile.put(file, contentList);
+		}
 
-    public void setExternalIdGenerator(ExternalIdGenerator externalIdGenerator) {
-        this.externalIdGenerator = externalIdGenerator;
-    }
+		contentList.add(content);
+	}
+
+	private void exportSingleFile(File file, List<ContentUtil> contents)
+			throws TransformerFactoryConfigurationError {
+		try {
+			singleFileExporter.exportContentToFile(contents, file);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "While exporting " + contents + " to "
+					+ file + ": " + e.getMessage(), e);
+		}
+	}
+
+	private void printStatus(int exportedCount) {
+		System.err
+				.println("Exported " + count(exportedCount, "object") + "...");
+	}
 }

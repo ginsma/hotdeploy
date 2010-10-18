@@ -1,9 +1,12 @@
 package com.polopoly.pcmd.tool;
 
+import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+
 import java.util.List;
 
 import com.polopoly.pcmd.tool.parameters.HotdeployValidateParameters;
 import com.polopoly.util.client.PolopolyContext;
+import com.polopoly.util.exception.NoSuchExternalIdException;
 
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.util.Plural;
@@ -13,42 +16,102 @@ import example.deploy.xml.present.PresentFileReader;
 
 public class HotdeployValidateTool implements Tool<HotdeployValidateParameters> {
 
-    public HotdeployValidateParameters createParameters() {
-        return new HotdeployValidateParameters();
-    }
+	public HotdeployValidateParameters createParameters() {
+		return new HotdeployValidateParameters();
+	}
 
-    public void execute(PolopolyContext context, HotdeployValidateParameters parameters) {
-        List<DeploymentFile> files = parameters.discoverFiles();
+	public void execute(final PolopolyContext context,
+			final HotdeployValidateParameters parameters) {
+		List<DeploymentFile> files = parameters.discoverFiles();
 
-        System.out.println("Validating " + Plural.count(files, "file") + "...");
+		System.out.println("Validating " + Plural.count(files, "file") + "...");
 
-        XMLConsistencyVerifier verifier =
-            new XMLConsistencyVerifier(files);
+		XMLConsistencyVerifier verifier = new XMLConsistencyVerifier(files) {
 
-        if (!parameters.isIgnorePresent()) {
-            new PresentFileReader(parameters.getDirectory(), verifier).read();
-        }
+			@Override
+			protected boolean isPresentContent(String externalId) {
+				if (super.isPresentContent(externalId)) {
+					return true;
+				}
 
-        verifier.setValidateClassReferences(parameters.isValidateClasses());
+				if (parameters.isDatabaseIsPresent()
+						&& isPresentContentInDatabase(externalId)) {
+					return true;
+				}
 
-        if (parameters.getClassDirectory() != null) {
-            verifier.addClassDirectory(parameters.getClassDirectory());
-        }
+				return false;
+			}
 
-        VerifyResult verifyResult = verifier.verify();
+			private boolean isPresentContentInDatabase(String externalId) {
+				try {
+					context.resolveExternalId(externalId);
 
-        if (verifyResult.isEverythingOk()) {
-            System.out.println("The files are in consistent order and do not reference non-existing content.");
-        }
-        else {
-            verifyResult.reportUsingLogging();
-        }
-    }
+					return true;
+				} catch (NoSuchExternalIdException e) {
+					return false;
+				}
+			}
 
-    public String getHelp() {
-        return "Parses the content and template XML in the specified directory and " +
-    		"reports on whether there is any content being imported in the wrong order " +
-    		"or references to content that does exist.";
-    }
+			@Override
+			protected boolean isPresentInputTemplate(String externalId) {
+				if (super.isPresentInputTemplate(externalId)) {
+					return true;
+				}
 
+				if (parameters.isDatabaseIsPresent()
+						&& isPresentInputTemplateInDatabase(externalId)) {
+					return true;
+				}
+
+				return false;
+			}
+
+			private boolean isPresentInputTemplateInDatabase(String externalId) {
+				try {
+					if (context.resolveExternalId(externalId).getMajor() == INPUT_TEMPLATE
+							.getIntegerMajor()) {
+						return true;
+					} else {
+						System.err
+								.println("Content \""
+										+ externalId
+										+ "\" was present but was not an input template as expected.");
+					}
+				} catch (NoSuchExternalIdException e) {
+					// nope.
+				}
+
+				return false;
+			}
+
+		};
+
+		if (!parameters.isIgnorePresent()) {
+			new PresentFileReader(parameters.getDirectory(), verifier).read();
+		}
+
+		verifier.setDiscoverResources(parameters.isSearchResources());
+		verifier.setOnlyJarResources(parameters.isOnlyJarResources());
+
+		verifier.setValidateClassReferences(parameters.isValidateClasses());
+
+		if (parameters.getClassDirectory() != null) {
+			verifier.addClassDirectory(parameters.getClassDirectory());
+		}
+
+		VerifyResult verifyResult = verifier.verify();
+
+		if (verifyResult.isEverythingOk()) {
+			System.out
+					.println("The files are in consistent order and do not reference non-existing content.");
+		} else {
+			verifyResult.reportUsingLogging();
+		}
+	}
+
+	public String getHelp() {
+		return "Parses the content and template XML in the specified directory and "
+				+ "reports on whether there is any content being imported in the wrong order "
+				+ "or references to content that does exist.";
+	}
 }

@@ -8,7 +8,9 @@ import java.util.Set;
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.VersionedContentId;
 import com.polopoly.cm.client.CMException;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.util.ContentIdFilter;
+import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
 import com.polopoly.pcmd.tool.export.AcceptanceCollectingContentIdFilter;
 import com.polopoly.pcmd.tool.export.ContentFileFormat;
 import com.polopoly.pcmd.tool.export.NormalizedFileExporter;
@@ -31,261 +33,263 @@ import example.deploy.xml.export.filteredcontent.OrContentIdFilter;
 import example.deploy.xml.export.filteredcontent.PresentContentFilter;
 import example.deploy.xml.export.filteredcontent.ProjectContentFilterFactory;
 import example.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
+import example.deploy.xml.normalize.RMDBundlingNamingStrategy;
 import example.deploy.xml.present.PresentFileReader;
 
 public class ExportTool extends ListExportableTool {
-    private PolopolyContext context;
+	private PolopolyContext context;
 
-    private ExportParameters parameters;
+	private ExportParameters parameters;
 
-    @Override
-    public ExportParameters createParameters() {
-        return new ExportParameters();
-    }
+	@Override
+	public ExportParameters createParameters() {
+		return new ExportParameters();
+	}
 
-    @Override
-    public void execute(PolopolyContext context,
-            ListExportableParameters listParameters) {
-        parameters = (ExportParameters) listParameters;
-        this.context = context;
+	@Override
+	public void execute(PolopolyContext context,
+			ListExportableParameters listParameters) {
+		parameters = (ExportParameters) listParameters;
+		this.context = context;
 
-        File outputDirectory = parameters.getOutputDirectory();
+		File outputDirectory = parameters.getOutputDirectory();
 
-        System.err.println("Scanning project content...");
+		System.err.println("Scanning project content...");
 
-        ContentIdFilter existingObjectsFilter = createExistingObjectsFilter(listParameters);
+		ContentIdFilter existingObjectsFilter = createExistingObjectsFilter(listParameters);
 
-        Set<ContentId> contentIdsToExport = getIdsToExport(existingObjectsFilter);
+		Set<ContentId> contentIdsToExport = getIdsToExport(existingObjectsFilter);
 
-        RejectionCollectingContentIdFilter referenceFilter;
+		RejectionCollectingContentIdFilter referenceFilter;
 
-        if (parameters.isFilterReferences()) {
-            PresentContentFilter alreadyExportedObjectsFilter = createAlreadyExportedObjectsFilter(outputDirectory);
+		if (parameters.isFilterReferences()) {
+			PresentContentFilter alreadyExportedObjectsFilter = createAlreadyExportedObjectsFilter(outputDirectory);
 
-            ContentIdFilter willBeExportedFilter = createWillBeExportedFilter(contentIdsToExport);
-			
-            ContentIdFilter existingOrExportedObjectsFilter = or(
-            		new OrContentIdFilter(existingObjectsFilter, willBeExportedFilter), alreadyExportedObjectsFilter);
+			ContentIdFilter willBeExportedFilter = createWillBeExportedFilter(contentIdsToExport);
 
-            RejectionCollectingContentIdFilter collectingExistingOrExportedObjectsFilter = new RejectionCollectingContentIdFilter(
-                    existingOrExportedObjectsFilter);
+			ContentIdFilter existingOrExportedObjectsFilter = or(
+					new OrContentIdFilter(existingObjectsFilter,
+							willBeExportedFilter), alreadyExportedObjectsFilter);
 
-            referenceFilter = collectingExistingOrExportedObjectsFilter;
-        } else {
-            RejectionCollectingContentIdFilter collectingAcceptAllFilter = new RejectionCollectingContentIdFilter(
-                    new AcceptAllContentIdFilter());
+			RejectionCollectingContentIdFilter collectingExistingOrExportedObjectsFilter = new RejectionCollectingContentIdFilter(
+					existingOrExportedObjectsFilter);
 
-            referenceFilter = collectingAcceptAllFilter;
-        }
+			referenceFilter = collectingExistingOrExportedObjectsFilter;
+		} else {
+			RejectionCollectingContentIdFilter collectingAcceptAllFilter = new RejectionCollectingContentIdFilter(
+					new AcceptAllContentIdFilter());
 
-        NormalizedFileExporter normalizedFileExporter = createExporter(
-                outputDirectory, contentIdsToExport,
-                new ContentIdFilterToContentReferenceFilterWrapper(
-                        referenceFilter));
+			referenceFilter = collectingAcceptAllFilter;
+		}
 
-        normalizedFileExporter.export(contentIdsToExport);
+		NormalizedFileExporter normalizedFileExporter = createExporter(
+				outputDirectory, contentIdsToExport,
+				new ContentIdFilterToContentReferenceFilterWrapper(
+						referenceFilter));
 
-        logRejected(referenceFilter);
-    }
+		normalizedFileExporter.export(contentIdsToExport);
 
-    private ContentIdFilter createWillBeExportedFilter(final Set<ContentId> contentIdsToExport) {
-    	return new ContentIdFilter() {
+		logRejected(referenceFilter);
+	}
+
+	private ContentIdFilter createWillBeExportedFilter(
+			final Set<ContentId> contentIdsToExport) {
+		return new ContentIdFilter() {
 			public boolean accept(ContentId contentId) {
 				return contentIdsToExport.contains(contentId);
-			}};
+			}
+		};
 	}
 
 	private NormalizedFileExporter createExporter(File outputDirectory,
-            Set<ContentId> contentIdsToExport,
-            ContentReferenceFilter contentReferenceFilter) {
-        ContentsExporterFactory contentsExporterFactory = new ContentsExporterFactory(
-                context.getPolicyCMServer(), context.getUserServer(),
-                contentReferenceFilter);
+			Set<ContentId> contentIdsToExport,
+			ContentReferenceFilter contentReferenceFilter) {
+		PolicyCMServer server = context.getPolicyCMServer();
+		ContentsExporterFactory contentsExporterFactory = new ContentsExporterFactory(
+				server, context.getUserServer(), contentReferenceFilter);
 
-        SingleContentToFileExporter exporter;
+		ExternalIdGenerator externalIdGenerator = contentsExporterFactory
+				.getExternalIdGenerator();
 
-        if (parameters.getFormat() == ContentFileFormat.TEXT) {
-            exporter = new SingleContentToContentFileExporter(context.getPolicyCMServer(), contentReferenceFilter);
-        }
-        else {
-            exporter = new SingleContentToXMLFileExporter(
-                contentsExporterFactory
-                        .createContentsExporter(contentIdsToExport));
-        }
+		SingleContentToFileExporter exporter;
 
-        DefaultNormalizationNamingStrategy namingStrategy = new DefaultNormalizationNamingStrategy(
-                outputDirectory, parameters.getFormat().getExtension());
+		if (parameters.getFormat() == ContentFileFormat.TEXT) {
+			exporter = new SingleContentToContentFileExporter(server,
+					contentReferenceFilter, externalIdGenerator);
+		} else {
+			exporter = new SingleContentToXMLFileExporter(
+					contentsExporterFactory
+							.createContentsExporter(contentIdsToExport));
+		}
 
-        NormalizedFileExporter normalizedFileExporter = new NormalizedFileExporter(
-                context, exporter, namingStrategy);
+		DefaultNormalizationNamingStrategy namingStrategy = new RMDBundlingNamingStrategy(
+				server, externalIdGenerator, outputDirectory, parameters
+						.getFormat().getExtension());
 
-        normalizedFileExporter.setExternalIdGenerator(contentsExporterFactory
-                .getExternalIdGenerator());
+		return new NormalizedFileExporter(context, exporter, namingStrategy);
+	}
 
-        return normalizedFileExporter;
-    }
+	private ContentIdFilter createExistingObjectsFilter(
+			ListExportableParameters listParameters) {
+		return new ProjectContentFilterFactory(context.getPolicyCMServer())
+				.getExistingObjectsFilter(listParameters
+						.getProjectContentDirectories());
+	}
 
-    private ContentIdFilter createExistingObjectsFilter(
-            ListExportableParameters listParameters) {
-        return new ProjectContentFilterFactory(context.getPolicyCMServer())
-                .getExistingObjectsFilter(listParameters
-                        .getProjectContentDirectories());
-    }
+	private PresentContentFilter createAlreadyExportedObjectsFilter(
+			File outputDirectory) {
+		PresentContentFilter alreadyExportedObjectsFilter = new PresentContentFilter(
+				context.getPolicyCMServer());
 
-    private PresentContentFilter createAlreadyExportedObjectsFilter(
-            File outputDirectory) {
-        PresentContentFilter alreadyExportedObjectsFilter = new PresentContentFilter(
-                context.getPolicyCMServer());
+		System.err.println("Scanning output directory for existing content...");
+		new PresentFileReader(outputDirectory, alreadyExportedObjectsFilter)
+				.readAndScanContent();
 
-        System.err.println("Scanning output directory for existing content...");
-        new PresentFileReader(outputDirectory, alreadyExportedObjectsFilter)
-                .readAndScanContent();
+		return alreadyExportedObjectsFilter;
+	}
 
-        return alreadyExportedObjectsFilter;
-    }
+	private void logRejected(RejectionCollectingContentIdFilter collectingFilter) {
+		Set<ContentId> rejected = collectingFilter.getCollectedIds();
 
-    private void logRejected(RejectionCollectingContentIdFilter collectingFilter) {
-        Set<ContentId> rejected = collectingFilter.getCollectedIds();
+		if (rejected.isEmpty()) {
+			return;
+		}
 
-        if (rejected.isEmpty()) {
-            return;
-        }
+		System.out
+				.println("The exported content had references to "
+						+ Plural.count(rejected, "content object")
+						+ " not part either of the exported data or of project content. These references were excluded. ");
 
-        System.out
-                .println("The exported content had references to "
-                        + Plural.count(rejected, "content object")
-                        + " not part either of the exported data or of project content. These references were excluded. ");
+		collectingFilter.printCollectedObjects(context);
+	}
 
-        collectingFilter.printCollectedObjects(context);
-    }
+	@Override
+	protected void logNotExportedBecausePresent(PolopolyContext context,
+			AcceptanceCollectingContentIdFilter collectingFilter) {
+		Set<ContentId> notExportedBecausePresent = collectingFilter
+				.getCollectedIds();
 
-    @Override
-    protected void logNotExportedBecausePresent(PolopolyContext context,
-            AcceptanceCollectingContentIdFilter collectingFilter) {
-        Set<ContentId> notExportedBecausePresent = collectingFilter
-                .getCollectedIds();
+		if (notExportedBecausePresent.isEmpty()) {
+			return;
+		}
 
-        if (notExportedBecausePresent.isEmpty()) {
-            return;
-        }
+		System.err.println(Plural.count(notExportedBecausePresent, "objects")
+				+ " were not exported because they are "
+				+ "part of the project data or Polopoly content. Use --"
+				+ ExportParameters.EXPORT_PRESENT_OPTION
+				+ " to export these too.");
+		collectingFilter.printCollectedObjects(context);
+	}
 
-        System.err.println(Plural.count(notExportedBecausePresent, "objects")
-                + " were not exported because they are "
-                + "part of the project data or Polopoly content. Use --"
-                + ExportParameters.EXPORT_PRESENT_OPTION
-                + " to export these too.");
-        collectingFilter.printCollectedObjects(context);
-    }
+	private ContentIdFilter or(ContentIdFilter filter,
+			PresentContentFilter presentContentFilter) {
+		if (presentContentFilter.getPresentIds().isEmpty()) {
+			return filter;
+		} else {
+			return new OrContentIdFilter(filter, presentContentFilter);
+		}
+	}
 
-    private ContentIdFilter or(ContentIdFilter filter,
-            PresentContentFilter presentContentFilter) {
-        if (presentContentFilter.getPresentIds().isEmpty()) {
-            return filter;
-        } else {
-            return new OrContentIdFilter(filter, presentContentFilter);
-        }
-    }
+	private Set<ContentId> getIdsToExport(ContentIdFilter presentContentFilter) {
+		int since = parameters.getSince();
+		Iterable<ContentId> idIterable;
 
-    private Set<ContentId> getIdsToExport(ContentIdFilter presentContentFilter) {
-        int since = parameters.getSince();
-        Iterable<ContentId> idIterable;
+		ContentIdFilter excludeFilter = parameters.isExportPresent() ? new AcceptNoneContentIdFilter()
+				: presentContentFilter;
 
-        ContentIdFilter excludeFilter = parameters.isExportPresent() ? new AcceptNoneContentIdFilter()
-                : presentContentFilter;
+		if (parameters.isIdsArguments()) {
+			idIterable = parameters.getIdArgumentsIterator(excludeFilter,
+					context);
+		} else {
+			idIterable = super.getIdsToExport(context, since, excludeFilter);
+		}
 
-        if (parameters.isIdsArguments()) {
-            idIterable = parameters.getIdArgumentsIterator(excludeFilter,
-                    context);
-        } else {
-            idIterable = super.getIdsToExport(context, since, excludeFilter);
-        }
+		if (parameters.isIncludeReferrers()) {
+			idIterable = findReferrers(idIterable,
+					(parameters.isFilterReferences() ? presentContentFilter
+							: new AcceptAllContentIdFilter()));
+		}
 
-        if (parameters.isIncludeReferrers()) {
-            idIterable = findReferrers(idIterable, (parameters
-                    .isFilterReferences() ? presentContentFilter
-                    : new AcceptAllContentIdFilter()));
-        }
+		Set<ContentId> contentIdsToExport = new HashSet<ContentId>(250);
 
-        Set<ContentId> contentIdsToExport = new HashSet<ContentId>(250);
+		for (ContentId idToExport : idIterable) {
+			contentIdsToExport.add(idToExport);
+		}
 
-        for (ContentId idToExport : idIterable) {
-            contentIdsToExport.add(idToExport);
-        }
+		return contentIdsToExport;
+	}
 
-        return contentIdsToExport;
-    }
+	private Iterable<ContentId> findReferrers(
+			final Iterable<ContentId> idIterable,
+			ContentIdFilter contentIdFilter) {
+		System.out.println("Finding refererring content...");
 
-    private Iterable<ContentId> findReferrers(
-            final Iterable<ContentId> idIterable,
-            ContentIdFilter contentIdFilter) {
-        System.out.println("Finding refererring content...");
+		final Set<ContentId> allReferrers = new HashSet<ContentId>(100);
 
-        final Set<ContentId> allReferrers = new HashSet<ContentId>(100);
+		int searched = 0;
 
-        int searched = 0;
+		System.out.println("HAS: " + idIterable.iterator().hasNext());
 
-        System.out.println("HAS: " + idIterable.iterator().hasNext());
+		for (ContentId contentId : idIterable) {
+			ContentId[] referrers;
+			try {
+				referrers = context.getPolicyCMServer().getReferringContentIds(
+						contentId, VersionedContentId.LATEST_COMMITTED_VERSION);
 
-        for (ContentId contentId : idIterable) {
-            ContentId[] referrers;
-            try {
-                referrers = context.getPolicyCMServer().getReferringContentIds(
-                        contentId, VersionedContentId.LATEST_COMMITTED_VERSION);
+				for (ContentId referrer : referrers) {
+					allReferrers.add(referrer.getContentId());
+				}
+			} catch (CMException e) {
+				System.err.println("Finding referrers of "
+						+ contentId.getContentIdString() + ": " + e);
+			}
 
-                for (ContentId referrer : referrers) {
-                    allReferrers.add(referrer.getContentId());
-                }
-            } catch (CMException e) {
-                System.err.println("Finding referrers of "
-                        + contentId.getContentIdString() + ": " + e);
-            }
+			if (++searched % 10 == 0) {
+				System.out.println("Found referrers for " + searched
+						+ " objects...");
+			}
+		}
 
-            if (++searched % 10 == 0) {
-                System.out.println("Found referrers for " + searched
-                        + " objects...");
-            }
-        }
+		System.out.println("HAS: " + idIterable.iterator().hasNext());
 
-        System.out.println("HAS: " + idIterable.iterator().hasNext());
+		for (ContentId contentId : idIterable) {
+			allReferrers.remove(contentId);
+		}
 
-        for (ContentId contentId : idIterable) {
-            allReferrers.remove(contentId);
-        }
+		System.out.println("HAS: " + idIterable.iterator().hasNext());
 
-        System.out.println("HAS: " + idIterable.iterator().hasNext());
+		int unfilteredSize = allReferrers.size();
 
-        int unfilteredSize = allReferrers.size();
+		Iterator<ContentId> it = allReferrers.iterator();
 
-        Iterator<ContentId> it = allReferrers.iterator();
+		RejectionCollectingContentIdFilter rejectionCollectingFilter = new RejectionCollectingContentIdFilter(
+				contentIdFilter);
 
-        RejectionCollectingContentIdFilter rejectionCollectingFilter = new RejectionCollectingContentIdFilter(
-                contentIdFilter);
+		while (it.hasNext()) {
+			if (!rejectionCollectingFilter.accept(it.next().getContentId())) {
+				it.remove();
+			}
+		}
 
-        while (it.hasNext()) {
-            if (!rejectionCollectingFilter.accept(it.next().getContentId())) {
-                it.remove();
-            }
-        }
+		System.out.println("Found " + unfilteredSize + " referring objects. "
+				+ allReferrers.size() + " of these were retained.");
 
-        System.out.println("Found " + unfilteredSize + " referring objects. "
-                + allReferrers.size() + " of these were retained.");
+		if (allReferrers.size() != unfilteredSize) {
+			System.out.println("Non-retained objects:");
+			rejectionCollectingFilter.printCollectedObjects(context);
+		}
 
-        if (allReferrers.size() != unfilteredSize) {
-            System.out.println("Non-retained objects:");
-            rejectionCollectingFilter.printCollectedObjects(context);
-        }
+		return new Iterable<ContentId>() {
+			public Iterator<ContentId> iterator() {
+				return new JoiningIterator<ContentId>(idIterable.iterator(),
+						allReferrers.iterator());
+			}
+		};
+	}
 
-        return new Iterable<ContentId>() {
-            public Iterator<ContentId> iterator() {
-                return new JoiningIterator<ContentId>(idIterable.iterator(),
-                        allReferrers.iterator());
-            }
-        };
-    }
-
-    @Override
-    public String getHelp() {
-        return "Exports content as XML";
-    }
+	@Override
+	public String getHelp() {
+		return "Exports content as XML";
+	}
 
 }

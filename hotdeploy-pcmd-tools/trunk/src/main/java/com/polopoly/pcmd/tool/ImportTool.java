@@ -31,212 +31,235 @@ import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
 
 public class ImportTool implements Tool<ImportParameters> {
-    private final class LoggingSingleFileDeployer extends DefaultSingleFileDeployer {
-        private int fileCount;
-        private int imported;
-        private PolopolyContext context;
+	private final class LoggingSingleFileDeployer extends
+			DefaultSingleFileDeployer {
+		private int fileCount;
+		private int imported;
+		private PolopolyContext context;
 
-        private LoggingSingleFileDeployer(PolopolyContext context, int fileCount) {
-            super(context.getPolicyCMServer());
+		private LoggingSingleFileDeployer(PolopolyContext context, int fileCount) {
+			super(context.getPolicyCMServer());
 
-            this.context = context;
-            this.fileCount = fileCount;
-        }
+			this.context = context;
+			this.fileCount = fileCount;
+		}
 
-        @Override
-        public boolean importAndHandleException(
-                DeploymentFile fileToImport) throws FatalDeployException {
-            StringBuffer message = new StringBuffer(100);
+		@Override
+		public boolean importAndHandleException(DeploymentFile fileToImport)
+				throws FatalDeployException {
+			StringBuffer message = new StringBuffer(100);
 
-            message.append("Importing ");
-            message.append(fileToImport);
+			message.append("Importing ");
+			message.append(fileToImport);
 
-            if (fileCount > 10) {
-                message.append(" (" + getPercentage(imported++) + "%)");
-            }
+			if (fileCount > 10) {
+				message.append(" (" + getPercentage(imported++) + "%)");
+			}
 
-            message.append("...");
+			message.append("...");
 
-            System.out.println(message);
+			System.out.println(message);
 
-            return super.importAndHandleException(fileToImport);
-        }
+			return super.importAndHandleException(fileToImport);
+		}
 
-        @Override
-        protected void contentCommitted(ContentId createdId) {
-            System.out.println(AbstractContentIdField.get(createdId, context));
-        }
+		@Override
+		protected void contentCommitted(ContentId createdId) {
+			System.out.println(AbstractContentIdField.get(createdId, context));
+		}
 
-        private String getPercentage(int i) {
-            return Integer.toString(100 * imported / fileCount);
-        }
-    }
+		private String getPercentage(int i) {
+			return Integer.toString(100 * imported / fileCount);
+		}
+	}
 
-    private CachingDeploymentFileParser cachingParser;
-    private DirectoryState directoryState;
-    private DirectoryStateFetcher directoryStateFetcher;
+	private CachingDeploymentFileParser cachingParser;
+	private DirectoryState directoryState;
+	private DirectoryStateFetcher directoryStateFetcher;
 
-    public ImportTool() {
-        cachingParser = new CachingDeploymentFileParser(new ContentXmlParser());
-    }
+	public ImportTool() {
+		cachingParser = new CachingDeploymentFileParser(new ContentXmlParser());
+	}
 
-    public ImportParameters createParameters() {
-        return new ImportParameters();
-    }
+	public ImportParameters createParameters() {
+		return new ImportParameters();
+	}
 
-    private boolean importOrderAvailable(FilesToDeployParameters parameters) {
-        try {
-            return new ImportOrderFile(parameters.getDirectory()).getFile().exists();
-        } catch (IOException e) {
-            System.err.println("Could not determine where to place import order: " + e.getMessage() + ". Not writing import order file.");
+	private boolean importOrderAvailable(FilesToDeployParameters parameters) {
+		try {
+			return new ImportOrderFile(parameters.getDirectory()).getFile()
+					.exists();
+		} catch (IOException e) {
+			System.err
+					.println("Could not determine where to place import order: "
+							+ e.getMessage()
+							+ ". Not writing import order file.");
 
-            return false;
-        }
-    }
+			return false;
+		}
+	}
 
-    private boolean shouldCreateImportOrder(ImportParameters parameters,
-            List<DeploymentFile> files) {
-        return files.size() > 1 && (!importOrderAvailable(parameters) || parameters.isGenerateImportOrder());
-    }
+	private boolean shouldCreateImportOrder(ImportParameters parameters,
+			List<DeploymentFile> files) {
+		return files.size() > 1
+				&& (!importOrderAvailable(parameters) || parameters
+						.isGenerateImportOrder());
+	}
 
-    private List<DeploymentFile> createImportOrder(
-            ImportParameters parameters) {
-        ImportOrder importOrder =
-            generateImportOrder(cachingParser, parameters, parameters.isIgnorePresent());
+	private List<DeploymentFile> createImportOrder(ImportParameters parameters) {
+		ImportOrder importOrder = generateImportOrder(cachingParser,
+				parameters, parameters.isIgnorePresent());
 
-        writeFile(importOrder);
+		writeFile(importOrder);
 
-        return importOrder;
-    }
+		return importOrder;
+	}
 
-    private boolean shouldCreateBootstrap(ImportParameters parameters,
-            boolean createImportOrder) {
-        return createImportOrder || parameters.isGenerateBootstrap();
-    }
+	private boolean shouldCreateBootstrap(ImportParameters parameters,
+			boolean createImportOrder) {
+		return createImportOrder || parameters.isGenerateBootstrap();
+	}
 
-    private void createBootstrap(ImportParameters parameters,
-            List<DeploymentFile> files) {
-        BootstrapFileGenerator generator = new BootstrapFileGenerator();
+	private void createBootstrap(ImportParameters parameters,
+			List<DeploymentFile> files) {
+		BootstrapFileGenerator generator = new BootstrapFileGenerator();
 
-        generator.setForce(true);
-        generator.setBootstrapNonCreated(parameters.isBootstrapNonCreated());
-        generator.setIgnorePresent(parameters.isIgnorePresent());
-        generator.setParser(cachingParser);
+		generator.setForce(true);
+		generator.setBootstrapNonCreated(parameters.isBootstrapNonCreated());
+		generator.setIgnorePresent(parameters.isIgnorePresent());
+		generator.setParser(cachingParser);
 
-        generator.generateBootstrap(parameters.getDirectory(), files);
-    }
+		generator.generateBootstrap(parameters.getDirectory(), files);
+	}
 
-    private DirectoryState getDirectoryState(PolopolyContext context, ImportParameters parameters) {
-        if (parameters.isForce()) {
-            return new NoFilesImportedDirectoryState();
-        }
-        else {
-            directoryStateFetcher =
-                new DirectoryStateFetcher(context.getPolicyCMServer());
+	private DirectoryState getDirectoryState(PolopolyContext context,
+			ImportParameters parameters) {
+		if (parameters.isForce()) {
+			return new NoFilesImportedDirectoryState();
+		} else {
+			directoryStateFetcher = new DirectoryStateFetcher(
+					context.getPolicyCMServer());
 
-            DirectoryState directoryState = directoryStateFetcher.getDirectoryState();
+			DirectoryState directoryState = directoryStateFetcher
+					.getDirectoryState();
 
-            String considerDirectoryJar = parameters.getConsiderJar();
+			String considerDirectoryJar = parameters.getConsiderJar();
 
-            if (considerDirectoryJar != null) {
-                directoryState = new DirectoryWillBecomeJarDirectoryState(directoryState,
-                    new FileDeploymentDirectory(parameters.getDirectory()), considerDirectoryJar);
-            }
+			if (considerDirectoryJar != null) {
+				directoryState = new DirectoryWillBecomeJarDirectoryState(
+						directoryState, new FileDeploymentDirectory(
+								parameters.getDirectory()),
+						considerDirectoryJar);
+			}
 
-            return directoryState;
-        }
-    }
+			return directoryState;
+		}
+	}
 
-    public void execute(PolopolyContext context,
-            ImportParameters parameters) {
-        directoryState = getDirectoryState(context, parameters);
+	public void execute(PolopolyContext context, ImportParameters parameters) {
+		directoryState = getDirectoryState(context, parameters);
 
-        try {
-            if (parameters.isSearchResources()) {
-                deployResourceContent(context, parameters.isOnlyJarResources());
-            }
+		try {
+			if (parameters.isSearchResources()) {
+				deployResourceContent(context, parameters);
+			}
 
-            List<DeploymentFile> files = parameters.discoverFiles();
+			List<DeploymentFile> files = parameters.discoverFiles();
 
-            boolean createImportOrder =
-                shouldCreateImportOrder(parameters, files);
+			boolean createImportOrder = shouldCreateImportOrder(parameters,
+					files);
 
-            if (createImportOrder) {
-                files = createImportOrder(parameters);
-            }
+			if (createImportOrder) {
+				files = createImportOrder(parameters);
+			}
 
-            boolean createBootstrap =
-                shouldCreateBootstrap(parameters, createImportOrder);
+			boolean createBootstrap = shouldCreateBootstrap(parameters,
+					createImportOrder);
 
-            if (createBootstrap) {
-                createBootstrap(parameters, files);
-            }
+			if (createBootstrap) {
+				createBootstrap(parameters, files);
+			}
 
-            if (parameters.getFileOrDirectory() != null) {
-                System.out.println(files.size() + " content file" + plural(files.size()) +
-                        " found in " + parameters.getFileOrDirectory().getAbsolutePath() + "...");
+			if (parameters.getFileOrDirectory() != null) {
+				System.out.println(files.size() + " content file"
+						+ plural(files.size()) + " found in "
+						+ parameters.getFileOrDirectory().getAbsolutePath()
+						+ "...");
 
-                MultipleFileDeployer deployer =
-                    createDeployer(context, files.size());
+				MultipleFileDeployer deployer = createDeployer(context,
+						parameters, files.size());
 
-                deployer.deploy(files);
+				deployer.deploy(files);
 
-                System.out.println(deployer.getResultMessage(files));
-            }
-        } catch (FatalDeployException e) {
-            System.err.println("Deployment could not be performed: " + e.getMessage());
-        } finally {
-            persistState(directoryState);
-        }
-    }
+				System.out.println(deployer.getResultMessage(files));
+			}
+		} catch (FatalDeployException e) {
+			System.err.println("Deployment could not be performed: "
+					+ e.getMessage());
+		} finally {
+			persistState(directoryState);
+		}
+	}
 
-    private MultipleFileDeployer createDeployer(PolopolyContext context, int fileCount) {
-        return new MultipleFileDeployer(
-                new LoggingSingleFileDeployer(context, fileCount),
-                directoryState);
-    }
+	private MultipleFileDeployer createDeployer(PolopolyContext context,
+			ImportParameters parameters, int fileCount) {
+		LoggingSingleFileDeployer singleFileDeployer = new LoggingSingleFileDeployer(
+				context, fileCount);
 
-    private void deployResourceContent(PolopolyContext context, boolean onlyJars) throws FatalDeployException {
-        try {
-            List<DeploymentFile> resourceFiles =
-                new ResourceFileDiscoverer(onlyJars).getFilesToImport(getClass().getClassLoader());
+		singleFileDeployer.setIgnoreContentListAddFailures(parameters
+				.isIgnoreContentListAddFailures());
 
-            if (resourceFiles.isEmpty()) {
-                return;
-            }
+		return new MultipleFileDeployer(singleFileDeployer, directoryState);
+	}
 
-            System.out.println(resourceFiles.size() + " content file" + plural(resourceFiles.size()) +
-                    " found in the classpath.");
+	private void deployResourceContent(PolopolyContext context,
+			ImportParameters parameters) throws FatalDeployException {
+		try {
+			List<DeploymentFile> resourceFiles = new ResourceFileDiscoverer(
+					parameters.isOnlyJarResources())
+					.getFilesToImport(getClass().getClassLoader());
 
-            MultipleFileDeployer deployer =
-                createDeployer(context, resourceFiles.size());
+			if (resourceFiles.isEmpty()) {
+				return;
+			}
 
-            deployer.deploy(resourceFiles);
+			System.out
+					.println(resourceFiles.size() + " content file"
+							+ plural(resourceFiles.size())
+							+ " found in the classpath.");
 
-            if (!deployer.isAllFilesUnchanged()) {
-                System.out.println("Content in the classpath: " +
-                        deployer.getResultMessage(resourceFiles));
-            }
+			MultipleFileDeployer deployer = createDeployer(context, parameters,
+					resourceFiles.size());
 
-            // we might have deployed the hotdeploy templates here. if that is the
-            // case we can now (and only now) fetch the directory state.
-            if (directoryStateFetcher != null) {
-                directoryState = directoryStateFetcher.refreshAfterFailingToFetch();
-            }
-        } catch (NotApplicableException e) {
-            // no resource content. fine.
-        }
-    }
+			deployer.deploy(resourceFiles);
 
-    private void persistState(DirectoryState directoryState) {
-        try {
-            directoryState.persist();
-        } catch (CouldNotUpdateStateException e) {
-            System.err.println("Error recording deployment state: " + e.getMessage());
-        }
-    }
+			if (!deployer.isAllFilesUnchanged()) {
+				System.out.println("Content in the classpath: "
+						+ deployer.getResultMessage(resourceFiles));
+			}
 
-    public String getHelp() {
-        return "Imports content files that have been modified since last time they were imported (or were never imported).";
-    }
+			// we might have deployed the hotdeploy templates here. if that is
+			// the
+			// case we can now (and only now) fetch the directory state.
+			if (directoryStateFetcher != null) {
+				directoryState = directoryStateFetcher
+						.refreshAfterFailingToFetch();
+			}
+		} catch (NotApplicableException e) {
+			// no resource content. fine.
+		}
+	}
+
+	private void persistState(DirectoryState directoryState) {
+		try {
+			directoryState.persist();
+		} catch (CouldNotUpdateStateException e) {
+			System.err.println("Error recording deployment state: "
+					+ e.getMessage());
+		}
+	}
+
+	public String getHelp() {
+		return "Imports content files that have been modified since last time they were imported (or were never imported).";
+	}
 }
