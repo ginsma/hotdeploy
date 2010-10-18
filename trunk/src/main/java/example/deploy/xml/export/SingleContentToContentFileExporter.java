@@ -7,21 +7,26 @@ import static example.deploy.text.TextContentParser.FILE_PREFIX;
 import static example.deploy.text.TextContentParser.ID_PREFIX;
 import static example.deploy.text.TextContentParser.INPUT_TEMPLATE_PREFIX;
 import static example.deploy.text.TextContentParser.LIST_PREFIX;
+import static example.deploy.text.TextContentParser.MAJOR_PREFIX;
 import static example.deploy.text.TextContentParser.NAME_PREFIX;
 import static example.deploy.text.TextContentParser.REFERENCE_PREFIX;
 import static example.deploy.text.TextContentParser.SECURITY_PARENT_PREFIX;
 import static example.deploy.text.TextContentParser.SEPARATOR_CHAR;
-import static example.deploy.text.TextContentParser.MAJOR_PREFIX;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import com.polopoly.cm.ContentFileInfo;
 import com.polopoly.cm.ContentId;
@@ -32,286 +37,332 @@ import com.polopoly.cm.client.ContentRead;
 import com.polopoly.cm.collections.ContentList;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.server.ServerNames;
+import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
 
 import example.deploy.hotdeploy.client.Major;
-
 import example.deploy.xml.export.contentlistentry.ContentReferenceFilter;
 
 public class SingleContentToContentFileExporter implements
-        SingleContentToFileExporter {
-    private static final Logger LOGGER = Logger
-            .getLogger(SingleContentToContentFileExporter.class.getName());
+		SingleContentToFileExporter {
+	private PolicyCMServer server;
 
-    private PolicyCMServer server;
+	private ContentReferenceFilter filter;
 
-    private ContentReferenceFilter filter;
+	private ExternalIdGenerator externalIdGenerator;
 
-    public SingleContentToContentFileExporter(PolicyCMServer server,
-            ContentReferenceFilter filter) {
-        this.server = server;
-        this.filter = filter;
-    }
+	public SingleContentToContentFileExporter(PolicyCMServer server,
+			ContentReferenceFilter filter,
+			ExternalIdGenerator externalIdGenerator) {
+		this.server = server;
+		this.filter = filter;
+		this.externalIdGenerator = externalIdGenerator;
+	}
 
-    public void exportSingleContentToFile(ContentRead content, File file)
-            throws ExportException {
-        try {
-            Writer writer = new OutputStreamWriter(new FileOutputStream(file),
-                    "UTF-8");
+	@Override
+	public void exportContentToFile(List<? extends ContentRead> contents,
+			File file) throws ParserConfigurationException,
+			TransformerFactoryConfigurationError,
+			TransformerConfigurationException, TransformerException,
+			FileNotFoundException, ExportException {
+		try {
+			Writer writer = startFile(file);
 
-            writeId(content, writer);
+			boolean first = true;
 
-            writeMajor(content, writer);
+			for (ContentRead content : contents) {
+				if (first) {
+					writeln(writer);
+					first = false;
+				}
 
-            writeName(content, writer);
-            
-            writeSecurityParent(content, writer);
+				exportSingleContent(file, writer, content);
+			}
 
-            writeComponents(content, writer);
+			endFile(writer);
+		} catch (CMException e) {
+			throw new ExportException(e);
+		} catch (IOException e) {
+			throw new ExportException(e);
+		}
+	}
 
-            writeContentReferences(content, writer);
+	public void exportSingleContentToFile(ContentRead content, File file)
+			throws ExportException {
+		try {
+			Writer writer = startFile(file);
 
-            writeFiles(content, file, writer);
+			exportSingleContent(file, writer, content);
 
-            writer.close();
-        } catch (CMException e) {
-            throw new ExportException(e);
-        } catch (IOException e) {
-            throw new ExportException(e);
-        }
-    }
+			endFile(writer);
+		} catch (CMException e) {
+			throw new ExportException(e);
+		} catch (IOException e) {
+			throw new ExportException(e);
+		}
+	}
 
-    private void writeMajor(ContentRead content, Writer writer) throws IOException {
-    	Major major = Major.getMajor(content.getContentId().getMajor());
-    	if (major != Major.UNKNOWN) {
-            writeln(writer, MAJOR_PREFIX + SEPARATOR_CHAR + major.getName());
-    	} 
+	private void exportSingleContent(File file, Writer writer,
+			ContentRead content) throws CMException, IOException,
+			ExportException, FileNotFoundException {
+		writeId(content, writer);
+
+		writeMajor(content, writer);
+
+		writeName(content, writer);
+
+		writeSecurityParent(content, writer);
+
+		writeComponents(content, writer);
+
+		writeContentReferences(content, writer);
+
+		writeFiles(content, file, writer);
+	}
+
+	private void endFile(Writer writer) throws IOException {
+		writer.close();
+	}
+
+	private Writer startFile(File file) throws UnsupportedEncodingException,
+			FileNotFoundException {
+		Writer writer = new OutputStreamWriter(new FileOutputStream(file),
+				"UTF-8");
+		return writer;
+	}
+
+	private void writeMajor(ContentRead content, Writer writer)
+			throws IOException {
+		Major major = Major.getMajor(content.getContentId().getMajor());
+		if (major != Major.UNKNOWN) {
+			writeln(writer, MAJOR_PREFIX + SEPARATOR_CHAR + major.getName());
+		}
 	}
 
 	private void writeId(ContentRead content, Writer writer)
-            throws CMException, IOException, ExportException {
-        writeln(writer, ID_PREFIX + SEPARATOR_CHAR + escape(getId(content)));
-    }
+			throws CMException, IOException, ExportException {
+		writeln(writer, ID_PREFIX + SEPARATOR_CHAR + escape(getId(content)));
+	}
 
-    private String getId(ContentRead content) {
-        ExternalContentId externalId;
+	private String getId(ContentRead content) {
+		return externalIdGenerator.generateExternalId(content);
+	}
 
-        try {
-            externalId = content.getExternalId();
-            if (externalId != null) {
-                return externalId.getExternalId();
-            }
-        } catch (CMException e) {
-            LOGGER.log(Level.WARNING, "Getting external ID of "
-                    + toString(content) + ": " + e.getMessage(), e);
-        }
+	private void writeFiles(ContentRead content, File file, Writer writer)
+			throws CMException, IOException, FileNotFoundException {
+		ContentFileInfo[] contentFiles = content.listFiles("/", true);
 
-        return content.getContentId().getContentId().getContentIdString();
-    }
+		for (ContentFileInfo contentFile : contentFiles) {
+			if (contentFile.isDirectory()) {
+				continue;
+			}
 
-    private void writeFiles(ContentRead content, File file, Writer writer)
-            throws CMException, IOException, FileNotFoundException {
-        ContentFileInfo[] contentFiles = content.listFiles("/", true);
+			File outputFile = new File(file.getParent(), getId(content) + "."
+					+ contentFile.getName());
 
-        for (ContentFileInfo contentFile : contentFiles) {
-            if (contentFile.isDirectory()) {
-                continue;
-            }
+			FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 
-            File outputFile = new File(file.getParent(), getId(content) + "."
-                    + contentFile.getName());
+			content.exportFile(contentFile.getPath(), fileOutputStream);
 
-            FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+			fileOutputStream.close();
 
-            content.exportFile(contentFile.getPath(), fileOutputStream);
+			writeln(writer,
+					FILE_PREFIX + SEPARATOR_CHAR + contentFile.getPath()
+							+ SEPARATOR_CHAR + outputFile.getName());
+		}
+	}
 
-            fileOutputStream.close();
+	private void writeContentReferences(ContentRead content, Writer writer)
+			throws CMException, IOException, ExportException {
+		String[] groups = content.getContentReferenceGroupNames();
 
-            writeln(writer, FILE_PREFIX + SEPARATOR_CHAR
-                    + contentFile.getPath() + SEPARATOR_CHAR
-                    + outputFile.getName());
-        }
-    }
+		Arrays.sort(groups);
 
-    private void writeContentReferences(ContentRead content, Writer writer)
-            throws CMException, IOException, ExportException {
-        String[] groups = content.getContentReferenceGroupNames();
+		for (String group : groups) {
+			String[] names = content.getContentReferenceNames(group);
 
-        Arrays.sort(groups);
+			if (isContentList(names)) {
+				ContentList contentList = content.getContentList(group);
 
-        for (String group : groups) {
-            String[] names = content.getContentReferenceNames(group);
+				int size = contentList.size();
 
-            if (isContentList(names)) {
-                ContentList contentList = content.getContentList(group);
+				for (int i = 0; i < size; i++) {
+					ContentReference entry = contentList.getEntry(i);
+					ContentId rmd = entry.getReferenceMetaDataId();
 
-                int size = contentList.size();
+					try {
+						if (rmd != null) {
+							writeln(writer,
+									LIST_PREFIX
+											+ SEPARATOR_CHAR
+											+ escape(group)
+											+ SEPARATOR_CHAR
+											+ escape(toContentId(content, entry
+													.getReferredContentId()))
+											+ SEPARATOR_CHAR
+											+ escape(toContentId(content, rmd)));
+						} else {
+							writeln(writer,
+									LIST_PREFIX
+											+ SEPARATOR_CHAR
+											+ escape(group)
+											+ SEPARATOR_CHAR
+											+ escape(toContentId(content, entry
+													.getReferredContentId())));
+						}
+					} catch (NotExportableException e) {
+						System.out.println("Skipped reference to "
+								+ entry.getReferredContentId()
+										.getContentIdString() + " in " + group
+								+ " in "
+								+ content.getContentId().getContentIdString()
+								+ " because " + e.toString());
 
-                for (int i = 0; i < size; i++) {
-                    ContentReference entry = contentList.getEntry(i);
-                    ContentId rmd = entry.getReferenceMetaDataId();
+					}
+				}
+			} else {
+				Arrays.sort(names);
 
-                    try {
-                        if (rmd != null) {
-                            writeln(writer, LIST_PREFIX
-                                    + SEPARATOR_CHAR
-                                    + escape(group)
-                                    + SEPARATOR_CHAR
-                                    + escape(toContentId(content, rmd))
-                                    + SEPARATOR_CHAR
-                                    + escape(toContentId(content, entry
-                                            .getReferredContentId())));
-                        } else {
-                            writeln(writer, LIST_PREFIX
-                                    + SEPARATOR_CHAR
-                                    + escape(group)
-                                    + SEPARATOR_CHAR
-                                    + escape(toContentId(content, entry
-                                            .getReferredContentId())));
-                        }
-                    } catch (NotExportableException e) {
-                    		System.out.println("Skipped reference to " + entry
-							        .getReferredContentId().getContentIdString() + " in " + group + " in " + content.getContentId().getContentIdString() + " because " +e.toString());
-						
-                    }
-                }
-            } else {
-                Arrays.sort(names);
+				for (String name : names) {
+					if (group.equals(ServerNames.CONTENT_ATTRG_SYSTEM)
+							&& name.equals(ServerNames.CONTENT_ATTR_INPUT_TEMPLATEID)) {
+						continue;
+					}
 
-                for (String name : names) {
-                    if (group.equals(ServerNames.CONTENT_ATTRG_SYSTEM)
-                            && name
-                                    .equals(ServerNames.CONTENT_ATTR_INPUT_TEMPLATEID)) {
-                        continue;
-                    }
+					try {
+						writeln(writer,
+								REFERENCE_PREFIX
+										+ SEPARATOR_CHAR
+										+ escape(group)
+										+ ':'
+										+ escape(name)
+										+ SEPARATOR_CHAR
+										+ escape(toContentId(content, content
+												.getContentReference(group,
+														name))));
+					} catch (NotExportableException e) {
+					}
+				}
+			}
+		}
+	}
 
-                    try {
-                        writeln(writer, REFERENCE_PREFIX
-                                + SEPARATOR_CHAR
-                                + escape(group)
-                                + ':'
-                                + escape(name)
-                                + SEPARATOR_CHAR
-                                + escape(toContentId(content, content
-                                        .getContentReference(group, name))));
-                    } catch (NotExportableException e) {
-                    }
-                }
-            }
-        }
-    }
+	private boolean isContentList(String[] names) {
+		for (String name : names) {
+			try {
+				Integer.parseInt(name);
+			} catch (NumberFormatException e) {
+				return false;
+			}
+		}
 
-    private boolean isContentList(String[] names) {
-        for (String name : names) {
-            try {
-                Integer.parseInt(name);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
+		return true;
+	}
 
-        return true;
-    }
+	private void writeComponents(ContentRead content, Writer writer)
+			throws CMException, IOException {
+		String[] groups = content.getComponentGroupNames();
 
-    private void writeComponents(ContentRead content, Writer writer)
-            throws CMException, IOException {
-        String[] groups = content.getComponentGroupNames();
+		Arrays.sort(groups);
 
-        Arrays.sort(groups);
+		for (String group : groups) {
+			String[] names = content.getComponentNames(group);
 
-        for (String group : groups) {
-            String[] names = content.getComponentNames(group);
+			Arrays.sort(names);
 
-            Arrays.sort(names);
+			for (String name : names) {
+				// skip name.
+				if (group.equals(CONTENT_ATTRG_SYSTEM)
+						&& name.equals(CONTENT_ATTR_NAME)) {
+					continue;
+				}
 
-            for (String name : names) {
-                // skip name.
-                if (group.equals(CONTENT_ATTRG_SYSTEM)
-                        && name.equals(CONTENT_ATTR_NAME)) {
-                    continue;
-                }
+				String value = content.getComponent(group, name);
 
-                String value = content.getComponent(group, name);
+				writeln(writer, COMPONENT_PREFIX + SEPARATOR_CHAR
+						+ escape(group) + SEPARATOR_CHAR + escape(name)
+						+ SEPARATOR_CHAR + escape(value));
+			}
+		}
+	}
 
-                writeln(writer, COMPONENT_PREFIX + SEPARATOR_CHAR + escape(group)
-                        + SEPARATOR_CHAR + escape(name) + SEPARATOR_CHAR
-                        + escape(value));
-            }
-        }
-    }
+	private void writeSecurityParent(ContentRead content, Writer writer)
+			throws IOException, ExportException {
+		ContentId securityParentId = content.getSecurityParentId();
 
-    private void writeSecurityParent(ContentRead content, Writer writer)
-            throws IOException, ExportException {
-        ContentId securityParentId = content.getSecurityParentId();
-                
-        if (securityParentId != null) {
-            try {
-                writeln(writer, SECURITY_PARENT_PREFIX + SEPARATOR_CHAR
-                        + escape(toContentId(content, securityParentId)));
-            } catch (NotExportableException e) {
-            }
-        }
-    }
+		if (securityParentId != null) {
+			try {
+				writeln(writer, SECURITY_PARENT_PREFIX + SEPARATOR_CHAR
+						+ escape(toContentId(content, securityParentId)));
+			} catch (NotExportableException e) {
+			}
+		}
+	}
 
-    private void writeName(ContentRead content, Writer writer)
-            throws IOException, ExportException, CMException {
-        writeln(writer, INPUT_TEMPLATE_PREFIX + SEPARATOR_CHAR
-                + getInputTemplateName(content));
+	private void writeName(ContentRead content, Writer writer)
+			throws IOException, ExportException, CMException {
+		writeln(writer, INPUT_TEMPLATE_PREFIX + SEPARATOR_CHAR
+				+ getInputTemplateName(content));
 
-        String contentName = content.getComponent(CONTENT_ATTRG_SYSTEM,
-                CONTENT_ATTR_NAME);
+		String contentName = content.getComponent(CONTENT_ATTRG_SYSTEM,
+				CONTENT_ATTR_NAME);
 
-        if (contentName != null) {
-            writeln(writer, NAME_PREFIX + SEPARATOR_CHAR + escape(contentName));
-        }
-    }
+		if (contentName != null) {
+			writeln(writer, NAME_PREFIX + SEPARATOR_CHAR + escape(contentName));
+		}
+	}
 
-    private String escape(String value) {
-        return value.replace("\\", "\\\\").replace(":", "\\:").replace("\n", "\\n").replace("\r", "");
-    }
+	private String escape(String value) {
+		return value.replace("\\", "\\\\").replace(":", "\\:")
+				.replace("\n", "\\n").replace("\r", "");
+	}
 
-    private void writeln(Writer writer, String string) throws IOException {
-        writer.write(string);
-        writer.write("\n");
-    }
+	private void writeln(Writer writer) throws IOException {
+		writer.write("\n");
+	}
 
-    private String toContentId(ContentRead inContent, ContentId contentId)
-            throws ExportException, NotExportableException {
-        try {
-        	if (filter != null && !filter.isAllowed(inContent, contentId)) {
-            	throw new NotExportableException("Not allowed by filter.");
-            }
+	private void writeln(Writer writer, String string) throws IOException {
+		writer.write(string);
+		writeln(writer);
+	}
 
-            ContentRead referredContent = server.getContent(contentId);
+	private String toContentId(ContentRead inContent, ContentId contentId)
+			throws ExportException, NotExportableException {
+		try {
+			if (filter != null && !filter.isAllowed(inContent, contentId)) {
+				throw new NotExportableException("Not allowed by filter.");
+			}
 
-            return getId(referredContent);
-        } catch (CMException e) {
-            throw new ExportException("Getting external ID of "
-                    + contentId.getContentIdString() + ":  " + e.getMessage(),
-                    e);
-        }
-    }
+			ContentRead referredContent = server.getContent(contentId);
 
-    private String toString(ContentRead content) {
-        return content.getContentId().getContentId().getContentIdString();
-    }
+			return getId(referredContent);
+		} catch (CMException e) {
+			throw new ExportException("Getting external ID of "
+					+ contentId.getContentIdString() + ":  " + e.getMessage(),
+					e);
+		}
+	}
 
-    private String getInputTemplateName(ContentRead content)
-            throws ExportException {
-        try {
-            ContentRead inputTemplate = server.getContent(content
-                    .getInputTemplateId());
+	private String toString(ContentRead content) {
+		return content.getContentId().getContentId().getContentIdString();
+	}
 
-            ExternalContentId externalId = inputTemplate.getExternalId();
+	private String getInputTemplateName(ContentRead content)
+			throws ExportException {
+		try {
+			ContentRead inputTemplate = server.getContent(content
+					.getInputTemplateId());
 
-            if (externalId == null) {
-                throw new ExportException("Input template "
-                        + toString(inputTemplate) + " had no external ID.");
-            }
+			ExternalContentId externalId = inputTemplate.getExternalId();
 
-            return externalId.getExternalId();
-        } catch (CMException e) {
-            throw new ExportException("Getting input template of "
-                    + toString(content) + ": " + e.getMessage(), e);
-        }
-    }
+			if (externalId == null) {
+				throw new ExportException("Input template "
+						+ toString(inputTemplate) + " had no external ID.");
+			}
+
+			return externalId.getExternalId();
+		} catch (CMException e) {
+			throw new ExportException("Getting input template of "
+					+ toString(content) + ": " + e.getMessage(), e);
+		}
+	}
 }

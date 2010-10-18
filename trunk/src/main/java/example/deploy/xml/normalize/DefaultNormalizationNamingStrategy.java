@@ -4,70 +4,124 @@ import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
 
 import java.io.File;
 
+import com.polopoly.cm.client.CMException;
+import com.polopoly.cm.client.ContentRead;
+import com.polopoly.cm.policy.PolicyCMServer;
+import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
+
 import example.deploy.hotdeploy.client.Major;
+import example.deploy.xml.export.PreserveExistingPrefixOthersExternalIdGenerator;
 
 public class DefaultNormalizationNamingStrategy implements
-        NormalizationNamingStrategy {
-    public static final String CONTENT_DIRECTORY = "content";
+		NormalizationNamingStrategy {
+	public static final String CONTENT_DIRECTORY = "content";
 
-    private static final String SYSTEM_TEMPLATE_PREFIX = "p.";
+	private static final String SYSTEM_TEMPLATE_PREFIX = "p.";
 
-    private File contentDirectory;
+	private File contentDirectory;
+	private File templateDirectory;
 
-    private File templateDirectory;
+	private String extension;
 
-    private String extension;
+	protected PolicyCMServer server;
 
-    public DefaultNormalizationNamingStrategy(File directory, String extension) {
-        templateDirectory = directory;
-        this.extension = extension;
+	protected ExternalIdGenerator externalIdGenerator;
 
-        contentDirectory = new File(directory, CONTENT_DIRECTORY);
-        mkdir(contentDirectory);
-    }
+	public DefaultNormalizationNamingStrategy(PolicyCMServer server,
+			ExternalIdGenerator externalIdGenerator, File directory,
+			String extension) {
+		templateDirectory = directory;
+		this.extension = extension;
+		this.server = server;
+		this.externalIdGenerator = externalIdGenerator;
 
-    private static void mkdir(File directory) {
-        if (!directory.exists()) {
-            if (!directory.mkdir()) {
-                System.err.println("Could not create directory "
-                        + directory.getAbsolutePath());
-                System.exit(1);
-            }
-        }
-    }
+		contentDirectory = new File(directory, CONTENT_DIRECTORY);
+		mkdir(contentDirectory);
+	}
 
-    public File getFileName(Major major, String externalId, String inputTemplate) {
-        if (major == INPUT_TEMPLATE) {
-            return getTemplateFileName(externalId);
-        } else {
-            return getContentFileName(externalId, inputTemplate);
-        }
-    }
+	public DefaultNormalizationNamingStrategy(PolicyCMServer server,
+			File directory, String extension) {
+		this(server, new PreserveExistingPrefixOthersExternalIdGenerator(
+				"export."), directory, extension);
+	}
 
-    private File getContentFileName(String externalId, String inputTemplate) {
-        File directory;
+	private static void mkdir(File directory) {
+		if (!directory.exists()) {
+			if (!directory.mkdir()) {
+				System.err.println("Could not create directory "
+						+ directory.getAbsolutePath());
+				System.exit(1);
+			}
+		}
+	}
 
-        if (inputTemplate != null && !inputTemplate.equals("")) {
-            directory = new File(contentDirectory, inputTemplate);
+	public File getFileName(ContentRead content) {
+		String externalId = externalIdGenerator.generateExternalId(content);
 
-            mkdir(directory);
-        } else {
-            directory = contentDirectory;
-        }
+		String inputTemplateName = getInputTemplateName(content);
 
-        return new File(directory, externalId + '.' + extension);
-    }
+		return getFileName(Major.getMajor(content.getContentId().getMajor()),
+				externalId, inputTemplateName);
+	}
 
-    private File getTemplateFileName(String externalId) {
-        File directory = templateDirectory;
+	private String getInputTemplateName(ContentRead content) {
+		try {
+			ContentRead inputTemplate = server.getContent(content
+					.getInputTemplateId());
 
-        if (externalId.startsWith(SYSTEM_TEMPLATE_PREFIX)) {
-            directory = new File(directory, "system");
+			String inputTemplateName = inputTemplate.getExternalId()
+					.getExternalId();
 
-            mkdir(directory);
-        }
+			if (inputTemplateName == null) {
+				return "Unknown";
+			}
 
-        return new File(directory, externalId + '.' + extension);
-    }
+			return inputTemplateName;
+		} catch (CMException e) {
+			// swallow exception.
+			return "Unknown";
+		}
+	}
 
+	public File getFileName(Major major, String externalId, String inputTemplate) {
+		if (major == INPUT_TEMPLATE) {
+			return getTemplateFileName(externalId);
+		} else {
+			return getContentFileName(externalId, inputTemplate);
+		}
+	}
+
+	private File getContentFileName(String externalId, String inputTemplate) {
+		File directory;
+
+		if (inputTemplate != null && !inputTemplate.equals("")) {
+			directory = new File(contentDirectory, inputTemplate);
+
+			mkdir(directory);
+		} else {
+			directory = contentDirectory;
+		}
+
+		return toSafeFile(directory, externalId + '.' + extension);
+	}
+
+	private File getTemplateFileName(String externalId) {
+		File directory = templateDirectory;
+
+		if (externalId.startsWith(SYSTEM_TEMPLATE_PREFIX)) {
+			directory = new File(directory, "system");
+
+			mkdir(directory);
+		}
+
+		return toSafeFile(directory, externalId + '.' + extension);
+	}
+
+	private File toSafeFile(File directory, String unsafeFileName) {
+		String safeFileName = unsafeFileName.replace(':', '.')
+				.replace('/', '.').replace('\\', '.');
+
+		return new File(directory, safeFileName);
+
+	}
 }

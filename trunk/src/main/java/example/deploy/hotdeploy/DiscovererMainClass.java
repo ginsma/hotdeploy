@@ -10,82 +10,80 @@ import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 
 public class DiscovererMainClass {
-    private boolean discoverResources = true;
-    private boolean onlyJarResources = true;
+	private boolean discoverResources = true;
+	private boolean onlyJarResources = true;
 
-    private List<File> directories = new ArrayList<File>();
+	private List<File> directories = new ArrayList<File>();
 
-    protected Iterable<FileDiscoverer> getDiscoverers() {
-        List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
+	protected Iterable<FileDiscoverer> getDiscoverers() {
+		List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
 
-        if (discoverResources) {
-            discoverers.add(new ResourceFileDiscoverer(onlyJarResources));
-        }
+		if (discoverResources) {
+			discoverers.add(new ResourceFileDiscoverer(onlyJarResources));
+		}
 
-        for (File directory : directories) {
-            discoverers.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
-        }
+		for (File directory : directories) {
+			discoverers
+					.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
+		}
 
-        return discoverers;
-    }
+		return discoverers;
+	}
 
-    public Collection<File> getDirectories() {
-        return directories;
-    }
+	public Collection<File> getDirectories() {
+		return directories;
+	}
 
-    public void addDirectoryName(String directoryName) {
-        File directory = new File(directoryName);
-        addDirectory(directory);
-    }
+	public void addDirectoryName(String directoryName) {
+		File directory = new File(directoryName);
+		addDirectory(directory);
+	}
 
-    protected void addDirectory(File directory) {
-        directories.add(directory);
-    }
+	protected void addDirectory(File directory) {
+		directories.add(directory);
+	}
 
-    protected void validateDirectories() {
-        if (directories.isEmpty()) {
-            System.err.println("--dir not specified. Only importing resource files.");
-        }
+	protected void validateDirectories() {
+		for (File directory : directories) {
+			if (!directory.exists() || !directory.canRead()
+					|| !directory.isDirectory()) {
+				System.err.println(directory.getAbsolutePath()
+						+ " is not a readable directory. Cannot import it.");
+			}
+		}
+	}
 
-        for (File directory : directories) {
-            if (!directory.exists() || !directory.canRead() || !directory.isDirectory()) {
-                System.err.println(directory.getAbsolutePath() + " is not a readable directory. Cannot import it.");
-            }
-        }
-    }
+	protected String getDirectoryString() {
+		StringBuffer result = new StringBuffer(100);
 
-    protected String getDirectoryString() {
-        StringBuffer result = new StringBuffer(100);
+		boolean first = true;
 
-        boolean first = true;
+		for (File directory : directories) {
+			if (first) {
+				first = false;
+			} else {
+				result.append(", ");
+			}
 
-        for (File directory : directories) {
-            if (first) {
-                first = false;
-            }
-            else {
-                result.append(", ");
-            }
+			result.append(directory.getAbsolutePath());
+		}
 
-            result.append(directory.getAbsolutePath());
-        }
+		return result.toString();
+	}
 
-        return result.toString();
-    }
+	public boolean isDiscoverResources() {
+		return discoverResources;
+	}
 
-    public boolean isDiscoverResources() {
-        return discoverResources;
-    }
+	public void setDiscoverResources(boolean discoverResources) {
+		this.discoverResources = discoverResources;
+	}
 
-    public void setDiscoverResources(boolean discoverResources) {
-        this.discoverResources = discoverResources;
-    }
+	public boolean isOnlyJarResources() {
+		return onlyJarResources;
+	}
 
-    public boolean isOnlyJarResources() {
-        return onlyJarResources;
-    }
-
-    public void setOnlyJarResources(boolean onlyJarResources) {
-        this.onlyJarResources = onlyJarResources;
-    }
+	public void setOnlyJarResources(boolean onlyJarResources) {
+		this.onlyJarResources = onlyJarResources;
+	}
 }

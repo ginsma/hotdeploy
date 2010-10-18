@@ -2,6 +2,7 @@ package example.deploy.xml.export;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
@@ -11,9 +12,15 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import com.polopoly.cm.client.ContentRead;
 
 public interface SingleContentToFileExporter {
-    void exportSingleContentToFile(ContentRead content, File file)
-            throws ParserConfigurationException,
-            TransformerFactoryConfigurationError,
-            TransformerConfigurationException, TransformerException,
-            FileNotFoundException, ExportException;
+	void exportContentToFile(List<? extends ContentRead> content, File file)
+			throws ParserConfigurationException,
+			TransformerFactoryConfigurationError,
+			TransformerConfigurationException, TransformerException,
+			FileNotFoundException, ExportException;
+
+	void exportSingleContentToFile(ContentRead content, File file)
+			throws ParserConfigurationException,
+			TransformerFactoryConfigurationError,
+			TransformerConfigurationException, TransformerException,
+			FileNotFoundException, ExportException;
 }

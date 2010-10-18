@@ -32,198 +32,218 @@ import example.deploy.text.TextContentParser;
 import example.deploy.text.TextContentSet;
 
 public class DefaultSingleFileDeployer implements SingleFileDeployer {
-    private static final Logger logger = Logger
-            .getLogger(DefaultSingleFileDeployer.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(DefaultSingleFileDeployer.class.getName());
 
-    private PolicyCMServer server;
+	private PolicyCMServer server;
 
-    private DispatchingDocumentImporter importer;
+	private DispatchingDocumentImporter importer;
 
-    private static boolean importing;
+	/**
+	 * Only works for text-format content.
+	 */
+	private boolean ignoreContentListAddFailures;
 
-    public DefaultSingleFileDeployer(PolicyCMServer server) {
-        this.server = server;
-    }
+	private static boolean importing;
 
-    public static boolean isImporting() {
-        return importing;
-    }
+	public DefaultSingleFileDeployer(PolicyCMServer server) {
+		this.server = server;
+	}
 
-    public void prepare() throws ParserConfigurationException {
-        importer = new DispatchingDocumentImporter(server);
-    }
+	public static boolean isImporting() {
+		return importing;
+	}
 
-    private void setImporterBaseUrl(DispatchingDocumentImporter importer,
-            DeploymentFile fileToImport) {
-        try {
-            URL baseUrl = fileToImport.getBaseUrl();
+	public void prepare() throws ParserConfigurationException {
+		importer = new DispatchingDocumentImporter(server);
+	}
 
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Using base URL " + baseUrl);
-            }
+	private void setImporterBaseUrl(DispatchingDocumentImporter importer,
+			DeploymentFile fileToImport) {
+		try {
+			URL baseUrl = fileToImport.getBaseUrl();
 
-            importer.setBaseUrl(baseUrl);
-        } catch (MalformedURLException e) {
-            logger.log(Level.WARNING, "Failed to create base URL for file "
-                    + fileToImport, e);
-        }
-    }
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.log(Level.FINEST, "Using base URL " + baseUrl);
+			}
 
-    private void importFile(DeploymentFile fileToImport) throws Exception {
-        importing = true;
+			importer.setBaseUrl(baseUrl);
+		} catch (MalformedURLException e) {
+			logger.log(Level.WARNING, "Failed to create base URL for file "
+					+ fileToImport, e);
+		}
+	}
 
-        try {
-            if (fileToImport.getName().endsWith(
-                    '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
-                TextContentSet textContent = new TextContentParser(fileToImport
-                        .getInputStream(), fileToImport.getBaseUrl(),
-                        fileToImport.getName()).parse();
+	private void importFile(DeploymentFile fileToImport) throws Exception {
+		importing = true;
 
-                textContent.validate(new CMServerValidationContext(server));
+		try {
+			if (fileToImport.getName().endsWith(
+					'.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
+				TextContentSet textContent = new TextContentParser(
+						fileToImport.getInputStream(),
+						fileToImport.getBaseUrl(), fileToImport.getName())
+						.parse();
 
-                for (Policy createdPolicy : new TextContentDeployer(
-                        textContent, server).deploy()) {
-                    contentCommitted(createdPolicy.getContentId());
-                }
+				textContent.validate(new CMServerValidationContext(server));
 
-                return;
-            }
+				TextContentDeployer textContentDeployer = new TextContentDeployer(
+						textContent, server);
 
-            setImporterBaseUrl(importer, fileToImport);
+				textContentDeployer
+						.setIgnoreContentListAddFailures(ignoreContentListAddFailures);
 
-            DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
-            Document xmlDocument = documentBuilder.parse(fileToImport
-                    .getInputStream());
+				for (Policy createdPolicy : textContentDeployer.deploy()) {
+					contentCommitted(createdPolicy.getContentId());
+				}
 
-            if (fileToImport instanceof JarDeploymentFile) {
-                importer.importXML(xmlDocument,
-                        ((JarDeploymentFile) fileToImport).getJarFile(),
-                        ((JarDeploymentFile) fileToImport).getNameWithinJar());
-            } else {
-                importer.importXML(xmlDocument, null,
-                        ((FileDeploymentFile) fileToImport).getDirectory());
-            }
-        } finally {
-            importing = false;
-        }
-    }
+				return;
+			}
 
-    protected void contentCommitted(ContentId createdId) {
-    }
+			setImporterBaseUrl(importer, fileToImport);
 
-    private static Throwable contains(Throwable t, Class<?> klass) {
-        if (klass.isAssignableFrom(t.getClass())) {
-            return t;
-        }
+			DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
+			Document xmlDocument = documentBuilder.parse(fileToImport
+					.getInputStream());
 
-        if (t.getCause() != null) {
-            return contains(t.getCause(), klass);
-        }
+			if (fileToImport instanceof JarDeploymentFile) {
+				importer.importXML(xmlDocument,
+						((JarDeploymentFile) fileToImport).getJarFile(),
+						((JarDeploymentFile) fileToImport).getNameWithinJar());
+			} else {
+				importer.importXML(xmlDocument, null,
+						((FileDeploymentFile) fileToImport).getDirectory());
+			}
+		} finally {
+			importing = false;
+		}
+	}
 
-        return null;
-    }
+	protected void contentCommitted(ContentId createdId) {
+	}
 
-    public boolean importAndHandleException(DeploymentFile fileToImport)
-            throws FatalDeployException {
-        if (importer == null) {
-            throw new FatalDeployException(
-                    "prepare() must be called before import.");
-        }
+	private static Throwable contains(Throwable t, Class<?> klass) {
+		if (klass.isAssignableFrom(t.getClass())) {
+			return t;
+		}
 
-        try {
-            importFile(fileToImport);
+		if (t.getCause() != null) {
+			return contains(t.getCause(), klass);
+		}
 
-            logger.log(Level.INFO, "Import of " + fileToImport + " done.");
+		return null;
+	}
 
-            return true;
-        } catch (PermissionDeniedException e) {
-            throw new FatalDeployException(e);
-        } catch (ParserConfigurationException e) {
-            throw new FatalDeployException(e);
-        } catch (Exception e) {
-            LockException lockException = (LockException) contains(e,
-                    LockException.class);
+	public boolean importAndHandleException(DeploymentFile fileToImport)
+			throws FatalDeployException {
+		if (importer == null) {
+			throw new FatalDeployException(
+					"prepare() must be called before import.");
+		}
 
-            if (lockException != null) {
-                ContentId lockedId = null;
+		try {
+			importFile(fileToImport);
 
-                if (lockException.getLockInfo() != null) {
-                    lockedId = lockException.getLockInfo().getLocked();
-                } else {
-                    // there are two locked exceptions: something being locked
-                    // by someone else
-                    // and something not being locked while trying to modify.
-                    if (e.getMessage().indexOf("is not locked") != -1) {
-                        throw new FatalDeployException(e);
-                    }
+			logger.log(Level.INFO, "Import of " + fileToImport + " done.");
 
-                    int i = e.getMessage().indexOf("ContentId(");
+			return true;
+		} catch (PermissionDeniedException e) {
+			throw new FatalDeployException(e);
+		} catch (ParserConfigurationException e) {
+			throw new FatalDeployException(e);
+		} catch (Exception e) {
+			LockException lockException = (LockException) contains(e,
+					LockException.class);
 
-                    if (i != -1) {
-                        int j = e.getMessage().indexOf(")", i + 1);
+			if (lockException != null) {
+				ContentId lockedId = null;
 
-                        String contentIdString = e.getMessage().substring(
-                                i + 10, j);
+				if (lockException.getLockInfo() != null) {
+					lockedId = lockException.getLockInfo().getLocked();
+				} else {
+					// there are two locked exceptions: something being locked
+					// by someone else
+					// and something not being locked while trying to modify.
+					if (e.getMessage().indexOf("is not locked") != -1) {
+						throw new FatalDeployException(e);
+					}
 
-                        try {
-                            lockedId = ContentIdFactory
-                                    .createContentId(contentIdString);
-                        } catch (IllegalArgumentException iae) {
-                            logger.log(Level.WARNING,
-                                    "Could not parse content ID \""
-                                            + contentIdString
-                                            + "\"in error message.");
-                        }
-                    }
-                }
+					int i = e.getMessage().indexOf("ContentId(");
 
-                if (lockedId == null) {
-                    logger.log(Level.WARNING, "Import of " + fileToImport
-                            + " failed: " + e.getMessage());
+					if (i != -1) {
+						int j = e.getMessage().indexOf(")", i + 1);
 
-                    return false;
-                }
+						String contentIdString = e.getMessage().substring(
+								i + 10, j);
 
-                try {
-                    Content content = (Content) server
-                            .getContent(new VersionedContentId(lockedId,
-                                    VersionedContentId.LATEST_VERSION));
+						try {
+							lockedId = ContentIdFactory
+									.createContentId(contentIdString);
+						} catch (IllegalArgumentException iae) {
+							logger.log(Level.WARNING,
+									"Could not parse content ID \""
+											+ contentIdString
+											+ "\"in error message.");
+						}
+					}
+				}
 
-                    if (content.getLockInfo() == null) {
-                        throw new FatalDeployException(e);
-                    }
+				if (lockedId == null) {
+					logger.log(Level.WARNING, "Import of " + fileToImport
+							+ " failed: " + e.getMessage());
 
-                    logger.log(Level.WARNING, lockedId.getContentIdString()
-                            + " was locked. Trying to unlock it.");
+					return false;
+				}
 
-                    content.forcedUnlock();
-                } catch (CMException cmException) {
-                    logger.log(Level.WARNING,
-                            "While unlocking: " + cmException, cmException);
-                    logger.log(Level.WARNING, "Import of " + fileToImport
-                            + " failed: " + e.getMessage());
+				try {
+					Content content = (Content) server
+							.getContent(new VersionedContentId(lockedId,
+									VersionedContentId.LATEST_VERSION));
 
-                    return false;
-                }
+					if (content.getLockInfo() == null) {
+						throw new FatalDeployException(e);
+					}
 
-                logger.log(Level.INFO, "Retrying import...");
+					logger.log(Level.WARNING, lockedId.getContentIdString()
+							+ " was locked. Trying to unlock it.");
 
-                return importAndHandleException(fileToImport);
-            }
+					content.forcedUnlock();
+				} catch (CMException cmException) {
+					logger.log(Level.WARNING,
+							"While unlocking: " + cmException, cmException);
+					logger.log(Level.WARNING, "Import of " + fileToImport
+							+ " failed: " + e.getMessage());
 
-            String message = e.getMessage();
+					return false;
+				}
 
-            if (message == null) {
-                message = e.toString();
-            }
+				logger.log(Level.INFO, "Retrying import...");
 
-            boolean printStackTrace = e instanceof RuntimeException
-                    || e instanceof DeployCommitException;
+				return importAndHandleException(fileToImport);
+			}
 
-            logger.log(Level.WARNING, "Import of " + fileToImport + " failed: "
-                    + message, (printStackTrace ? e : null));
+			String message = e.getMessage();
 
-            return false;
-        }
-    }
+			if (message == null) {
+				message = e.toString();
+			}
+
+			boolean printStackTrace = e instanceof RuntimeException
+					|| e instanceof DeployCommitException;
+
+			logger.log(Level.WARNING, "Import of " + fileToImport + " failed: "
+					+ message, (printStackTrace ? e : null));
+
+			return false;
+		}
+	}
+
+	public boolean isIgnoreContentListAddFailures() {
+		return ignoreContentListAddFailures;
+	}
+
+	public void setIgnoreContentListAddFailures(
+			boolean ignoreContentListAddFailures) {
+		this.ignoreContentListAddFailures = ignoreContentListAddFailures;
+	}
 }

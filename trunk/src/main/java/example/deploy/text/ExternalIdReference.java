@@ -1,5 +1,8 @@
 package example.deploy.text;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.polopoly.cm.ContentReference;
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.VersionedContentId;
@@ -7,70 +10,85 @@ import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.policy.PolicyCMServer;
 
 public class ExternalIdReference implements Reference {
-    private String externalId;
+	private static final Logger LOGGER = Logger
+			.getLogger(ExternalIdReference.class.getName());
 
-    private String metadataExternalId;
+	private String externalId;
 
-    public String getExternalId() {
-        return externalId;
-    }
+	private String metadataExternalId;
 
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
-    }
+	public String getExternalId() {
+		return externalId;
+	}
 
-    public ExternalIdReference(String externalId, String metadataExternalId) {
-        this(externalId);
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
 
-        this.metadataExternalId = metadataExternalId;
-    }
+	public ExternalIdReference(String externalId, String metadataExternalId) {
+		this(externalId);
 
-    public ExternalIdReference(String externalId) {
-        this.externalId = externalId;
-    }
+		this.metadataExternalId = metadataExternalId;
+	}
 
-    public void validate(ValidationContext context) throws ValidationException {
-        context.validateContentExistence(externalId);
+	public ExternalIdReference(String externalId) {
+		this.externalId = externalId;
+	}
 
-        if (metadataExternalId != null) {
-            context.validateContentExistence(metadataExternalId);
-        }
-    }
+	public void validate(ValidationContext context) throws ValidationException {
+		context.validateContentExistence(externalId);
 
-    public void validateTemplate(ValidationContext context)
-            throws ValidationException {
-        context.validateTemplateExistence(externalId);
-    }
+		if (metadataExternalId != null) {
+			context.validateContentExistence(metadataExternalId);
+		}
+	}
 
-    @Override
-    public String toString() {
-        return externalId;
-    }
+	public void validateTemplate(ValidationContext context)
+			throws ValidationException {
+		context.validateTemplateExistence(externalId);
+	}
 
-    public ContentReference resolveReference(PolicyCMServer server)
-            throws CMException {
-        VersionedContentId referredId = resolveId(server);
+	@Override
+	public String toString() {
+		return externalId;
+	}
 
-        VersionedContentId metadata = null;
+	public ContentReference resolveReference(PolicyCMServer server)
+			throws CMException {
+		VersionedContentId referredId = resolveId(server);
 
-        if (metadataExternalId != null) {
-            metadata = server.findContentIdByExternalId(new ExternalContentId(
-                    metadataExternalId));
-        }
+		VersionedContentId metadata = null;
 
-        return new ContentReference(referredId.getContentId(), metadata);
-    }
+		if (metadataExternalId != null) {
+			metadata = server.findContentIdByExternalId(new ExternalContentId(
+					metadataExternalId));
+		}
 
-    public VersionedContentId resolveId(PolicyCMServer server)
-            throws CMException {
-        VersionedContentId referredId = server
-                .findContentIdByExternalId(new ExternalContentId(externalId));
+		if (metadata != null && referredId.getMajor() == 13
+				&& metadata.getMajor() != 13) {
+			LOGGER.log(Level.WARNING,
+					"The referred ID and the major seem to be swapped in a reference to "
+							+ metadata.getContentIdString() + " with metadata "
+							+ this + ". Swapping them back.");
 
-        if (referredId == null) {
-            throw new CMException("Could not find content with external ID \""
-                    + externalId + "\".");
-        }
+			VersionedContentId temp = metadata;
+			metadata = referredId;
+			referredId = temp;
+		}
 
-        return referredId;
-    }
+		return new ContentReference(referredId.getContentId(), metadata);
+	}
+
+	public VersionedContentId resolveId(PolicyCMServer server)
+			throws CMException {
+		VersionedContentId referredId = server
+				.findContentIdByExternalId(new ExternalContentId(externalId));
+
+		if (referredId == null) {
+			throw new CMException("Could not find content with external ID \""
+					+ externalId + "\".");
+		}
+
+		return referredId;
+	}
 }
