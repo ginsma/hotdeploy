@@ -7,7 +7,9 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import com.polopoly.cm.client.impl.LegacyCMApplicationUtil;
+import com.polopoly.application.Application;
+import com.polopoly.application.servlet.ApplicationServletUtil;
+import com.polopoly.cm.client.EjbCmClient;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.user.server.UserServer;
 
@@ -34,10 +36,13 @@ public class HotDeployContentContextListener extends
         try {
             boolean logout = false;
             try {
-                PolicyCMServer server = LegacyCMApplicationUtil
-                        .getPolicyCMServer(event.getServletContext());
-                UserServer userServer = LegacyCMApplicationUtil
-                        .getUserServer(event.getServletContext());
+            	Application application = ApplicationServletUtil
+            	.getApplication(event.getServletContext());
+    
+            	EjbCmClient client = (EjbCmClient) application
+            		.getApplicationComponent(EjbCmClient.DEFAULT_COMPOUND_NAME);
+            	PolicyCMServer server = client.getPolicyCMServer();
+            	UserServer userServer = client.getUserServer();
 
                 logout = DeployContentUser.login(server, userServer);
 
