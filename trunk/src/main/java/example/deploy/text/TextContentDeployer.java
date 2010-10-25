@@ -353,6 +353,11 @@ public class TextContentDeployer {
 
 		try {
 			metadataContent = server.getContent(referenceMetaDataId);
+		} catch (EJBFinderException e) {
+			// this is likely to mean that we are just in the process of
+			// creating the RMD too. otherwise, it would have caused an error
+			// before.
+			return;
 		} catch (CMException e) {
 			logger.log(Level.WARNING, "Could not read metadata content "
 					+ referenceMetaDataId.getContentIdString() + ".");
