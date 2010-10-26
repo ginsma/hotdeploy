@@ -118,10 +118,41 @@ public class DefaultNormalizationNamingStrategy implements
 	}
 
 	private File toSafeFile(File directory, String unsafeFileName) {
-		String safeFileName = unsafeFileName.replace(':', '.')
-				.replace('/', '.').replace('\\', '.');
+		StringBuffer safeFileName = new StringBuffer(unsafeFileName);
 
-		return new File(directory, safeFileName);
+		for (int i = 0; i < safeFileName.length(); i++) {
+			char ch = safeFileName.charAt(i);
+
+			if (ch == ':') {
+				ch = '.';
+			} else if (ch == '/') {
+				ch = '.';
+			} else if (ch == '\\') {
+				ch = '.';
+			} else if (ch == 'ä') {
+				ch = 'a';
+			} else if (ch == 'ö') {
+				ch = 'o';
+			} else if (ch == 'å') {
+				ch = 'a';
+			} else if (ch == 'ü') {
+				ch = 'u';
+			} else if (ch == 'Ä') {
+				ch = 'A';
+			} else if (ch == 'Ö') {
+				ch = 'O';
+			} else if (ch == 'Å') {
+				ch = 'A';
+			} else if (ch == 'Ü') {
+				ch = 'U';
+			} else if (ch > 127) {
+				ch = '.';
+			}
+
+			safeFileName.setCharAt(i, ch);
+		}
+
+		return new File(directory, safeFileName.toString());
 
 	}
 }

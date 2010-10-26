@@ -14,7 +14,6 @@ import example.deploy.hotdeploy.client.ConnectException;
 import example.deploy.hotdeploy.client.PolopolyClient;
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
-import example.deploy.hotdeploy.deployer.SingleFileDeployer;
 import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.state.DirectoryState;
@@ -22,159 +21,173 @@ import example.deploy.hotdeploy.state.DirectoryStateFetcher;
 import example.deploy.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
 
 /**
- * A deploy client with a main method that connects to Polopoly and does a deploy of all content.
+ * A deploy client with a main method that connects to Polopoly and does a
+ * deploy of all content.
  */
 public class Deploy extends DiscovererMainClass {
-    private static final Logger logger =
-        Logger.getLogger(Deploy.class.getName());
+	private static final Logger logger = Logger.getLogger(Deploy.class
+			.getName());
 
-    private boolean force = false;
-    private String connectionUrl = "localhost";
-    private String user = null;
-    private String password = null;
-    private String considerDirectoryJar = null;
+	private boolean force = false;
+	private String connectionUrl = "localhost";
+	private String user = null;
+	private String password = null;
+	private String considerDirectoryJar = null;
+	private boolean ignoreContentListAddFailures;
 
-    private DirectoryState directoryState;
+	private DirectoryState directoryState;
 
-    public static void main(String[] args) {
-        Deploy deploy = new Deploy();
-        DeployParameterParser parameterParser = new DeployParameterParser(deploy);
-        parameterParser.parseParameters(args);
+	public static void main(String[] args) {
+		Deploy deploy = new Deploy();
+		DeployParameterParser parameterParser = new DeployParameterParser(
+				deploy);
+		parameterParser.parseParameters(args);
 
-        try {
-            boolean success = deploy.deploy();
+		try {
+			boolean success = deploy.deploy();
 
-            if (success) {
-                System.exit(0);
-            }
-            else {
-                System.exit(1);
-            }
-        } catch (ConnectException e) {
-            System.err.println(e.getMessage());
-            parameterParser.printParameterHelp();
-            System.exit(1);
-        }
-    }
+			if (success) {
+				System.exit(0);
+			} else {
+				System.exit(1);
+			}
+		} catch (ConnectException e) {
+			System.err.println(e.getMessage());
+			parameterParser.printParameterHelp();
+			System.exit(1);
+		}
+	}
 
-    private PolopolyClient getPolopolyClient() {
-        PolopolyClient polopolyClient = new PolopolyClient();
+	private PolopolyClient getPolopolyClient() {
+		PolopolyClient polopolyClient = new PolopolyClient();
 
-        polopolyClient.setConnectionUrl(connectionUrl);
-        polopolyClient.setUser(user);
-        polopolyClient.setPassword(password);
+		polopolyClient.setConnectionUrl(connectionUrl);
+		polopolyClient.setUser(user);
+		polopolyClient.setPassword(password);
 
-        return polopolyClient;
-    }
+		return polopolyClient;
+	}
 
-    public boolean deploy() throws ConnectException {
-        validateDirectories();
+	public boolean deploy() throws ConnectException {
+		validateDirectories();
 
-        Collection<File> directories = getDirectories();
+		Collection<File> directories = getDirectories();
 
-        System.err.println("Importing content in " +
-                (directories.isEmpty() ? "resource files" : getDirectoryString()) +
-                " to Polopoly server " + connectionUrl + ".");
+		System.err.println("Importing content in "
+				+ (directories.isEmpty() ? "resource files"
+						: getDirectoryString()) + " to Polopoly server "
+				+ connectionUrl + ".");
 
-        PolopolyClient polopolyClient = getPolopolyClient();
+		PolopolyClient polopolyClient = getPolopolyClient();
 
-        polopolyClient.connect();
+		polopolyClient.connect();
 
-        PolicyCMServer server = polopolyClient.getPolicyCMServer();
+		PolicyCMServer server = polopolyClient.getPolicyCMServer();
 
-        boolean success;
+		boolean success;
 
-        try {
-            DirectoryState directoryState = getDirectoryState(server);
+		try {
+			DirectoryState directoryState = getDirectoryState(server);
 
-            if (considerDirectoryJar != null) {
-                List<FileDeploymentDirectory> deploymentDirectories =
-                    new ArrayList<FileDeploymentDirectory>(directories.size());
+			if (considerDirectoryJar != null) {
+				List<FileDeploymentDirectory> deploymentDirectories = new ArrayList<FileDeploymentDirectory>(
+						directories.size());
 
-                for (File directory : directories) {
-                    deploymentDirectories.add(new FileDeploymentDirectory(directory));
-                }
+				for (File directory : directories) {
+					deploymentDirectories.add(new FileDeploymentDirectory(
+							directory));
+				}
 
-                directoryState = new DirectoryWillBecomeJarDirectoryState(directoryState,
-                        deploymentDirectories, considerDirectoryJar);
-            }
+				directoryState = new DirectoryWillBecomeJarDirectoryState(
+						directoryState, deploymentDirectories,
+						considerDirectoryJar);
+			}
 
-            SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(server);
+			DefaultSingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(
+					server);
 
-            MultipleFileDeployer deployer =
-                new MultipleFileDeployer(singleFileDeployer, directoryState);
+			singleFileDeployer
+					.setIgnoreContentListAddFailures(ignoreContentListAddFailures);
 
-            Set<DeploymentFile> failingFiles =
-                deployer.discoverAndDeploy(getDiscoverers());
+			MultipleFileDeployer deployer = new MultipleFileDeployer(
+					singleFileDeployer, directoryState);
 
-            success = failingFiles.isEmpty();
-        } catch (Exception e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
-            e.printStackTrace(System.err);
+			Set<DeploymentFile> failingFiles = deployer
+					.discoverAndDeploy(getDiscoverers());
 
-            success = false;
-        }
+			success = failingFiles.isEmpty();
+		} catch (Exception e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+			e.printStackTrace(System.err);
 
-        return success;
-    }
+			success = false;
+		}
 
-    /**
-     * Returns the import state stored in the CM server.
-     */
-    private DirectoryState getDirectoryState(PolicyCMServer server) {
-       if (directoryState == null) {
-           directoryState = new DirectoryStateFetcher(server).getDirectoryState();
+		return success;
+	}
 
-           if (force) {
-               directoryState = new DelegatingDirectoryState(directoryState) {
-                   @Override
-                   public boolean hasFileChanged(DeploymentFile file) {
-                       return true;
-                   }
-               };
-           }
-       }
+	/**
+	 * Returns the import state stored in the CM server.
+	 */
+	private DirectoryState getDirectoryState(PolicyCMServer server) {
+		if (directoryState == null) {
+			directoryState = new DirectoryStateFetcher(server)
+					.getDirectoryState();
 
-       return directoryState;
-   }
+			if (force) {
+				directoryState = new DelegatingDirectoryState(directoryState) {
+					@Override
+					public boolean hasFileChanged(DeploymentFile file) {
+						return true;
+					}
+				};
+			}
+		}
 
-    public void setForce(boolean force) {
-        this.force = force;
-    }
+		return directoryState;
+	}
 
-    public String getConnectionUrl() {
-        return connectionUrl;
-    }
+	public void setForce(boolean force) {
+		this.force = force;
+	}
 
-    public void setConnectionUrl(String connectionUrl) {
-        this.connectionUrl = connectionUrl;
-    }
+	public String getConnectionUrl() {
+		return connectionUrl;
+	}
 
-    public String getUser() {
-        return user;
-    }
+	public void setConnectionUrl(String connectionUrl) {
+		this.connectionUrl = connectionUrl;
+	}
 
-    public void setUser(String user) {
-        this.user = user;
-    }
+	public String getUser() {
+		return user;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public void setUser(String user) {
+		this.user = user;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public boolean isForce() {
-        return force;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public String getConsiderDirectoryJar() {
-        return considerDirectoryJar;
-    }
+	public boolean isForce() {
+		return force;
+	}
 
-    public void setConsiderDirectoryJar(String considerDirectoryJar) {
-        this.considerDirectoryJar = considerDirectoryJar;
-    }
+	public String getConsiderDirectoryJar() {
+		return considerDirectoryJar;
+	}
+
+	public void setConsiderDirectoryJar(String considerDirectoryJar) {
+		this.considerDirectoryJar = considerDirectoryJar;
+	}
+
+	public void setIgnoreContentListAddFailures(boolean parseBoolean) {
+		this.ignoreContentListAddFailures = parseBoolean;
+	}
 }

@@ -71,8 +71,9 @@ public class SingleContentToContentFileExporter implements
 
 			for (ContentRead content : contents) {
 				if (first) {
-					writeln(writer);
 					first = false;
+				} else {
+					writeln(writer);
 				}
 
 				exportSingleContent(file, writer, content);

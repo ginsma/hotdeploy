@@ -11,6 +11,9 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import com.polopoly.cm.client.ContentRead;
 
+/**
+ * Should be renamed; it can now export multiple files.
+ */
 public interface SingleContentToFileExporter {
 	void exportContentToFile(List<? extends ContentRead> content, File file)
 			throws ParserConfigurationException,

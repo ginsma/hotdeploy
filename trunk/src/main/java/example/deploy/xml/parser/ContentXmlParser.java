@@ -21,67 +21,67 @@ import example.deploy.text.TextContentParser;
 import example.deploy.text.TextContentSet;
 
 public class ContentXmlParser implements DeploymentFileParser {
-    private static final Logger logger = Logger
-            .getLogger(ContentXmlParser.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(ContentXmlParser.class.getName());
 
-    public ContentXmlParser() {
-    }
+	public ContentXmlParser() {
+	}
 
-    private void handleException(DeploymentFile file, Exception e) {
-        logger.log(Level.WARNING, "While parsing " + file + ": "
-                + e.getMessage(), e);
-    }
+	private void handleException(DeploymentFile file, Exception e) {
+		logger.log(Level.WARNING,
+				"While parsing " + file + ": " + e.getMessage(), e);
+	}
 
-    public void parse(DeploymentFile file, ParseCallback callback) {
-        InputStream inputStream = null;
+	public void parse(DeploymentFile file, ParseCallback callback) {
+		InputStream inputStream = null;
 
-        try {
-            inputStream = file.getInputStream();
+		try {
+			inputStream = file.getInputStream();
 
-            if (file.getName().endsWith(
-                    '.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
-                ParseContext parseContext = new ParseContext(file);
-                TextContentSet contentSet = new TextContentParser(inputStream,
-                        file.getBaseUrl(), file.getName()).parse();
-                new TextContentParseCallbackAdapter(contentSet).callback(
-                        callback, parseContext);
-            } else {
-                DocumentBuilderFactory factory = DocumentBuilderFactory
-                        .newInstance();
-                DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(inputStream);
+			if (file.getName().endsWith(
+					'.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
+				ParseContext parseContext = new ParseContext(file);
+				TextContentSet contentSet = new TextContentParser(inputStream,
+						file.getBaseUrl(), file.getName()).parse();
+				new TextContentParseCallbackAdapter(contentSet).callback(
+						callback, parseContext);
+			} else {
+				DocumentBuilderFactory factory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				Document document = builder.parse(inputStream);
 
-                Element root = document.getDocumentElement();
+				Element root = document.getDocumentElement();
 
-                String rootName = root.getNodeName();
+				String rootName = root.getNodeName();
 
-                if (rootName.equals("template-definition")) {
-                    new TemplateDefinitionParser(file, root, callback);
-                } else if (rootName.equals("batch")) {
-                    new XmlIoParser(file, root, callback);
-                } else {
-                    logger.log(Level.WARNING, "File " + file
-                            + " was of unknown type.");
-                }
-            }
-        } catch (FileNotFoundException e) {
-            handleException(file, e);
-        } catch (ParserConfigurationException e) {
-            handleException(file, e);
-        } catch (SAXException e) {
-            handleException(file, e);
-        } catch (IOException e) {
-            handleException(file, e);
-        } catch (ParseException e) {
-            handleException(file, e);
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    logger.log(Level.WARNING, e.getMessage(), e);
-                }
-            }
-        }
-    }
+				if (rootName.equals("template-definition")) {
+					new TemplateDefinitionParser(file, root, callback);
+				} else if (rootName.equals("batch")) {
+					new XmlIoParser(file, root, callback);
+				} else {
+					logger.log(Level.WARNING, "File " + file
+							+ " was of unknown type.");
+				}
+			}
+		} catch (FileNotFoundException e) {
+			handleException(file, e);
+		} catch (ParserConfigurationException e) {
+			handleException(file, e);
+		} catch (SAXException e) {
+			handleException(file, e);
+		} catch (IOException e) {
+			handleException(file, e);
+		} catch (ParseException e) {
+			handleException(file, e);
+		} finally {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					logger.log(Level.WARNING, e.getMessage(), e);
+				}
+			}
+		}
+	}
 }

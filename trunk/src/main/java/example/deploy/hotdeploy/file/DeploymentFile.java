@@ -9,11 +9,12 @@ import java.net.URL;
  * A file with an unique name of that file to use as key when comparing file
  * properties. Platform issues makes it impossible to use the file name.
  */
-public interface DeploymentFile extends DeploymentObject
-{
-    InputStream getInputStream() throws FileNotFoundException;
-    URL getBaseUrl() throws MalformedURLException;
+public interface DeploymentFile extends DeploymentObject {
+	InputStream getInputStream() throws FileNotFoundException;
 
-    long getQuickChecksum();
-    long getSlowChecksum();
+	URL getBaseUrl() throws MalformedURLException;
+
+	long getQuickChecksum();
+
+	long getSlowChecksum();
 }
