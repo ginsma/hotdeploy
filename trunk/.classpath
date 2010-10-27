@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/manualtest/java"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="POLOPOLY_DIR/install/lib/polopoly.jar"/>
+	<classpathentry kind="var" path="POLOPOLY_DIR/contrib-archives/container-client-lib/jboss-j2ee.jar"/>
+	<classpathentry kind="var" path="POLOPOLY_DIR/install/lib/servlet.jar"/>
+	<classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/polopoly/pcmd/9.17-DR5-SNAPSHOT/pcmd-9.17-DR5-SNAPSHOT.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
