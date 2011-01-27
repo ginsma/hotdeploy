@@ -20,7 +20,7 @@ public class FileChecksumsPseudoPolicy {
     private static final Logger logger = Logger
             .getLogger(FileChecksumsPseudoPolicy.class.getName());
 
-    public static final int ATTRIBGROUP_MAXLEN = 62;
+    public static final int ATTRIBGROUP_MAXLEN = 128;
 
     private static final int HALF_ATTRIB_GROUP_MAXLEN = ATTRIBGROUP_MAXLEN / 2;
 

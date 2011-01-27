@@ -18,7 +18,7 @@ public class FileChecksumsPolicy extends ContentPolicy {
     private static final Logger logger = Logger
             .getLogger(FileChecksumsPolicy.class.getName());
 
-    public static final int ATTRIBGROUP_MAXLEN = 60;
+    public static final int ATTRIBGROUP_MAXLEN = 128;
 
     private static final String QUICK_CHECKSUM_COMPONENT = "quick";
 
