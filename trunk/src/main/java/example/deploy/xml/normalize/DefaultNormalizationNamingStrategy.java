@@ -123,6 +123,9 @@ public class DefaultNormalizationNamingStrategy implements
 		for (int i = 0; i < safeFileName.length(); i++) {
 			char ch = safeFileName.charAt(i);
 
+			// maybe we should encode these instead somehow? What could happen
+			// is if there are two external IDs such as "kommun.håbo" and
+			// "kommun.habo": they will be written two the same file.
 			if (ch == ':') {
 				ch = '.';
 			} else if (ch == '/') {

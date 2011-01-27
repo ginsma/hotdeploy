@@ -17,207 +17,235 @@ import example.deploy.hotdeploy.file.FileDeploymentDirectory;
 import example.deploy.hotdeploy.topologicalsort.TopologicalSorter;
 
 public class ResourceFileDiscoverer implements FileDiscoverer {
-    private static final String HOTDEPLOY_DEPENDENCY_NAME = "hotdeploy";
-    private static final Logger logger =
-        Logger.getLogger(ResourceFileDiscoverer.class.getName());
-    private boolean onlyJarResources;
+	private static final String HOTDEPLOY_DEPENDENCY_NAME = "hotdeploy";
+	private static final Logger logger = Logger
+			.getLogger(ResourceFileDiscoverer.class.getName());
+	private boolean onlyJarResources;
 
-    public ResourceFileDiscoverer(boolean onlyJarResources) {
-        this.onlyJarResources = onlyJarResources;
-    }
+	public ResourceFileDiscoverer(boolean onlyJarResources) {
+		this.onlyJarResources = onlyJarResources;
+	}
 
-    public List<DeploymentFile> getFilesToImport() throws NotApplicableException {
-        ClassLoader classLoader = getClass().getClassLoader();
+	public List<DeploymentFile> getFilesToImport()
+			throws NotApplicableException {
+		ClassLoader classLoader = getClass().getClassLoader();
 
-        return getFilesToImport(classLoader);
-    }
+		return getFilesToImport(classLoader);
+	}
 
-    private Collection<DeploymentDirectory> discoverDirectories(
-            DeploymentDirectory directory) {
-        return new DeploymentDirectoryDiscoverer(directory, DefaultDiscoveryDirectories.getDirectories()).getDiscoveredDirectories();
-    }
+	private Collection<DeploymentDirectory> discoverDirectories(
+			DeploymentDirectory directory) {
+		return new DeploymentDirectoryDiscoverer(directory,
+				DefaultDiscoveryDirectories.getDirectories())
+				.getDiscoveredDirectories();
+	}
 
-    public List<DeploymentFile> getFilesToImport(ClassLoader classLoader) throws NotApplicableException {
-        List<ImportOrder> foundImportOrderFiles = getImportOrderFiles(classLoader);
+	public List<DeploymentFile> getFilesToImport(ClassLoader classLoader)
+			throws NotApplicableException {
+		List<DeploymentFile> result = new ArrayList<DeploymentFile>();
 
-        if (foundImportOrderFiles.size() > 1) {
-            logger.log(Level.INFO, "Deployment order is " + foundImportOrderFiles + ".");
-        }
+		result.addAll(new PluginFileDiscoverer().getFilesToImport());
 
-        List<DeploymentFile> result = new ArrayList<DeploymentFile>();
+		if (!result.isEmpty()) {
+			logger.log(Level.INFO, result.size()
+					+ " file(s) to import in plugins.");
+		}
 
-        for (ImportOrder filesWithDependencies : foundImportOrderFiles) {
-            result.addAll(filesWithDependencies);
-        }
+		List<ImportOrder> foundImportOrderFiles = getImportOrderFiles(classLoader);
 
-        return result;
-    }
+		if (foundImportOrderFiles.size() > 1) {
+			logger.log(Level.INFO, "Deployment order is "
+					+ foundImportOrderFiles + ".");
+		}
 
-    public List<ImportOrder> getImportOrderFiles(ClassLoader classLoader) {
-        Collection<DeploymentDirectory> potentialDirectories =
-            new DeploymentDirectoryDiscoverer(classLoader,
-                DefaultDiscoveryDirectories.getDirectories()).getDiscoveredDirectories();
+		for (ImportOrder filesWithDependencies : foundImportOrderFiles) {
+			result.addAll(filesWithDependencies);
+		}
 
-        List<ImportOrder> foundImportOrderFiles = new ArrayList<ImportOrder>();
+		return result;
+	}
 
-        for (DeploymentDirectory directory : potentialDirectories) {
-            logger.log(Level.FINE, "Scanning " + directory + " for content files.");
+	public List<ImportOrder> getImportOrderFiles(ClassLoader classLoader) {
+		Collection<DeploymentDirectory> potentialDirectories = new DeploymentDirectoryDiscoverer(
+				classLoader, DefaultDiscoveryDirectories.getDirectories())
+				.getDiscoveredDirectories();
 
-            if (onlyJarResources && directory instanceof FileDeploymentDirectory) {
-                logger.log(Level.FINE, "Skipping " + directory + " since it's not in a JAR.");
+		List<ImportOrder> foundImportOrderFiles = new ArrayList<ImportOrder>();
 
-                continue;
-            }
+		for (DeploymentDirectory directory : potentialDirectories) {
+			logger.log(Level.FINE, "Scanning " + directory
+					+ " for content files.");
 
-            Collection<DeploymentDirectory> subDirectories =
-                discoverDirectories(directory);
+			if (onlyJarResources
+					&& directory instanceof FileDeploymentDirectory) {
+				logger.log(Level.FINE, "Skipping " + directory
+						+ " since it's not in a JAR.");
 
-            for (DeploymentDirectory subDirectory : subDirectories) {
-                try {
-                    ImportOrder thisResult = new ImportOrderFileDiscoverer(subDirectory).getFilesToImport();
+				continue;
+			}
 
-                    if (!foundImportOrderFiles.contains(thisResult)) {
-                        logFilesFound(subDirectory, thisResult);
-                        foundImportOrderFiles.add(thisResult);
-                    }
-                } catch (NotApplicableException e) {
-                    handleDirectoryNotApplicable(subDirectory, e);
-                }
-            }
-        }
+			Collection<DeploymentDirectory> subDirectories = discoverDirectories(directory);
 
-        Collections.sort(foundImportOrderFiles, new Comparator<ImportOrder>() {
-            public int compare(ImportOrder o1, ImportOrder o2) {
-                return o1.toString().compareTo(o2.toString());
-            }
-        });
+			// there's only going to be one directory here.
+			for (DeploymentDirectory subDirectory : subDirectories) {
+				try {
+					ImportOrder thisResult = new ImportOrderFileDiscoverer(
+							subDirectory).getFilesToImport();
 
-        topologicalSort(foundImportOrderFiles);
+					if (!foundImportOrderFiles.contains(thisResult)) {
+						logFilesFound(subDirectory, thisResult);
+						foundImportOrderFiles.add(thisResult);
+					}
+				} catch (NotApplicableException e) {
+					handleDirectoryNotApplicable(subDirectory, e);
+				}
+			}
+		}
 
-        return foundImportOrderFiles;
-    }
+		Collections.sort(foundImportOrderFiles, new Comparator<ImportOrder>() {
+			public int compare(ImportOrder o1, ImportOrder o2) {
+				return o1.toString().compareTo(o2.toString());
+			}
+		});
 
-    private boolean isHotDeploy(ImportOrder importOrderFile) {
-        return importOrderFile.calculateDependencyName().equals(HOTDEPLOY_DEPENDENCY_NAME);
-    }
+		topologicalSort(foundImportOrderFiles);
 
-    private void topologicalSort(List<ImportOrder> foundImportOrderFiles) {
-        List<ImportOrderVertex> vertexes = new ArrayList<ImportOrderVertex>(foundImportOrderFiles.size());
+		return foundImportOrderFiles;
+	}
 
-        for (int i = 0; i < foundImportOrderFiles.size(); i++) {
-            vertexes.add(new ImportOrderVertex(foundImportOrderFiles.get(i)));
-        }
+	private boolean isHotDeploy(ImportOrder importOrderFile) {
+		return importOrderFile.calculateDependencyName().equals(
+				HOTDEPLOY_DEPENDENCY_NAME);
+	}
 
-        for (int atIndex = 0; atIndex < vertexes.size(); atIndex++) {
-            ImportOrderVertex atVertex = vertexes.get(atIndex);
-            ImportOrder importOrderFile = atVertex.getImportOrderFile();
+	private void topologicalSort(List<ImportOrder> foundImportOrderFiles) {
+		List<ImportOrderVertex> vertexes = new ArrayList<ImportOrderVertex>(
+				foundImportOrderFiles.size());
 
-            // hotdeploy comes first
-            if (isHotDeploy(importOrderFile)) {
-                ImportOrderVertex hotdeployVertex = atVertex;
+		for (int i = 0; i < foundImportOrderFiles.size(); i++) {
+			vertexes.add(new ImportOrderVertex(foundImportOrderFiles.get(i)));
+		}
 
-                for (ImportOrderVertex otherVertex : vertexes) {
-                    if (otherVertex != hotdeployVertex) {
-                        otherVertex.addDependency(hotdeployVertex);
-                    }
-                }
-            }
+		for (int atIndex = 0; atIndex < vertexes.size(); atIndex++) {
+			ImportOrderVertex atVertex = vertexes.get(atIndex);
+			ImportOrder importOrderFile = atVertex.getImportOrderFile();
 
-            // JAR files come before class directories
-            if (isFileDirectory(importOrderFile)) {
-                ImportOrderVertex classDirectoryVertex = atVertex;
+			// hotdeploy comes first
+			if (isHotDeploy(importOrderFile)) {
+				ImportOrderVertex hotdeployVertex = atVertex;
 
-                for (ImportOrderVertex otherVertex : vertexes) {
-                    if (!isFileDirectory(otherVertex.getImportOrderFile())) {
-                        classDirectoryVertex.addDependency(otherVertex);
-                    }
-                }
-            }
+				for (ImportOrderVertex otherVertex : vertexes) {
+					if (otherVertex != hotdeployVertex) {
+						otherVertex.addDependency(hotdeployVertex);
+					}
+				}
+			}
 
-            for (String dependencyName : importOrderFile.getDependencies()) {
-                ImportOrderVertex dependencyVertex = getVertexWithName(vertexes, dependencyName);
+			// JAR files come before class directories
+			if (isFileDirectory(importOrderFile)) {
+				ImportOrderVertex classDirectoryVertex = atVertex;
 
-                if (dependencyVertex == null) {
-                    logUnknownDependencyReferenced(foundImportOrderFiles, importOrderFile, dependencyName);
-                }
-                else {
-                    atVertex.addDependency(dependencyVertex);
-                }
-            }
-        }
+				for (ImportOrderVertex otherVertex : vertexes) {
+					if (!isFileDirectory(otherVertex.getImportOrderFile())) {
+						classDirectoryVertex.addDependency(otherVertex);
+					}
+				}
+			}
 
-        List<ImportOrderVertex> sortedOrder = new TopologicalSorter<ImportOrderVertex>(vertexes).sort();
+			for (String dependencyName : importOrderFile.getDependencies()) {
+				ImportOrderVertex dependencyVertex = getVertexWithName(
+						vertexes, dependencyName);
 
-        foundImportOrderFiles.clear();
+				if (dependencyVertex == null) {
+					logUnknownDependencyReferenced(foundImportOrderFiles,
+							importOrderFile, dependencyName);
+				} else {
+					atVertex.addDependency(dependencyVertex);
+				}
+			}
+		}
 
-        for (ImportOrderVertex importOrderVertex : sortedOrder) {
-            foundImportOrderFiles.add(importOrderVertex.getImportOrderFile());
-        }
-    }
+		List<ImportOrderVertex> sortedOrder = new TopologicalSorter<ImportOrderVertex>(
+				vertexes).sort();
 
-    private boolean isFileDirectory(ImportOrder importOrderFile) {
-        return importOrderFile.getDirectory() instanceof FileDeploymentDirectory;
-    }
+		foundImportOrderFiles.clear();
 
-    private ImportOrderVertex getVertexWithName(List<ImportOrderVertex> vertexes, String dependencyName) {
-        for (int i = 0; i < vertexes.size(); i++) {
-            ImportOrderVertex vertex = vertexes.get(i);
-            if (vertex.getImportOrderFile().calculateDependencyName().equals(dependencyName)) {
-                return vertex;
-            }
-        }
+		for (ImportOrderVertex importOrderVertex : sortedOrder) {
+			foundImportOrderFiles.add(importOrderVertex.getImportOrderFile());
+		}
+	}
 
-        return null;
-    }
+	private boolean isFileDirectory(ImportOrder importOrderFile) {
+		return importOrderFile.getDirectory() instanceof FileDeploymentDirectory;
+	}
 
-    private void logUnknownDependencyReferenced(
-            List<ImportOrder> foundImportOrderFiles,
-            ImportOrder importOrderFile, String dependencyName) {
-        logger.log(Level.WARNING, "The dependency \"" + dependencyName + "\" declared by " +
-                importOrderFile + " was unknown. Known dependencies are " +
-                getDependencyNameString(foundImportOrderFiles) + ".");
-    }
+	private ImportOrderVertex getVertexWithName(
+			List<ImportOrderVertex> vertexes, String dependencyName) {
+		for (int i = 0; i < vertexes.size(); i++) {
+			ImportOrderVertex vertex = vertexes.get(i);
+			if (vertex.getImportOrderFile().calculateDependencyName()
+					.equals(dependencyName)) {
+				return vertex;
+			}
+		}
 
-    private String getDependencyNameString(List<ImportOrder> foundImportOrderFiles) {
-        StringBuffer result = new StringBuffer(100);
+		return null;
+	}
 
-        boolean first = true;
+	private void logUnknownDependencyReferenced(
+			List<ImportOrder> foundImportOrderFiles,
+			ImportOrder importOrderFile, String dependencyName) {
+		logger.log(Level.WARNING, "The dependency \"" + dependencyName
+				+ "\" declared by " + importOrderFile
+				+ " was unknown. Known dependencies are "
+				+ getDependencyNameString(foundImportOrderFiles) + ".");
+	}
 
-        for (ImportOrder importOrderFile : foundImportOrderFiles) {
-            if (first) {
-                first = false;
-            }
-            else {
-                result.append(", ");
-            }
+	private String getDependencyNameString(
+			List<ImportOrder> foundImportOrderFiles) {
+		StringBuffer result = new StringBuffer(100);
 
-            result.append(importOrderFile.calculateDependencyName());
-        }
+		boolean first = true;
 
-        return result.toString();
-    }
+		for (ImportOrder importOrderFile : foundImportOrderFiles) {
+			if (first) {
+				first = false;
+			} else {
+				result.append(", ");
+			}
 
-    private void logFilesFound(DeploymentDirectory directory,
-            ImportOrder filesFound) {
-        String dependencies;
+			result.append(importOrderFile.calculateDependencyName());
+		}
 
-        if (filesFound.getDependencies().isEmpty()) {
-            dependencies = "It has no dependencies.";
-        }
-        else {
-            dependencies = "It depends on " + filesFound.getDependencies() + ".";
-        }
+		return result.toString();
+	}
 
-        logger.log(Level.INFO, "Found " + filesFound.size() + " content file(s) under " + directory + ". " + dependencies);
-    }
+	private void logFilesFound(DeploymentDirectory directory,
+			ImportOrder filesFound) {
+		String dependencies;
 
-    private void handleDirectoryNotApplicable(DeploymentDirectory directory,
-            NotApplicableException e) {
-        logger.log(Level.WARNING, "Thought directory " + directory + " would have content, but could not find it: " + e.getMessage());
-    }
+		if (filesFound.getDependencies().isEmpty()) {
+			dependencies = "It has no dependencies.";
+		} else {
+			dependencies = "It depends on " + filesFound.getDependencies()
+					+ ".";
+		}
 
-    @Override
-    public String toString() {
-        return "resource file discoverer";
-    }
+		logger.log(Level.INFO, "Found " + filesFound.size()
+				+ " content file(s) under " + directory + ". " + dependencies);
+	}
+
+	private void handleDirectoryNotApplicable(DeploymentDirectory directory,
+			NotApplicableException e) {
+		logger.log(
+				Level.WARNING,
+				"Thought directory " + directory
+						+ " would have content, but could not find it: "
+						+ e.getMessage());
+	}
+
+	@Override
+	public String toString() {
+		return "resource file discoverer";
+	}
 }

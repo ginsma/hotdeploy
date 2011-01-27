@@ -7,6 +7,7 @@ import java.util.List;
 
 import example.deploy.hotdeploy.discovery.FileDiscoverer;
 import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
+import example.deploy.hotdeploy.discovery.PluginFileDiscoverer;
 import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 
 public class DiscovererMainClass {
@@ -20,6 +21,7 @@ public class DiscovererMainClass {
 
 		if (discoverResources) {
 			discoverers.add(new ResourceFileDiscoverer(onlyJarResources));
+			discoverers.add(new PluginFileDiscoverer());
 		}
 
 		for (File directory : directories) {

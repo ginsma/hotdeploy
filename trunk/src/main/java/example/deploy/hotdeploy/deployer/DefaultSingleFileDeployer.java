@@ -108,8 +108,8 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 
 			if (fileToImport instanceof JarDeploymentFile) {
 				importer.importXML(xmlDocument,
-						((JarDeploymentFile) fileToImport).getJarFile(),
-						((JarDeploymentFile) fileToImport).getNameWithinJar());
+						((JarDeploymentFile) fileToImport).getJarFile(), 
+						getDirNameForFileElementHandler(fileToImport));
 			} else {
 				importer.importXML(xmlDocument, null,
 						((FileDeploymentFile) fileToImport).getDirectory());
@@ -118,6 +118,16 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 			importing = false;
 		}
 	}
+
+    private String getDirNameForFileElementHandler(DeploymentFile fileToImport)
+    {
+        String dirName = ((JarDeploymentFile) fileToImport).getNameOfDirectoryWithinJar();
+        
+        if ("/".equals(dirName)) {
+            dirName = null;
+        }
+        return dirName;
+    }
 
 	protected void contentCommitted(ContentId createdId) {
 	}

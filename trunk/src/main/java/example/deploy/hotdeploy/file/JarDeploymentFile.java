@@ -9,107 +9,117 @@ import java.net.URL;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-public class JarDeploymentFile extends AbstractDeploymentObject implements DeploymentFile {
+public class JarDeploymentFile extends AbstractDeploymentObject implements
+		DeploymentFile {
+		
     protected JarFile file;
-    protected ZipEntry entry;
+	protected ZipEntry entry;
 
-    public JarDeploymentFile(JarFile file, ZipEntry entry) {
-        this.file = file;
-        this.entry = entry;
-    }
+	public JarDeploymentFile(JarFile file, ZipEntry entry) {
+		this.file = file;
+		this.entry = entry;
+	}
 
-    public InputStream getInputStream() throws FileNotFoundException {
-        if (entry == null) {
-            throw new FileNotFoundException("While reading " + this + ": file not found");
-        }
+	public InputStream getInputStream() throws FileNotFoundException {
+		if (entry == null) {
+			throw new FileNotFoundException("While reading " + this
+					+ ": file not found");
+		}
 
-        try {
-            return file.getInputStream(entry);
-        } catch (IOException e) {
-            throw new FileNotFoundException("While reading " + this + ": " + e.getMessage());
-        }
-    }
+		try {
+			return file.getInputStream(entry);
+		} catch (IOException e) {
+			throw new FileNotFoundException("While reading " + this + ": "
+					+ e.getMessage());
+		}
+	}
 
-    public String getName() {
-        String entryName = null;
+	public String getName() {
+		String entryName = null;
 
-        if (entry != null) {
-            entryName = entry.getName();
+		if (entry != null) {
+			entryName = entry.getName();
 
-            if (entryName.endsWith("/")) {
-                entryName = entryName.substring(0, entryName.length()-1);
-            }
-        }
+			if (entryName.endsWith("/")) {
+				entryName = entryName.substring(0, entryName.length() - 1);
+			}
+		}
 
-        String fileName = file.getName();
+		String fileName = file.getName();
 
-        // for equality we don't consider the path of a JAR file, only its name, since it is likely to
-        // be found in multiple places such as the maven repository and web-inf/lib.
-        int fileSlash = fileName.lastIndexOf(File.separatorChar);
+		// for equality we don't consider the path of a JAR file, only its name,
+		// since it is likely to
+		// be found in multiple places such as the maven repository and
+		// web-inf/lib.
+		int fileSlash = fileName.lastIndexOf(File.separatorChar);
 
-        if (fileSlash != -1) {
-            fileName = fileName.substring(fileSlash+1);
-        }
+		if (fileSlash != -1) {
+			fileName = fileName.substring(fileSlash + 1);
+		}
 
-        return fileName + "!" + (entryName != null ? entryName : "n/a");
-    }
+		return fileName + "!" + (entryName != null ? entryName : "n/a");
+	}
 
-    @Override
-    public String toString() {
-        String name = null;
+	@Override
+	public String toString() {
+		String name = null;
 
-        if (entry != null) {
-            name = entry.getName();
+		if (entry != null) {
+			name = entry.getName();
 
-            if (name.endsWith("/")) {
-                name = name.substring(0, name.length()-1);
-            }
-        }
+			if (name.endsWith("/")) {
+				name = name.substring(0, name.length() - 1);
+			}
+		}
 
-        return file.getName() + "!" + (name != null ? name : "n/a");
-    }
+		return file.getName() + "!" + (name != null ? name : "n/a");
+	}
 
-    public URL getBaseUrl() throws MalformedURLException {
-        String name = entry.getName();
+	public URL getBaseUrl() throws MalformedURLException {
+		String name = getNameOfDirectoryWithinJar();
 
-        int i = name.lastIndexOf("/");
+		return new URL("jar:file:"
+				+ (new File(file.getName())).getAbsolutePath() + "!" + name);
+	}
 
-        if (i != -1) {
-            name = name.substring(0, i+1);
-        }
-        else {
-            name = "/";
-        }
+	public String getNameOfDirectoryWithinJar() {
+		String name = entry.getName();
 
-        if (!name.startsWith("/")) {
-            name = "/" + name;
-        }
+		int i = name.lastIndexOf("/");
 
-        return new URL("jar:file:" + (new File(file.getName())).getAbsolutePath() + "!" + name);
-    }
+		if (i != -1) {
+			name = name.substring(0, i + 1);
+		} else {
+			name = "/";
+		}
 
-    public JarFile getJarFile() {
-        return file;
-    }
+		if (!name.startsWith("/")) {
+			name = "/" + name;
+		}
+		return name;
+	}
 
-    public String getNameWithinJar() {
-        if (entry != null) {
-            return entry.getName();
-        }
-        else {
-            return "";
-        }
-    }
+	public JarFile getJarFile() {
+		return file;
+	}
 
-    public long getQuickChecksum() {
-        return entry.getTime();
-    }
+	public String getNameWithinJar() {
+		if (entry != null) {
+			return entry.getName();
+		} else {
+			return "";
+		}
+	}
 
-    public long getSlowChecksum() {
-        return entry.getCrc();
-    }
+	public long getQuickChecksum() {
+		return entry.getTime();
+	}
 
-    public boolean imports(DeploymentObject object) {
-        return object.equals(this);
-    }
+	public long getSlowChecksum() {
+		return entry.getCrc();
+	}
+
+	public boolean imports(DeploymentObject object) {
+		return object.equals(this);
+	}
 }
