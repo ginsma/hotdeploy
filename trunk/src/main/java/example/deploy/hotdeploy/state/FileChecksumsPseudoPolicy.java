@@ -71,7 +71,7 @@ public class FileChecksumsPseudoPolicy {
             result = result.substring(0, HALF_ATTRIB_GROUP_MAXLEN)
                     + ".."
                     + result.substring(result.length()
-                            - HALF_ATTRIB_GROUP_MAXLEN);
+                            - HALF_ATTRIB_GROUP_MAXLEN + 2); // Added removal of ".."
         }
 
         return result;
