@@ -44,6 +44,7 @@ public class FileChecksumsPseudoPolicy {
     static String getAttributeGroup(DeploymentFile file) {
         String result = file.getName();
 
+        result = result.replaceAll("\\\\", "/");
         if (result.length() > ATTRIBGROUP_MAXLEN) {
             if (result.endsWith(".content")) {
                 // keep ".c"
