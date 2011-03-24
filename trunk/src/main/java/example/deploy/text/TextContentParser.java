@@ -68,7 +68,12 @@ public class TextContentParser {
 		this.contentUrl = contentUrl;
 
 		int i = fileName.lastIndexOf('/');
-
+		
+		if (i == -1){
+			// We have a windows user
+			i = fileName.lastIndexOf('\\');
+		}
+		
 		if (i != -1) {
 			fileName = fileName.substring(i + 1);
 		}
