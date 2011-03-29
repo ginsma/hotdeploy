@@ -48,6 +48,8 @@ public class TextContentParser {
 
 	public static final String FILE_PREFIX = "file";
 
+    public static final String COMMIT_PRIO = "commitprio";
+
 	private BufferedReader reader;
 
 	private TextContentSet parsed = new TextContentSet();
@@ -245,6 +247,18 @@ public class TextContentParser {
 					expandId(publishIn), expandId(metadata)), group);
 
 			currentContent.addPublishing(publishing);
+			
+		} else if(prefix.equals(COMMIT_PRIO)) {
+		    assertFields(2, fields);
+
+            String prioString = fields[1].trim();
+
+            try {
+                int commitPrio = Integer.parseInt(prioString);
+                currentContent.setCommitPrio(commitPrio);
+            } catch (NumberFormatException e) {
+                fail(COMMIT_PRIO + ":" + prioString + " is not an integer!");
+            }
 		} else {
 			fail("Line should start with " + ID_PREFIX + ", "
 					+ INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "

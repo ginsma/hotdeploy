@@ -5,9 +5,10 @@ import static com.polopoly.cm.VersionedContentId.LATEST_VERSION;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -113,14 +114,27 @@ public class TextContentDeployer {
 				}
 			}
 
-			Iterator<Policy> newVersionIterator = newVersionById.values()
-					.iterator();
+			
+			
+			List<TextContent> commitPrioOrder = new ArrayList<TextContent>();
+			for (TextContent textContent : contentSet) {
+			    commitPrioOrder.add(textContent);
+			}
+			TextContent[] commitPrioOrderArray = commitPrioOrder.toArray(new TextContent[commitPrioOrder.size()]);
+			Arrays.sort(commitPrioOrderArray, new Comparator<TextContent>() {
+
+                @Override
+                public int compare(TextContent o1, TextContent o2) {
+                  return new Integer(o2.getCommitPrio()).compareTo(o1.getCommitPrio());
+                }
+                
+            });
+						
 			Collection<Policy> result = new ArrayList<Policy>();
 
-			while (newVersionIterator.hasNext()) {
-				Policy newVersion = newVersionIterator.next();
-
-				try {
+			for (TextContent textContent : commitPrioOrderArray) {
+			    Policy newVersion = newVersionById.get(textContent.getId());
+            	try {
 					newVersion.getContent().commit();
 				} catch (CMException e) {
 					throw new DeployCommitException("While committing "
@@ -129,8 +143,8 @@ public class TextContentDeployer {
 					throw new DeployCommitException("While committing "
 							+ toString(newVersion) + ": " + e, e);
 				}
-
-				newVersionIterator.remove();
+				
+				newVersionById.remove(textContent.getId());
 				result.add(newVersion);
 			}
 

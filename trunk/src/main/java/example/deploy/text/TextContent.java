@@ -25,6 +25,7 @@ public class TextContent {
     private List<Publishing> publishings = new ArrayList<Publishing>();
 
     private String templateId;
+    private int commitPrio = 0;
 
     public Map<String, List<Reference>> getLists() {
         return lists;
@@ -224,5 +225,13 @@ public class TextContent {
     @Override
     public String toString() {
         return id;
+    }
+
+    public int getCommitPrio() {
+        return commitPrio;
+    }
+    
+    public void setCommitPrio(int commitPrio) {
+        this.commitPrio = commitPrio;
     }
 }
