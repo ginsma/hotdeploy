@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -147,7 +148,22 @@ public class TextContentDeployer {
 				newVersionById.remove(textContent.getId());
 				result.add(newVersion);
 			}
-
+			
+			//Commit remaining created versions if any
+			Iterator<Policy> iterator = newVersionById.values().iterator();
+			while(iterator.hasNext()) {
+			    Policy newVersion = iterator.next();
+			    try {
+                    newVersion.getContent().commit();
+                } catch (CMException e) {
+                    throw new DeployCommitException("While committing "
+                            + toString(newVersion) + ": " + e, e);
+                } catch (Exception e) {
+                    throw new DeployCommitException("While committing "
+                            + toString(newVersion) + ": " + e, e);
+                }
+			}
+			
 			success = true;
 
 			return result;
