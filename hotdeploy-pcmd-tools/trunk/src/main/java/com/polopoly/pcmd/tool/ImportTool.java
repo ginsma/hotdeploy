@@ -31,7 +31,7 @@ import example.deploy.xml.parser.ContentXmlParser;
 import example.deploy.xml.parser.cache.CachingDeploymentFileParser;
 
 public class ImportTool implements Tool<ImportParameters> {
-	private final class LoggingSingleFileDeployer extends
+	private static final class LoggingSingleFileDeployer extends
 			DefaultSingleFileDeployer {
 		private int fileCount;
 		private int imported;

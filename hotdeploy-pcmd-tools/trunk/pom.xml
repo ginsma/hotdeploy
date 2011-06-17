@@ -5,7 +5,7 @@
   <packaging>jar</packaging>
   <name>Hotdeploy PCMD Tools</name>
   <properties>
-     <polopoly.version>10.0.0</polopoly.version>
+     <polopoly.version>10-1-DR1-r58876</polopoly.version>
      <pcmd.version>-SNAPSHOT</pcmd.version>
   </properties>
   <version>${polopoly.version}.1</version>
@@ -67,6 +67,11 @@
       <id>jboss</id>
       <name>JBoss repository</name>
       <url>http://repository.jboss.com/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
     </repository>
     <repository>
       <id>solutions</id>
