@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import example.deploy.hotdeploy.HotDeployContentContextListener;
 import example.deploy.hotdeploy.file.DeploymentFile;
 
 public class DefaultDirectoryState implements DirectoryState {
