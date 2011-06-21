@@ -7,9 +7,9 @@
   <name>Hotdeploy</name>
   <properties>
   	<polopoly.version>10.1-DR1-r58876</polopoly.version>
-  	<hotdeploy.version>-SNAPSHOT</hotdeploy.version>
+  	<pcmd.version>-SNAPSHOT</pcmd.version>
   </properties>
-  <version>${polopoly.version}${hotdeploy.version}</version>
+  <version>${polopoly.version}${pcmd.version}</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
@@ -117,7 +117,7 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>pcmd</artifactId>
-      <version>${polopoly.version}-SNAPSHOT</version>
+      <version>${polopoly.version}${pcmd.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
