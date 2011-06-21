@@ -6,10 +6,10 @@
   <packaging>jar</packaging>
   <name>Hotdeploy</name>
   <properties>
-  	<polopoly.version>10.0.0</polopoly.version>
-  	<pcmd.version>-SNAPSHOT</pcmd.version>
+  	<polopoly.version>10.1-DR1-r58876</polopoly.version>
+  	<hotdeploy.version>-SNAPSHOT</hotdeploy.version>
   </properties>
-  <version>${polopoly.version}.1</version>
+  <version>${polopoly.version}${hotdeploy.version}</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <resources>
@@ -23,6 +23,7 @@
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
+          <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
       <plugin>
@@ -55,7 +56,7 @@
     <repository>
       <id>jboss</id>
       <name>JBoss repository</name>
-      <url>http://repository.jboss.com/maven2</url>
+      <url>http://repository.jboss.org/nexus/content/groups/public</url>
     </repository>
     <repository>
       <id>solutions</id>
@@ -67,11 +68,16 @@
       <name>Test resources</name>
       <url>file://${basedir}/repository</url>
     </repository>
+    <repository>
+      <id>polopoly-product</id>
+      <name>Polopoly repository</name>
+      <url>http://maven.polopoly.com/nexus/content/repositories/polopoly-product</url>
+    </repository>    
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>com.polopoly</groupId>
-      <artifactId>polopoly</artifactId>
+      <groupId>com.polopoly.assemblies</groupId>
+      <artifactId>polopoly-jar</artifactId>
       <version>${polopoly.version}</version>
     </dependency>
     <dependency>
@@ -111,7 +117,7 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>pcmd</artifactId>
-      <version>${polopoly.version}${pcmd.version}</version>
+      <version>${polopoly.version}-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
