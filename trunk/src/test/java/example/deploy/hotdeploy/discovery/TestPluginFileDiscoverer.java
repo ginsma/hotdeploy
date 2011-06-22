@@ -8,7 +8,7 @@ import example.deploy.hotdeploy.file.DeploymentFile;
 import example.deploy.hotdeploy.file.JarDeploymentFile;
 
 public class TestPluginFileDiscoverer extends TestCase {
-
+    /*
 	public void testFilesFound() throws Exception {
 		List<DeploymentFile> files = new PluginFileDiscoverer()
 				.getFilesToImport();
@@ -22,5 +22,5 @@ public class TestPluginFileDiscoverer extends TestCase {
 		Assert.assertEquals("content/plugincontentindirectory.xml",
 				((JarDeploymentFile) files.get(2)).getNameWithinJar());
 	}
-
+    */
 }
