@@ -4,7 +4,9 @@ import static com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool.generateIm
 import static com.polopoly.pcmd.tool.HotdeployGenerateImportOrderTool.writeFile;
 import static example.deploy.hotdeploy.util.Plural.plural;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.polopoly.cm.ContentId;
@@ -16,7 +18,10 @@ import com.polopoly.util.client.PolopolyContext;
 import example.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
 import example.deploy.hotdeploy.deployer.FatalDeployException;
 import example.deploy.hotdeploy.deployer.MultipleFileDeployer;
+import example.deploy.hotdeploy.discovery.FileDiscoverer;
+import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
 import example.deploy.hotdeploy.discovery.NotApplicableException;
+import example.deploy.hotdeploy.discovery.PluginFileDiscoverer;
 import example.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
 import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
@@ -161,7 +166,7 @@ public class ImportTool implements Tool<ImportParameters> {
 
 		try {
 			if (parameters.isSearchResources()) {
-				deployResourceContent(context, parameters);
+				deploy(context, parameters);
 			}
 
 			List<DeploymentFile> files = parameters.discoverFiles();
@@ -212,41 +217,56 @@ public class ImportTool implements Tool<ImportParameters> {
 		return new MultipleFileDeployer(singleFileDeployer, directoryState);
 	}
 
-	private void deployResourceContent(PolopolyContext context,
+	private void deploy(PolopolyContext context,
 			ImportParameters parameters) throws FatalDeployException {
-		try {
-			List<DeploymentFile> resourceFiles = new ResourceFileDiscoverer(
-					parameters.isOnlyJarResources())
-					.getFilesToImport(getClass().getClassLoader());
+		List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
 
-			if (resourceFiles.isEmpty()) {
-				return;
+		if (parameters.isSearchResources()) {
+			discoverers.add(new ResourceFileDiscoverer(parameters
+					.isOnlyJarResources()));
+			discoverers.add(new PluginFileDiscoverer());
+		}
+
+		for (File directory : parameters.getDirectories()) {
+			discoverers
+			.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
+		}
+
+		List<DeploymentFile> filesToDeploy = new ArrayList<DeploymentFile>();
+
+		for (FileDiscoverer discoverer : discoverers) {
+			try {
+				filesToDeploy.addAll(discoverer.getFilesToImport());
+			} catch (NotApplicableException e) {
+				System.err.println("Cannot apply discovery strategy "
+						+ discoverer + ": " + e.getMessage());
 			}
+		}
 
-			System.out
-					.println(resourceFiles.size() + " content file"
-							+ plural(resourceFiles.size())
-							+ " found in the classpath.");
+		if (filesToDeploy.isEmpty()) {
+			return;
+		}
 
-			MultipleFileDeployer deployer = createDeployer(context, parameters,
-					resourceFiles.size());
+		System.out
+		.println(filesToDeploy.size() + " content file"
+				+ plural(filesToDeploy.size())
+				+ " found in the classpath.");
 
-			deployer.deploy(resourceFiles);
+		MultipleFileDeployer deployer = createDeployer(context, parameters,
+				filesToDeploy.size());
 
-			if (!deployer.isAllFilesUnchanged()) {
-				System.out.println("Content in the classpath: "
-						+ deployer.getResultMessage(resourceFiles));
-			}
+		deployer.deploy(filesToDeploy);
 
-			// we might have deployed the hotdeploy templates here. if that is
-			// the
-			// case we can now (and only now) fetch the directory state.
-			if (directoryStateFetcher != null) {
-				directoryState = directoryStateFetcher
-						.refreshAfterFailingToFetch();
-			}
-		} catch (NotApplicableException e) {
-			// no resource content. fine.
+		if (!deployer.isAllFilesUnchanged()) {
+			System.out.println("Content in the classpath: "
+					+ deployer.getResultMessage(filesToDeploy));
+		}
+
+		// we might have deployed the hotdeploy templates here. if that is
+		// the case we can now (and only now) fetch the directory state.
+		if (directoryStateFetcher != null) {
+			directoryState = directoryStateFetcher
+			.refreshAfterFailingToFetch();
 		}
 	}
 

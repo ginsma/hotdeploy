@@ -67,6 +67,10 @@
       <id>maven</id>
       <name>Maven central repository</name>
       <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>never</updatePolicy>
+      </snapshots>
     </repository>
     <repository>
       <id>jboss</id>

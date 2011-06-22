@@ -5,10 +5,16 @@ import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.
 import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.IGNORE_PRESENT;
 import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
+
 import com.polopoly.pcmd.argument.ArgumentException;
 import com.polopoly.pcmd.argument.Arguments;
+import com.polopoly.pcmd.argument.NotProvidedException;
 import com.polopoly.pcmd.argument.ParameterHelp;
 import com.polopoly.pcmd.parser.BooleanParser;
+import com.polopoly.pcmd.parser.ExistingDirectoryParser;
 import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 
@@ -22,7 +28,9 @@ public class ImportParameters extends FilesToDeployParameters {
 	private boolean onlyJarResources = true;
 	private String considerJar;
 	private boolean ignoreContentListAddFailures;
+	private List<File> directories = null;
 
+	private static final String DIRECTOY_PARAMETER = "dir";
 	private static final String GENERATE_IMPORT_ORDER_PARAMETER = "order";
 	private static final String GENERATE_BOOTSTRAP_PARAMETER = "bootstrap";
 	private static final String FORCE_PARAMETER = "force";
@@ -34,6 +42,10 @@ public class ImportParameters extends FilesToDeployParameters {
 	@Override
 	public void getHelp(ParameterHelp help) {
 		super.getHelp(help);
+		help.addOption(
+				DIRECTOY_PARAMETER,
+				new ExistingDirectoryParser(),
+				"Directory to search content in. This option may be provided multiple times.");
 		help.addOption(
 				BOOTSTRAP_NON_CREATED_PARAMETER,
 				new BooleanParser(),
@@ -82,6 +94,14 @@ public class ImportParameters extends FilesToDeployParameters {
 	public void parseParameters(Arguments args, PolopolyContext context)
 			throws ArgumentException {
 		super.parseParameters(args, context);
+		
+		try {
+			setDirectories(args.getOptions(
+					DIRECTOY_PARAMETER, new ExistingDirectoryParser()));
+		} catch (NotProvidedException e) {
+			setDirectories(Collections.<File> emptyList());
+		}
+
 		setBootstrapNonCreated(args.getFlag(BOOTSTRAP_NON_CREATED_PARAMETER,
 				bootstrapNonCreated));
 		setGenerateImportOrder(args.getFlag(GENERATE_IMPORT_ORDER_PARAMETER,
@@ -97,6 +117,14 @@ public class ImportParameters extends FilesToDeployParameters {
 		setConsiderJar(args.getOptionString(CONSIDER_JAR, null));
 		setIgnoreContentListAddFailures(args.getFlag(
 				IGNORE_CONTENT_LIST_ADD_FAILURES, false));
+	}
+
+	public void setDirectories(List<File> directories) {
+		this.directories = directories;
+	}
+
+	public List<File> getDirectories() {
+		return directories;
 	}
 
 	public void setBootstrapNonCreated(boolean bootstrapNonCreated) {
