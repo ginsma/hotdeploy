@@ -58,7 +58,7 @@
       <url>http://maven.polopoly.com/nexus/content/repositories/professional-services</url>
     </repository>
     <repository>
-      <id>removemelater</id>
+      <id>discoverytest</id>
       <name>Test resources</name>
       <url>file://${basedir}/repository</url>
     </repository> 
