@@ -104,6 +104,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.polopoly.hotdeploy.test</groupId>
+      <artifactId>plugin-contentdata</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>pcmd</artifactId>
       <version>${polopoly.version}${pcmd.version}</version>
