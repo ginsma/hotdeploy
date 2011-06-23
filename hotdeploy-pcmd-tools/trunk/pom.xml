@@ -5,7 +5,7 @@
   <packaging>jar</packaging>
   <name>Hotdeploy PCMD Tools</name>
   <properties>
-     <polopoly.version>10-1-DR1-r58876</polopoly.version>
+     <polopoly.version>10.1-DR1-r58876</polopoly.version>
      <pcmd.version>-SNAPSHOT</pcmd.version>
   </properties>
   <version>${polopoly.version}${pcmd.version}</version>
@@ -59,49 +59,25 @@
   </distributionManagement>
   <repositories>
     <repository>
-      <id>removemelater</id>
-      <name>Test resources</name>
-      <url>file://${basedir}/../repo</url>
-    </repository>
-    <repository>
       <id>maven</id>
       <name>Maven central repository</name>
       <url>http://repo1.maven.org/maven2</url>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>never</updatePolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>jboss</id>
-      <name>JBoss repository</name>
-      <url>http://repository.jboss.org/nexus/content/groups/public</url>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>never</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>solutions</id>
-      <name>Polopoly solutions repository</name>
-      <url>http://prodtest00.polopoly.com/solutions/maven2</url>
     </repository>
     <repository>
       <id>polopoly-product</id>
       <name>Polopoly repository</name>
       <url>http://maven.polopoly.com/nexus/content/repositories/polopoly-product</url>
-    </repository>    
+    </repository>
     <repository>
-      <id>local</id>
-      <name>Test resources</name>
-      <url>${basedir}/repository</url>
+      <id>professional-services</id>
+      <name>Polopoly PS repository</name>
+      <url>http://maven.polopoly.com/nexus/content/repositories/professional-services</url>
     </repository>
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>com.polopoly</groupId>
-      <artifactId>polopoly</artifactId>
+      <groupId>com.polopoly.assemblies</groupId>
+      <artifactId>polopoly-jar</artifactId>
       <version>${polopoly.version}</version>
     </dependency>
     <dependency>
@@ -115,9 +91,9 @@
       <version>${polopoly.version}${pcmd.version}</version>
     </dependency>
     <dependency>
-        <groupId>jboss</groupId>
-        <artifactId>jboss-j2ee</artifactId>
-        <version>4.0.2</version>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-j2ee</artifactId>
+      <version>4.0.2</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
