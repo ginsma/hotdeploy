@@ -86,7 +86,7 @@ public class TestResourceFileDiscoverer extends TestCase {
         ImportOrder firstImportOrderFile = importOrderFileIterator.next();
         ImportOrder secondImportOrderFile = importOrderFileIterator.next();
 
-        assertEquals(TestFileConstants.DEPENDED_TEST_JAR_DEPENDENCY_NAME, firstImportOrderFile.calculateDependencyName());
-        assertEquals(TestFileConstants.DEPENDING_TEST_JAR_DEPENDENCY_NAME, secondImportOrderFile.calculateDependencyName());
+        assertEquals(FileConstants.DEPENDED_TEST_JAR_DEPENDENCY_NAME, firstImportOrderFile.calculateDependencyName());
+        assertEquals(FileConstants.DEPENDING_TEST_JAR_DEPENDENCY_NAME, secondImportOrderFile.calculateDependencyName());
     }
 }

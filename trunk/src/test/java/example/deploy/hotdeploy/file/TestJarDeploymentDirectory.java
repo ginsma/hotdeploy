@@ -1,6 +1,6 @@
 package example.deploy.hotdeploy.file;
 
-import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDING_TEST_JAR_PATH;
+import static example.deploy.hotdeploy.discovery.FileConstants.DEPENDING_TEST_JAR_PATH;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

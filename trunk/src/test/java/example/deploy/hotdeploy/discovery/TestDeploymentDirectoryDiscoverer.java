@@ -1,8 +1,8 @@
 package example.deploy.hotdeploy.discovery;
 
 import static example.deploy.hotdeploy.discovery.PlatformNeutralPath.unixToPlatformSpecificPath;
-import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDED_TEST_JAR_PATH;
-import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDING_TEST_JAR_PATH;
+import static example.deploy.hotdeploy.discovery.FileConstants.DEPENDED_TEST_JAR_PATH;
+import static example.deploy.hotdeploy.discovery.FileConstants.DEPENDING_TEST_JAR_PATH;
 import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;

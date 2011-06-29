@@ -1,7 +1,7 @@
 package example.deploy.hotdeploy.discovery;
 
-import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDED_TEST_JAR_FILE_NAME;
-import static example.deploy.hotdeploy.discovery.TestFileConstants.DEPENDING_TEST_JAR_PATH;
+import static example.deploy.hotdeploy.discovery.FileConstants.DEPENDED_TEST_JAR_FILE_NAME;
+import static example.deploy.hotdeploy.discovery.FileConstants.DEPENDING_TEST_JAR_PATH;
 
 import java.io.File;
 import java.io.IOException;

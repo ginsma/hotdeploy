@@ -1,8 +1,9 @@
 package example.deploy.hotdeploy.discovery;
 
 import static example.deploy.hotdeploy.discovery.PlatformNeutralPath.unixToPlatformSpecificPath;
+import junit.framework.TestCase;
 
-public class TestFileConstants {
+public class FileConstants  {
     public static final String DEPENDED_TEST_JAR_DEPENDENCY_NAME = "discoverytestdependency";
     public static final String DEPENDED_TEST_JAR_FILE_NAME = DEPENDED_TEST_JAR_DEPENDENCY_NAME + "-1.0.jar";
     public static final String DEPENDED_TEST_JAR_PATH = unixToPlatformSpecificPath("repository/com/polopoly/hotdeploy/test/discoverytestdependency/1.0/" + DEPENDED_TEST_JAR_FILE_NAME);
