@@ -1,18 +1,19 @@
 package com.polopoly.pcmd.tool;
 
-import static example.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+import static com.polopoly.ps.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
 
 import java.util.List;
 
 import com.polopoly.pcmd.tool.parameters.HotdeployValidateParameters;
+import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.deploy.hotdeploy.util.Plural;
+import com.polopoly.ps.deploy.xml.consistency.VerifyResult;
+import com.polopoly.ps.deploy.xml.consistency.XMLConsistencyVerifier;
+import com.polopoly.ps.deploy.xml.present.PresentFileReader;
+import com.polopoly.ps.pcmd.tool.Tool;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.exception.NoSuchExternalIdException;
 
-import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.util.Plural;
-import example.deploy.xml.consistency.VerifyResult;
-import example.deploy.xml.consistency.XMLConsistencyVerifier;
-import example.deploy.xml.present.PresentFileReader;
 
 public class HotdeployValidateTool implements Tool<HotdeployValidateParameters> {
 

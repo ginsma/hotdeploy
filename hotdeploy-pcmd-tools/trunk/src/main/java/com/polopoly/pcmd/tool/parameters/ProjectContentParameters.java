@@ -4,13 +4,13 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import com.polopoly.pcmd.argument.ArgumentException;
-import com.polopoly.pcmd.argument.Arguments;
-import com.polopoly.pcmd.argument.NotProvidedException;
-import com.polopoly.pcmd.argument.ParameterHelp;
-import com.polopoly.pcmd.argument.Parameters;
-import com.polopoly.pcmd.parser.BooleanParser;
-import com.polopoly.pcmd.parser.ExistingDirectoryParser;
+import com.polopoly.ps.pcmd.argument.ArgumentException;
+import com.polopoly.ps.pcmd.argument.Arguments;
+import com.polopoly.ps.pcmd.argument.NotProvidedException;
+import com.polopoly.ps.pcmd.argument.ParameterHelp;
+import com.polopoly.ps.pcmd.argument.Parameters;
+import com.polopoly.ps.pcmd.parser.BooleanParser;
+import com.polopoly.ps.pcmd.parser.ExistingDirectoryParser;
 import com.polopoly.util.client.PolopolyContext;
 
 public class ProjectContentParameters implements Parameters {

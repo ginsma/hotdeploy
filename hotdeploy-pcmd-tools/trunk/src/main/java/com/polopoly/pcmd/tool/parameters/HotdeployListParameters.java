@@ -1,14 +1,14 @@
 package com.polopoly.pcmd.tool.parameters;
 
-import com.polopoly.pcmd.argument.ArgumentException;
-import com.polopoly.pcmd.argument.Arguments;
-import com.polopoly.pcmd.argument.NotProvidedException;
-import com.polopoly.pcmd.argument.ParameterHelp;
-import com.polopoly.pcmd.parser.BooleanParser;
 import com.polopoly.pcmd.parser.MajorParser;
+import com.polopoly.ps.deploy.hotdeploy.client.Major;
+import com.polopoly.ps.pcmd.argument.ArgumentException;
+import com.polopoly.ps.pcmd.argument.Arguments;
+import com.polopoly.ps.pcmd.argument.NotProvidedException;
+import com.polopoly.ps.pcmd.argument.ParameterHelp;
+import com.polopoly.ps.pcmd.parser.BooleanParser;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.client.Major;
 
 public class HotdeployListParameters extends FilesToDeployParameters {
     private static final String MAJOR_OPTION = "major";

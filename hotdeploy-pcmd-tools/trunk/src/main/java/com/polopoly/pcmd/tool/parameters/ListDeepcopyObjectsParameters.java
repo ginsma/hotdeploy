@@ -1,10 +1,10 @@
 package com.polopoly.pcmd.tool.parameters;
 
-import com.polopoly.pcmd.argument.ArgumentException;
-import com.polopoly.pcmd.argument.Arguments;
-import com.polopoly.pcmd.argument.ContentIdListParameters;
-import com.polopoly.pcmd.argument.ParameterHelp;
-import com.polopoly.pcmd.parser.BooleanParser;
+import com.polopoly.ps.pcmd.argument.ArgumentException;
+import com.polopoly.ps.pcmd.argument.Arguments;
+import com.polopoly.ps.pcmd.argument.ContentIdListParameters;
+import com.polopoly.ps.pcmd.argument.ParameterHelp;
+import com.polopoly.ps.pcmd.parser.BooleanParser;
 import com.polopoly.util.client.PolopolyContext;
 
 public class ListDeepcopyObjectsParameters extends ContentIdListParameters {

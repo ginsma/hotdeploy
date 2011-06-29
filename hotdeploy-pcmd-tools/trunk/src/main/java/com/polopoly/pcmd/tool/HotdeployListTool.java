@@ -5,11 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 import com.polopoly.pcmd.tool.parameters.HotdeployListParameters;
+import com.polopoly.ps.deploy.hotdeploy.client.Major;
+import com.polopoly.ps.deploy.xml.allcontent.AllContent;
+import com.polopoly.ps.deploy.xml.allcontent.AllContentFinder;
+import com.polopoly.ps.pcmd.tool.Tool;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.client.Major;
-import example.deploy.xml.allcontent.AllContent;
-import example.deploy.xml.allcontent.AllContentFinder;
 
 public class HotdeployListTool implements Tool<HotdeployListParameters> {
 

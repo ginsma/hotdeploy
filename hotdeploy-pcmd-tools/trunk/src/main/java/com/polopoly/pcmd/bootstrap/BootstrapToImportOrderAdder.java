@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileParser;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
-import example.deploy.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileParser;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
+import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentFile;
+
 
 public class BootstrapToImportOrderAdder {
     private File bootstrapFile;

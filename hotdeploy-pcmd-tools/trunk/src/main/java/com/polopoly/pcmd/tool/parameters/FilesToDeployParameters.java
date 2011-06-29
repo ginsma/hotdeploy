@@ -4,20 +4,20 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import com.polopoly.pcmd.argument.ArgumentException;
-import com.polopoly.pcmd.argument.Arguments;
-import com.polopoly.pcmd.argument.NotProvidedException;
-import com.polopoly.pcmd.argument.ParameterHelp;
-import com.polopoly.pcmd.argument.Parameters;
-import com.polopoly.pcmd.parser.ExistingFileParser;
+import com.polopoly.ps.deploy.hotdeploy.discovery.FileDiscoverer;
+import com.polopoly.ps.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
+import com.polopoly.ps.deploy.hotdeploy.discovery.NotApplicableException;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
+import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.ps.pcmd.argument.ArgumentException;
+import com.polopoly.ps.pcmd.argument.Arguments;
+import com.polopoly.ps.pcmd.argument.NotProvidedException;
+import com.polopoly.ps.pcmd.argument.ParameterHelp;
+import com.polopoly.ps.pcmd.argument.Parameters;
+import com.polopoly.ps.pcmd.parser.ExistingFileParser;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.discovery.FileDiscoverer;
-import example.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
-import example.deploy.hotdeploy.discovery.NotApplicableException;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
-import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.file.FileDeploymentFile;
 
 public class FilesToDeployParameters implements Parameters {
     private File directoryOrFile;

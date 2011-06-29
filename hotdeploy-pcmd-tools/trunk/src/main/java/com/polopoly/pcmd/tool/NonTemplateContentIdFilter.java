@@ -2,8 +2,8 @@ package com.polopoly.pcmd.tool;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.util.ContentIdFilter;
+import com.polopoly.ps.deploy.hotdeploy.client.Major;
 
-import example.deploy.hotdeploy.client.Major;
 
 public class NonTemplateContentIdFilter implements ContentIdFilter {
 

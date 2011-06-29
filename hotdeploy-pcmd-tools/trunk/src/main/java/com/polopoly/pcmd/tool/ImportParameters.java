@@ -3,19 +3,19 @@ package com.polopoly.pcmd.tool;
 import static com.polopoly.pcmd.bootstrap.BootstrapFileGenerator.BOOTSTRAP_FILE_NAME;
 import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.BOOTSTRAP_NON_CREATED_PARAMETER;
 import static com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters.IGNORE_PRESENT;
-import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
+import static com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import com.polopoly.pcmd.argument.ArgumentException;
-import com.polopoly.pcmd.argument.Arguments;
-import com.polopoly.pcmd.argument.NotProvidedException;
-import com.polopoly.pcmd.argument.ParameterHelp;
-import com.polopoly.pcmd.parser.BooleanParser;
-import com.polopoly.pcmd.parser.ExistingDirectoryParser;
 import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
+import com.polopoly.ps.pcmd.argument.ArgumentException;
+import com.polopoly.ps.pcmd.argument.Arguments;
+import com.polopoly.ps.pcmd.argument.NotProvidedException;
+import com.polopoly.ps.pcmd.argument.ParameterHelp;
+import com.polopoly.ps.pcmd.parser.BooleanParser;
+import com.polopoly.ps.pcmd.parser.ExistingDirectoryParser;
 import com.polopoly.util.client.PolopolyContext;
 
 public class ImportParameters extends FilesToDeployParameters {

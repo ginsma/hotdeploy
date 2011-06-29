@@ -1,7 +1,7 @@
 package com.polopoly.pcmd.tool;
 
-import static example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
-import static example.deploy.hotdeploy.util.Plural.count;
+import static com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
+import static com.polopoly.ps.deploy.hotdeploy.util.Plural.count;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,17 +9,18 @@ import java.util.List;
 
 import com.polopoly.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.pcmd.tool.parameters.ForceAndFilesToDeployParameters;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrder;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
+import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.deploy.xml.ordergenerator.AddWholeRootToImportOrderFile;
+import com.polopoly.ps.deploy.xml.ordergenerator.ImportOrderGenerator;
+import com.polopoly.ps.deploy.xml.parser.ContentXmlParser;
+import com.polopoly.ps.deploy.xml.parser.DeploymentFileParser;
+import com.polopoly.ps.deploy.xml.present.PresentFileReader;
+import com.polopoly.ps.pcmd.tool.Tool;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.discovery.importorder.ImportOrder;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileWriter;
-import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.xml.ordergenerator.AddWholeRootToImportOrderFile;
-import example.deploy.xml.ordergenerator.ImportOrderGenerator;
-import example.deploy.xml.parser.ContentXmlParser;
-import example.deploy.xml.parser.DeploymentFileParser;
-import example.deploy.xml.present.PresentFileReader;
 
 public class HotdeployGenerateImportOrderTool implements Tool<ForceAndFilesToDeployParameters> {
     public ForceAndFilesToDeployParameters createParameters() {

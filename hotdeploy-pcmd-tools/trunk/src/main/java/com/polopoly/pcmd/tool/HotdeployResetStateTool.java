@@ -1,10 +1,11 @@
 package com.polopoly.pcmd.tool;
 
 import com.polopoly.pcmd.tool.parameters.EmptyParameters;
+import com.polopoly.ps.deploy.hotdeploy.state.CouldNotFetchChecksumsException;
+import com.polopoly.ps.deploy.hotdeploy.state.DefaultFileChecksums;
+import com.polopoly.ps.pcmd.tool.Tool;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.state.CouldNotFetchChecksumsException;
-import example.deploy.hotdeploy.state.DefaultFileChecksums;
 
 public class HotdeployResetStateTool implements Tool<EmptyParameters>{
 

@@ -3,13 +3,14 @@ package com.polopoly.pcmd.tool;
 import java.util.List;
 
 import com.polopoly.pcmd.tool.parameters.HotdeployFindParameters;
+import com.polopoly.ps.deploy.hotdeploy.client.Major;
+import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.deploy.xml.parser.ContentXmlParser;
+import com.polopoly.ps.deploy.xml.parser.ParseCallback;
+import com.polopoly.ps.deploy.xml.parser.ParseContext;
+import com.polopoly.ps.pcmd.tool.Tool;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.client.Major;
-import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.xml.parser.ParseCallback;
-import example.deploy.xml.parser.ParseContext;
-import example.deploy.xml.parser.ContentXmlParser;
 
 public class HotdeployFindTool implements Tool<HotdeployFindParameters> {
 

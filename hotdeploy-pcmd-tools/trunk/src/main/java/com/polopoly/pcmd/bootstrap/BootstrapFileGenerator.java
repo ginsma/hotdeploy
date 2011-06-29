@@ -1,6 +1,6 @@
 package com.polopoly.pcmd.bootstrap;
 
-import static example.deploy.hotdeploy.util.Plural.plural;
+import static com.polopoly.ps.deploy.hotdeploy.util.Plural.plural;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,16 +11,16 @@ import java.util.Collections;
 import java.util.List;
 
 import com.polopoly.pcmd.tool.parameters.HotdeployBootstrapParameters;
+import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.ps.deploy.xml.bootstrap.Bootstrap;
+import com.polopoly.ps.deploy.xml.bootstrap.BootstrapContent;
+import com.polopoly.ps.deploy.xml.bootstrap.BootstrapFileWriter;
+import com.polopoly.ps.deploy.xml.bootstrap.BootstrapGenerator;
+import com.polopoly.ps.deploy.xml.parser.ContentXmlParser;
+import com.polopoly.ps.deploy.xml.parser.DeploymentFileParser;
+import com.polopoly.ps.deploy.xml.present.PresentFileReader;
 
-import example.deploy.hotdeploy.file.DeploymentFile;
-import example.deploy.hotdeploy.file.FileDeploymentFile;
-import example.deploy.xml.bootstrap.Bootstrap;
-import example.deploy.xml.bootstrap.BootstrapContent;
-import example.deploy.xml.bootstrap.BootstrapFileWriter;
-import example.deploy.xml.bootstrap.BootstrapGenerator;
-import example.deploy.xml.parser.ContentXmlParser;
-import example.deploy.xml.parser.DeploymentFileParser;
-import example.deploy.xml.present.PresentFileReader;
 
 public class BootstrapFileGenerator {
 	public static final String BOOTSTRAP_FILE_NAME = "bootstrap.xml";

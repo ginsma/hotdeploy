@@ -18,23 +18,23 @@ import com.polopoly.pcmd.tool.export.RejectionCollectingContentIdFilter;
 import com.polopoly.pcmd.tool.parameters.ExportParameters;
 import com.polopoly.pcmd.tool.parameters.ListExportableParameters;
 import com.polopoly.pcmd.util.JoiningIterator;
+import com.polopoly.ps.deploy.hotdeploy.util.Plural;
+import com.polopoly.ps.deploy.xml.export.ContentsExporterFactory;
+import com.polopoly.ps.deploy.xml.export.SingleContentToContentFileExporter;
+import com.polopoly.ps.deploy.xml.export.SingleContentToFileExporter;
+import com.polopoly.ps.deploy.xml.export.SingleContentToXMLFileExporter;
+import com.polopoly.ps.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
+import com.polopoly.ps.deploy.xml.export.contentlistentry.ContentReferenceFilter;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.AcceptAllContentIdFilter;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.AcceptNoneContentIdFilter;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.OrContentIdFilter;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.PresentContentFilter;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.ProjectContentFilterFactory;
+import com.polopoly.ps.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
+import com.polopoly.ps.deploy.xml.normalize.RMDBundlingNamingStrategy;
+import com.polopoly.ps.deploy.xml.present.PresentFileReader;
 import com.polopoly.util.client.PolopolyContext;
 
-import example.deploy.hotdeploy.util.Plural;
-import example.deploy.xml.export.ContentsExporterFactory;
-import example.deploy.xml.export.SingleContentToContentFileExporter;
-import example.deploy.xml.export.SingleContentToFileExporter;
-import example.deploy.xml.export.SingleContentToXMLFileExporter;
-import example.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
-import example.deploy.xml.export.contentlistentry.ContentReferenceFilter;
-import example.deploy.xml.export.filteredcontent.AcceptAllContentIdFilter;
-import example.deploy.xml.export.filteredcontent.AcceptNoneContentIdFilter;
-import example.deploy.xml.export.filteredcontent.OrContentIdFilter;
-import example.deploy.xml.export.filteredcontent.PresentContentFilter;
-import example.deploy.xml.export.filteredcontent.ProjectContentFilterFactory;
-import example.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
-import example.deploy.xml.normalize.RMDBundlingNamingStrategy;
-import example.deploy.xml.present.PresentFileReader;
 
 public class ExportTool extends ListExportableTool {
 	private PolopolyContext context;

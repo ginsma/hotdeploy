@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.util.ContentIdFilter;
-import com.polopoly.pcmd.field.content.AbstractContentIdField;
+import com.polopoly.ps.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.util.client.PolopolyContext;
 
 abstract class AbstractCollectingContentIdFilter implements ContentIdFilter {
