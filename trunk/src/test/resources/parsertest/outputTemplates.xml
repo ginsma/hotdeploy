@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <template-definition version="1.0" xmlns="http://www.polopoly.com/polopoly/cm/app/xml">
-  <input-template name="example.FlashElement" label="Flash">
+  <input-template name="com.polopoly.ps.FlashElement" label="Flash">
     <content-xml>
       <component group="polopoly.Content" name="name">Flash Element</component>
     </content-xml>
-    <policy>example.layout.element.ElementPolicy</policy>
-    <editor>example.widget.OContentInsertionTopPolicyWidget</editor>
-	<viewer>example.widget.OContentInsertionTopPolicyWidget</viewer>
+    <policy>com.polopoly.ps.layout.element.ElementPolicy</policy>
+    <editor>com.polopoly.ps.widget.OContentInsertionTopPolicyWidget</editor>
+	<viewer>com.polopoly.ps.widget.OContentInsertionTopPolicyWidget</viewer>
     <type>LayoutElement</type>
     <param name="templateIcon">page_with_flash.png</param>
-    <editor contextName="orchid_TOCENTRY">example.widget.OContentListEntryBasePolicyWidget</editor>
-    <viewer contextName="orchid_TOCENTRY">example.widget.OContentListEntryBasePolicyWidget</viewer>
+    <editor contextName="orchid_TOCENTRY">com.polopoly.ps.widget.OContentListEntryBasePolicyWidget</editor>
+    <viewer contextName="orchid_TOCENTRY">com.polopoly.ps.widget.OContentListEntryBasePolicyWidget</viewer>
     
     <param name="insertable">false</param>
     <param name="EditState_saveAndView">true</param>
@@ -19,10 +19,10 @@
 
           
     <output-templates mode="www">
-      <id>example.FlashElement.ot</id>
+      <id>com.polopoly.ps.FlashElement.ot</id>
     </output-templates>
   </input-template>
-  <output-template name="example.FlashElement.ot" input-template="p.siteengine.ElementOutputTemplate">
+  <output-template name="com.polopoly.ps.FlashElement.ot" input-template="p.siteengine.ElementOutputTemplate">
     <content-xml>
       <component group="polopoly.Content" name="name">Flash animation</component>
       <component group="output/renderer/selected/default" name="value">

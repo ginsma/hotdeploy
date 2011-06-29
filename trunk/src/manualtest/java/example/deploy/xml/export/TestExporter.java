@@ -1,4 +1,4 @@
-package example.deploy.xml.export;
+package com.polopoly.ps.deploy.xml.export;
 
 import java.io.File;
 import java.util.HashSet;
@@ -10,11 +10,11 @@ import java.util.logging.Logger;
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.xml.util.export.DefaultContentContentsExporter;
 
-import example.deploy.hotdeploy.discovery.PlatformNeutralPath;
-import example.deploy.hotdeploy.manualtest.ManualTestCase;
-import example.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
-import example.deploy.xml.export.filteredcontent.PresentContentFilter;
-import example.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
+import com.polopoly.ps.deploy.hotdeploy.discovery.PlatformNeutralPath;
+import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
+import com.polopoly.ps.deploy.xml.export.contentlistentry.ContentIdFilterToContentReferenceFilterWrapper;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.PresentContentFilter;
+import com.polopoly.ps.deploy.xml.normalize.DefaultNormalizationNamingStrategy;
 
 public class TestExporter extends ManualTestCase {
     private static final Logger logger =

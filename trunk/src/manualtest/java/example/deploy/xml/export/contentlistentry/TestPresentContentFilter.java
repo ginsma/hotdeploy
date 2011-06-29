@@ -1,9 +1,9 @@
-package example.deploy.xml.export.contentlistentry;
+package com.polopoly.ps.deploy.xml.export.contentlistentry;
 
 import com.polopoly.cm.VersionedContentId;
 
-import example.deploy.hotdeploy.manualtest.ManualTestCase;
-import example.deploy.xml.export.filteredcontent.PresentContentFilter;
+import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.PresentContentFilter;
 
 public class TestPresentContentFilter extends ManualTestCase {
     private static final String P_ROOT_DEPARTMENT = "p.RootDepartment";

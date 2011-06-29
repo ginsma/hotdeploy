@@ -8,7 +8,7 @@
         <externalid>myfirstarticle</externalid>
       </contentid>
       <input-template>
-        <externalid>example.Article</externalid>
+        <externalid>com.polopoly.ps.Article</externalid>
       </input-template>
     </metadata>
   </content>

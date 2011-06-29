@@ -1,6 +1,6 @@
-package example.deploy.hotdeploy.state;
+package com.polopoly.ps.deploy.hotdeploy.state;
 
-import static example.deploy.hotdeploy.state.DefaultFileChecksums.CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME;
+import static com.polopoly.ps.deploy.hotdeploy.state.DefaultFileChecksums.CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME;
 
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.client.CMException;
@@ -8,7 +8,7 @@ import com.polopoly.cm.client.Content;
 import com.polopoly.user.server.Caller;
 import com.polopoly.user.server.UserId;
 
-import example.deploy.hotdeploy.manualtest.ManualTestCase;
+import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
 
 public class TestFileChecksums extends ManualTestCase {
     private static final ExternalContentId CHECKSUMS_SINGLETON_EXTERNAL_ID = new ExternalContentId(CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME);

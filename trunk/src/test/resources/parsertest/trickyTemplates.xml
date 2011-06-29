@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <template-definition version="1.0" xmlns="http://www.polopoly.com/polopoly/cm/app/xml">
-  <input-template name="example.NewsletterContentListWrapper">
+  <input-template name="com.polopoly.ps.NewsletterContentListWrapper">
     <content-list-wrapper>com.polopoly.cm.app.policy.ConfigurableContentListWrapper</content-list-wrapper>
     <idparam-list name="allowedInputTemplates">
       <contentid>
-        <externalid>example.Newsletter</externalid>
+        <externalid>com.polopoly.ps.Newsletter</externalid>
       </contentid>
     </idparam-list>
   </input-template>
 
-  <input-template name="example.Article">
+  <input-template name="com.polopoly.ps.Article">
        <field name="imageContentCreator" input-template="it.wid.ContentCreator" label="Create New Image">
           <param name="insertTargetAlias">content</param>
           <param name="askInsertTarget">false</param>
@@ -18,7 +18,7 @@
           <param name="askInsertionContentListName">false</param>
           <param name="major">1</param>
           <idparam name="inputTemplateId">
-            <externalid>example.Image</externalid>
+            <externalid>com.polopoly.ps.Image</externalid>
           </idparam>
           <param name="createWithSecurityParent">true</param>
           <param name="securityParentAlias">content</param>
@@ -32,7 +32,7 @@
           <idparam-list name="categoryList0">
             <contentid>
               <major>InputTemplate</major>
-              <externalid>example.Image</externalid>
+              <externalid>com.polopoly.ps.Image</externalid>
             </contentid>
           </idparam-list>
         </field>

@@ -1,4 +1,4 @@
-package example.deploy.xml.export;
+package com.polopoly.ps.deploy.xml.export;
 
 import java.util.Set;
 
@@ -6,8 +6,8 @@ import com.polopoly.cm.ContentId;
 import com.polopoly.cm.util.ContentIdFilter;
 import com.polopoly.util.content.ContentReadUtil;
 
-import example.deploy.hotdeploy.manualtest.ManualTestCase;
-import example.deploy.xml.export.filteredcontent.FilteredAllContentFinder;
+import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
+import com.polopoly.ps.deploy.xml.export.filteredcontent.FilteredAllContentFinder;
 
 public class TestAllNonPresentContentFinder extends ManualTestCase {
     private ContentReadUtil rootDepartment;

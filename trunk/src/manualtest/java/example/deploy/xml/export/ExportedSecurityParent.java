@@ -1,4 +1,4 @@
-package example.deploy.xml.export;
+package com.polopoly.ps.deploy.xml.export;
 
 import com.polopoly.cm.client.CMException;
 import com.polopoly.util.client.PolopolyContext;

@@ -1,8 +1,8 @@
-package example.deploy.hotdeploy.state;
+package com.polopoly.ps.deploy.hotdeploy.state;
 
-import static example.deploy.hotdeploy.state.DefaultFileChecksums.FILE_CHECKSUMS_INPUT_TEMPLATE_NAME;
-import example.deploy.hotdeploy.manualtest.CreatePolicyTestAndAbort;
-import example.deploy.hotdeploy.manualtest.ManualTestCase;
+import static com.polopoly.ps.deploy.hotdeploy.state.DefaultFileChecksums.FILE_CHECKSUMS_INPUT_TEMPLATE_NAME;
+import com.polopoly.ps.deploy.hotdeploy.manualtest.CreatePolicyTestAndAbort;
+import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
 
 public class TestFileChecksumsPolicy extends ManualTestCase {
     private DummyDeploymentFile aFile;

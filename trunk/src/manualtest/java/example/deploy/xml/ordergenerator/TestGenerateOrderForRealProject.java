@@ -1,12 +1,12 @@
-package example.deploy.xml.ordergenerator;
+package com.polopoly.ps.deploy.xml.ordergenerator;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import example.deploy.hotdeploy.discovery.FileDiscoverer;
-import example.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
-import example.deploy.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.deploy.hotdeploy.discovery.FileDiscoverer;
+import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
+import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
 
 public class TestGenerateOrderForRealProject {
 

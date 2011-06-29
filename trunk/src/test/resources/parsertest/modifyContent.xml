@@ -4,7 +4,7 @@
   <content updateIfExists="false">
     <metadata>
       <contentid>
-        <externalid>example.Content</externalid>
+        <externalid>com.polopoly.ps.Content</externalid>
       </contentid>
     </metadata> 
     <component group="polopoly.Content" name="name">Content Name</component>
@@ -14,7 +14,7 @@
                     <referredContent>
                         <contentid>
                             <major>Article</major>
-                            <externalid>example.ReferredContent</externalid>
+                            <externalid>com.polopoly.ps.ReferredContent</externalid>
                         </contentid>
                     </referredContent>
                 </metadata>

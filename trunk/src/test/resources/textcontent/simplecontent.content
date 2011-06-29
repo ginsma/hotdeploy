@@ -7,7 +7,7 @@ id:textcontent.simplearticle2
 inputtemplate:p.siteengine.Page
 name:Test Page
 
-id:example.DefaultPageLayout
+id:com.polopoly.ps.DefaultPageLayout
 inputtemplate:p.siteengine.PageLayout
 
 id:p.siteengine.Sites.d
@@ -17,7 +17,7 @@ id:textcontent.simplecontenttest
 inputtemplate:p.siteengine.Site
 securityparent:p.siteengine.Sites.d
 name:Test Site
-ref:pageLayout:selected:example.DefaultPageLayout
+ref:pageLayout:selected:com.polopoly.ps.DefaultPageLayout
 list:polopoly.Department:textcontent.simplearticle
 list:polopoly.Department:textcontent.simplearticle2
 publish:p.siteengine.Sites.d

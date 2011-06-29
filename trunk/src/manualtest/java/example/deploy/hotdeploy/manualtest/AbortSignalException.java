@@ -1,4 +1,4 @@
-package example.deploy.hotdeploy.manualtest;
+package com.polopoly.ps.deploy.hotdeploy.manualtest;
 
 import com.polopoly.cm.client.CMException;
 
