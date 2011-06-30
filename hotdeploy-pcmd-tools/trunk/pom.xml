@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.polopoly</groupId>
+  <groupId>com.polopoly.ps</groupId>
   <artifactId>hotdeploy-pcmd-tools</artifactId>
   <packaging>jar</packaging>
   <name>Hotdeploy PCMD Tools</name>
@@ -85,12 +85,12 @@
       <version>${polopoly.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.polopoly</groupId>
+      <groupId>com.polopoly.ps</groupId>
       <artifactId>pcmd</artifactId>
       <version>${polopoly.version}${pcmd.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.polopoly</groupId>
+      <groupId>com.polopoly.ps</groupId>
       <artifactId>hotdeploy</artifactId>
       <version>${polopoly.version}${pcmd.version}</version>
     </dependency>
