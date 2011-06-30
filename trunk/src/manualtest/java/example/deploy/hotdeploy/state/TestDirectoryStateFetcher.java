@@ -1,6 +1,6 @@
-package com.polopoly.ps.deploy.hotdeploy.state;
+package com.polopoly.ps.hotdeploy.state;
 
-import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
+import com.polopoly.ps.hotdeploy.manualtest.ManualTestCase;
 
 public class TestDirectoryStateFetcher extends ManualTestCase {
     public void testFetching() {

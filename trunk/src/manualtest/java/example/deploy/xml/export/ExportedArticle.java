@@ -1,6 +1,6 @@
-package com.polopoly.ps.deploy.xml.export;
+package com.polopoly.ps.hotdeploy.xml.export;
 
-import static com.polopoly.ps.deploy.hotdeploy.client.Major.getMajor;
+import static com.polopoly.ps.hotdeploy.client.Major.getMajor;
 
 import java.io.File;
 import java.util.Random;
@@ -17,9 +17,9 @@ import com.polopoly.util.policy.PolicyModification;
 import com.polopoly.util.policy.PolicyUtil;
 import com.polopoly.util.policy.Util;
 
-import com.polopoly.ps.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
-import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentFile;
-import com.polopoly.ps.deploy.xml.normalize.NormalizationNamingStrategy;
+import com.polopoly.ps.hotdeploy.deployer.DefaultSingleFileDeployer;
+import com.polopoly.ps.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.ps.hotdeploy.xml.normalize.NormalizationNamingStrategy;
 
 public class ExportedArticle extends ExportedContent {
     private static final String INPUT_TEMPLATE = "p.DefaultArticle";

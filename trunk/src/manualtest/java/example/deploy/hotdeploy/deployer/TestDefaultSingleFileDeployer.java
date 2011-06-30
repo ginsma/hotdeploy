@@ -1,13 +1,13 @@
-package com.polopoly.ps.deploy.hotdeploy.deployer;
+package com.polopoly.ps.hotdeploy.deployer;
 
 import java.io.File;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.polopoly.ps.deploy.hotdeploy.discovery.PlatformNeutralPath;
-import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
-import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentFile;
-import com.polopoly.ps.deploy.hotdeploy.manualtest.ManualTestCase;
+import com.polopoly.ps.hotdeploy.discovery.PlatformNeutralPath;
+import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.ps.hotdeploy.manualtest.ManualTestCase;
 
 public class TestDefaultSingleFileDeployer extends ManualTestCase {
     private static final String CONTENT_FILE =
