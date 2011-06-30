@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.polopoly</groupId>
+	<groupId>com.polopoly.ps</groupId>
 	<artifactId>hotdeploy</artifactId>
 	<packaging>jar</packaging>
 	<name>Hotdeploy</name>
@@ -113,7 +113,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.polopoly</groupId>
+			<groupId>com.polopoly.ps</groupId>
 			<artifactId>pcmd</artifactId>
 			<version>${polopoly.version}${pcmd.version}</version>
 			<scope>test</scope>
