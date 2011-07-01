@@ -6,10 +6,10 @@
 	<packaging>jar</packaging>
 	<name>Hotdeploy</name>
 	<properties>
-		<polopoly.version>10.2.0-fp1-r59173</polopoly.version>
-		<pcmd.version>-SNAPSHOT</pcmd.version>
+	  <polopoly.version>10.2.0-fp1-r59173</polopoly.version>
+	  <tool.version>-SNAPSHOT</tool.version>
 	</properties>
-	<version>${polopoly.version}${pcmd.version}</version>
+	<version>${polopoly.version}${tool.version}</version>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<resources>
@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>com.polopoly.ps</groupId>
 			<artifactId>pcmd</artifactId>
-			<version>${polopoly.version}${pcmd.version}</version>
+			<version>${polopoly.version}${tool.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
