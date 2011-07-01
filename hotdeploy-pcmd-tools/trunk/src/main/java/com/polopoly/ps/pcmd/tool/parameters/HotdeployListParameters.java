@@ -1,6 +1,6 @@
 package com.polopoly.ps.pcmd.tool.parameters;
 
-import com.polopoly.ps.deploy.hotdeploy.client.Major;
+import com.polopoly.ps.hotdeploy.client.Major;
 import com.polopoly.ps.pcmd.argument.ArgumentException;
 import com.polopoly.ps.pcmd.argument.Arguments;
 import com.polopoly.ps.pcmd.argument.NotProvidedException;

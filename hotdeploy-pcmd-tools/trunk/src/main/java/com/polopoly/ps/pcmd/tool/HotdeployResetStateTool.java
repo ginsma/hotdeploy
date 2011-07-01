@@ -1,8 +1,8 @@
 package com.polopoly.ps.pcmd.tool;
 
-import com.polopoly.ps.deploy.hotdeploy.state.CouldNotFetchChecksumsException;
-import com.polopoly.ps.deploy.hotdeploy.state.DefaultFileChecksums;
-import com.polopoly.ps.pcmd.tool.Tool;
+import com.polopoly.ps.hotdeploy.state.CouldNotFetchChecksumsException;
+import com.polopoly.ps.hotdeploy.state.DefaultFileChecksums;
+import com.polopoly.pcmd.tool.Tool;
 import com.polopoly.ps.pcmd.tool.parameters.EmptyParameters;
 import com.polopoly.util.client.PolopolyContext;
 

@@ -1,6 +1,6 @@
 package com.polopoly.ps.pcmd.tool;
 
-import static com.polopoly.ps.deploy.hotdeploy.util.Plural.plural;
+import static com.polopoly.ps.hotdeploy.util.Plural.plural;
 import static com.polopoly.ps.pcmd.tool.HotdeployGenerateImportOrderTool.generateImportOrder;
 import static com.polopoly.ps.pcmd.tool.HotdeployGenerateImportOrderTool.writeFile;
 
@@ -10,28 +10,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.polopoly.cm.ContentId;
-import com.polopoly.ps.deploy.hotdeploy.deployer.DefaultSingleFileDeployer;
-import com.polopoly.ps.deploy.hotdeploy.deployer.FatalDeployException;
-import com.polopoly.ps.deploy.hotdeploy.deployer.MultipleFileDeployer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.FileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.NotApplicableException;
-import com.polopoly.ps.deploy.hotdeploy.discovery.PluginFileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.ResourceFileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrder;
-import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFile;
-import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
-import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentDirectory;
-import com.polopoly.ps.deploy.hotdeploy.state.CouldNotUpdateStateException;
-import com.polopoly.ps.deploy.hotdeploy.state.DirectoryState;
-import com.polopoly.ps.deploy.hotdeploy.state.DirectoryStateFetcher;
-import com.polopoly.ps.deploy.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
-import com.polopoly.ps.deploy.hotdeploy.state.NoFilesImportedDirectoryState;
-import com.polopoly.ps.deploy.xml.parser.ContentXmlParser;
-import com.polopoly.ps.deploy.xml.parser.cache.CachingDeploymentFileParser;
+import com.polopoly.ps.hotdeploy.deployer.DefaultSingleFileDeployer;
+import com.polopoly.ps.hotdeploy.deployer.FatalDeployException;
+import com.polopoly.ps.hotdeploy.deployer.MultipleFileDeployer;
+import com.polopoly.ps.hotdeploy.discovery.FileDiscoverer;
+import com.polopoly.ps.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
+import com.polopoly.ps.hotdeploy.discovery.NotApplicableException;
+import com.polopoly.ps.hotdeploy.discovery.PluginFileDiscoverer;
+import com.polopoly.ps.hotdeploy.discovery.ResourceFileDiscoverer;
+import com.polopoly.ps.hotdeploy.discovery.importorder.ImportOrder;
+import com.polopoly.ps.hotdeploy.discovery.importorder.ImportOrderFile;
+import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.file.FileDeploymentDirectory;
+import com.polopoly.ps.hotdeploy.state.CouldNotUpdateStateException;
+import com.polopoly.ps.hotdeploy.state.DirectoryState;
+import com.polopoly.ps.hotdeploy.state.DirectoryStateFetcher;
+import com.polopoly.ps.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
+import com.polopoly.ps.hotdeploy.state.NoFilesImportedDirectoryState;
+import com.polopoly.ps.hotdeploy.xml.parser.ContentXmlParser;
+import com.polopoly.ps.hotdeploy.xml.parser.cache.CachingDeploymentFileParser;
 import com.polopoly.ps.pcmd.bootstrap.BootstrapFileGenerator;
 import com.polopoly.ps.pcmd.field.content.AbstractContentIdField;
-import com.polopoly.ps.pcmd.tool.Tool;
+import com.polopoly.pcmd.tool.Tool;
 import com.polopoly.ps.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
 

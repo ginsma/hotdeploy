@@ -1,15 +1,15 @@
 package com.polopoly.ps.pcmd.tool;
 
-import static com.polopoly.ps.deploy.hotdeploy.client.Major.INPUT_TEMPLATE;
+import static com.polopoly.ps.hotdeploy.client.Major.INPUT_TEMPLATE;
 
 import java.util.List;
 
-import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
-import com.polopoly.ps.deploy.hotdeploy.util.Plural;
-import com.polopoly.ps.deploy.xml.consistency.VerifyResult;
-import com.polopoly.ps.deploy.xml.consistency.XMLConsistencyVerifier;
-import com.polopoly.ps.deploy.xml.present.PresentFileReader;
-import com.polopoly.ps.pcmd.tool.Tool;
+import com.polopoly.pcmd.tool.Tool;
+import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.util.Plural;
+import com.polopoly.ps.hotdeploy.xml.consistency.VerifyResult;
+import com.polopoly.ps.hotdeploy.xml.consistency.XMLConsistencyVerifier;
+import com.polopoly.ps.hotdeploy.xml.present.PresentFileReader;
 import com.polopoly.ps.pcmd.tool.parameters.HotdeployValidateParameters;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.exception.NoSuchExternalIdException;

@@ -2,21 +2,19 @@ package com.polopoly.ps.pcmd.tool;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.util.ContentIdFilter;
-import com.polopoly.ps.deploy.xml.export.filteredcontent.AndContentIdFilter;
-import com.polopoly.ps.deploy.xml.export.filteredcontent.NegatingContentIdFilter;
-import com.polopoly.ps.deploy.xml.export.filteredcontent.ProjectContentFilterFactory;
+import com.polopoly.pcmd.tool.Tool;
+import com.polopoly.ps.hotdeploy.xml.export.filteredcontent.AndContentIdFilter;
+import com.polopoly.ps.hotdeploy.xml.export.filteredcontent.NegatingContentIdFilter;
+import com.polopoly.ps.hotdeploy.xml.export.filteredcontent.ProjectContentFilterFactory;
 import com.polopoly.ps.pcmd.FatalToolException;
 import com.polopoly.ps.pcmd.field.content.AbstractContentIdField;
-import com.polopoly.ps.pcmd.tool.Tool;
 import com.polopoly.ps.pcmd.tool.parameters.SpiderParameters;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.content.ContentUtil;

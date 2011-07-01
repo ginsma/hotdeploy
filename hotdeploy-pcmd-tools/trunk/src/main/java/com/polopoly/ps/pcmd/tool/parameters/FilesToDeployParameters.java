@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import com.polopoly.ps.deploy.hotdeploy.discovery.FileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.discovery.NotApplicableException;
-import com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
-import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
-import com.polopoly.ps.deploy.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.ps.hotdeploy.discovery.FileDiscoverer;
+import com.polopoly.ps.hotdeploy.discovery.ImportOrderOrDirectoryFileDiscoverer;
+import com.polopoly.ps.hotdeploy.discovery.NotApplicableException;
+import com.polopoly.ps.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer;
+import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.file.FileDeploymentFile;
 import com.polopoly.ps.pcmd.argument.ArgumentException;
 import com.polopoly.ps.pcmd.argument.Arguments;
 import com.polopoly.ps.pcmd.argument.NotProvidedException;

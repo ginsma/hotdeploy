@@ -3,10 +3,10 @@ package com.polopoly.ps.pcmd.tool;
 import java.io.File;
 import java.util.List;
 
-import com.polopoly.ps.deploy.hotdeploy.file.DeploymentFile;
-import com.polopoly.ps.deploy.xml.normalize.NormalizeElementGatherer;
-import com.polopoly.ps.deploy.xml.parser.ContentXmlParser;
-import com.polopoly.ps.pcmd.tool.Tool;
+import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.xml.normalize.NormalizeElementGatherer;
+import com.polopoly.ps.hotdeploy.xml.parser.ContentXmlParser;
+import com.polopoly.pcmd.tool.Tool;
 import com.polopoly.ps.pcmd.tool.parameters.HotdeployNormalizeParameters;
 import com.polopoly.util.client.PolopolyContext;
 

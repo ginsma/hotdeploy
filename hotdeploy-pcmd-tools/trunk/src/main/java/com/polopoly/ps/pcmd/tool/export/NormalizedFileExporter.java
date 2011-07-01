@@ -1,6 +1,6 @@
 package com.polopoly.ps.pcmd.tool.export;
 
-import static com.polopoly.ps.deploy.hotdeploy.util.Plural.count;
+import static com.polopoly.ps.hotdeploy.util.Plural.count;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,8 +15,8 @@ import java.util.logging.Logger;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import com.polopoly.cm.ContentId;
-import com.polopoly.ps.deploy.xml.export.SingleContentToFileExporter;
-import com.polopoly.ps.deploy.xml.normalize.NormalizationNamingStrategy;
+import com.polopoly.ps.hotdeploy.xml.export.SingleContentToFileExporter;
+import com.polopoly.ps.hotdeploy.xml.normalize.NormalizationNamingStrategy;
 import com.polopoly.ps.pcmd.field.content.AbstractContentIdField;
 import com.polopoly.util.client.PolopolyContext;
 import com.polopoly.util.collection.ContentIdToContentUtilIterator;
@@ -24,7 +24,7 @@ import com.polopoly.util.content.ContentUtil;
 
 
 /**
- * Same as {@link com.polopoly.ps.deploy.xml.export.NormalizedFileExporter}, but logs in
+ * Same as {@link com.polopoly.ps.hotdeploy.xml.export.NormalizedFileExporter}, but logs in
  * a way adapted to PCMD.
  */
 public class NormalizedFileExporter {

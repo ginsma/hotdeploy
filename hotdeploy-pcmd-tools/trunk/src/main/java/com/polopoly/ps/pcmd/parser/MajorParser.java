@@ -1,8 +1,6 @@
 package com.polopoly.ps.pcmd.parser;
 
-import com.polopoly.ps.deploy.hotdeploy.client.Major;
-import com.polopoly.ps.pcmd.parser.ParseException;
-import com.polopoly.ps.pcmd.parser.Parser;
+import com.polopoly.ps.hotdeploy.client.Major;
 
 public class MajorParser implements Parser<Major> {
 

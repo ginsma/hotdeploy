@@ -1,6 +1,6 @@
 package com.polopoly.ps.pcmd.tool;
 
-import static com.polopoly.ps.deploy.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
+import static com.polopoly.ps.hotdeploy.discovery.importorder.ImportOrderFileDiscoverer.IMPORT_ORDER_FILE_NAME;
 import static com.polopoly.ps.pcmd.bootstrap.BootstrapFileGenerator.BOOTSTRAP_FILE_NAME;
 import static com.polopoly.ps.pcmd.tool.parameters.ForceAndFilesToDeployParameters.BOOTSTRAP_NON_CREATED_PARAMETER;
 import static com.polopoly.ps.pcmd.tool.parameters.ForceAndFilesToDeployParameters.IGNORE_PRESENT;
