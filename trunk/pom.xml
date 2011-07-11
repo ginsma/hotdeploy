@@ -10,6 +10,15 @@
 	  <tool.version>-2</tool.version>
 	</properties>
 	<version>${polopoly.version}${tool.version}</version>
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>professional-services</id>
+            <name>Professional Services</name>
+            <url>http://maven.polopoly.com/nexus/content/repositories/professional-services</url>
+            <layout>default</layout>
+        </repository>
+    </distributionManagement>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<resources>
@@ -128,6 +137,5 @@
 			<artifactId>xercesImpl</artifactId>
 			<version>2.9.0</version>
 		</dependency>
-
 	</dependencies>
 </project>
