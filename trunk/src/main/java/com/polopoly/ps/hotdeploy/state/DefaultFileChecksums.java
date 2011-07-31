@@ -1,7 +1,9 @@
 package com.polopoly.ps.hotdeploy.state;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,186 +16,240 @@ import com.polopoly.cm.client.impl.exceptions.LockException;
 import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
-
+import com.polopoly.ps.hotdeploy.util.FetchingIterator;
 
 public class DefaultFileChecksums implements FileChecksums {
-    public static final String CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME = "hotdeploy.FileChecksumsSingleton";
-    public static final String FILE_CHECKSUMS_INPUT_TEMPLATE_NAME = "p.SystemConfig";
+	public static final String CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME = "hotdeploy.FileChecksumsSingleton";
+	public static final String FILE_CHECKSUMS_INPUT_TEMPLATE_NAME = "p.SystemConfig";
 
-    private static final Logger logger =
-        Logger.getLogger(DefaultFileChecksums.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(DefaultFileChecksums.class.getName());
 
-    private PolicyCMServer server;
-    private FileChecksumsPseudoPolicy checksumsPolicy;
+	private PolicyCMServer server;
+	private FileChecksumsPseudoPolicy checksumsPolicy;
+	private String externalId = CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME;
 
-    private Map<DeploymentFile, Checksums> changes = new HashMap<DeploymentFile, Checksums>();
+	private Map<DeploymentFile, Checksums> changes = new HashMap<DeploymentFile, Checksums>();
 
-    private class Checksums {
-        private long quickChecksum;
-        private long slowChecksum;
-    }
+	private class Checksums {
+		private long quickChecksum = -1;
+		private long slowChecksum = -1;
+	}
 
-    private FileChecksumsPseudoPolicy getLatestChecksumsPolicy(PolicyCMServer server)
-            throws CouldNotFetchChecksumsException {
-        try {
-            return new FileChecksumsPseudoPolicy(
-                PolicySingletonUtil.getSingleton(server, 17,
-                    CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME, FILE_CHECKSUMS_INPUT_TEMPLATE_NAME,
-                    Policy.class));
-        } catch (CMException e) {
-            throw new CouldNotFetchChecksumsException(e.getMessage(), e);
-        }
-    }
+	private class DeleteChecksums extends Checksums {
+		// indicates that a checksum should be deleted.
+	}
 
-    public DefaultFileChecksums(PolicyCMServer server) throws CouldNotFetchChecksumsException {
-        this.server = server;
+	private FileChecksumsPseudoPolicy getLatestChecksumsPolicy(
+			PolicyCMServer server) throws CouldNotFetchChecksumsException {
+		try {
+			return new FileChecksumsPseudoPolicy(
+					PolicySingletonUtil.getSingleton(server, 17, externalId,
+							FILE_CHECKSUMS_INPUT_TEMPLATE_NAME, Policy.class));
+		} catch (CMException e) {
+			throw new CouldNotFetchChecksumsException(e.getMessage(), e);
+		}
+	}
 
-        checksumsPolicy = getLatestChecksumsPolicy(server);
-    }
+	public DefaultFileChecksums(PolicyCMServer server)
+			throws CouldNotFetchChecksumsException {
+		this(server, CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME);
+	}
 
-    public void clear() {
-        try {
-            VersionedContentId checksumsId = getLatestChecksumVersion();
-            checksumsPolicy = getLatestChecksumsPolicy(server);
+	public DefaultFileChecksums(PolicyCMServer server, String externalId)
+			throws CouldNotFetchChecksumsException {
+		this.server = server;
+		this.externalId = externalId;
 
-            try {
-                checksumsPolicy = new FileChecksumsPseudoPolicy(server.createContentVersion(checksumsId));
+		checksumsPolicy = getLatestChecksumsPolicy(server);
+	}
 
-                changes.clear();
-                checksumsPolicy.clear();
+	public void clear() {
+		try {
+			VersionedContentId checksumsId = getLatestChecksumVersion();
+			checksumsPolicy = getLatestChecksumsPolicy(server);
 
-                checksumsPolicy.commit();
-            }
-            catch (RuntimeException e) {
-                failPersisting(e);
-            }
-            catch (LockException e) {
-                handleSingletonLocked(checksumsId);
+			try {
+				checksumsPolicy = new FileChecksumsPseudoPolicy(
+						server.createContentVersion(checksumsId));
 
-                // retry
-                persist();
-            }
-            catch (CMException e) {
-                failPersisting(e);
-            }
-        } catch (CouldNotUpdateStateException e) {
-            logger.log(Level.WARNING, "While deleting file checksums: " + e.getMessage(), e);
-        } catch (CouldNotFetchChecksumsException e) {
-            logger.log(Level.WARNING, "While deleting file checksums: " + e.getMessage(), e);
-        }
-    }
+				changes.clear();
+				checksumsPolicy.clear();
 
-    public long getQuickChecksum(DeploymentFile file) {
-        Checksums changedChecksum = changes.get(file);
+				checksumsPolicy.commit();
+			} catch (RuntimeException e) {
+				failPersisting(e);
+			} catch (LockException e) {
+				handleSingletonLocked(checksumsId);
 
-        if (changedChecksum != null) {
-            return changedChecksum.quickChecksum;
-        }
-        else {
-            return checksumsPolicy.getQuickChecksum(file);
-        }
-    }
+				// retry
+				persist();
+			} catch (CMException e) {
+				failPersisting(e);
+			}
+		} catch (CouldNotUpdateStateException e) {
+			logger.log(Level.WARNING,
+					"While deleting file checksums: " + e.getMessage(), e);
+		} catch (CouldNotFetchChecksumsException e) {
+			logger.log(Level.WARNING,
+					"While deleting file checksums: " + e.getMessage(), e);
+		}
+	}
 
-    public long getSlowChecksum(DeploymentFile file) {
-        Checksums changedChecksum = changes.get(file);
+	public long getQuickChecksum(DeploymentFile file) {
+		Checksums changedChecksum = changes.get(file);
 
-        if (changedChecksum != null) {
-            return changedChecksum.slowChecksum;
-        }
-        else {
-            return checksumsPolicy.getSlowChecksum(file);
-        }
-    }
+		if (changedChecksum != null) {
+			return changedChecksum.quickChecksum;
+		} else {
+			return checksumsPolicy.getQuickChecksum(file);
+		}
+	}
 
-    public synchronized void setChecksums(DeploymentFile file, long quickChecksum,
-            long slowChecksum) {
-        Checksums checksums = new Checksums();
-        checksums.quickChecksum = quickChecksum;
-        checksums.slowChecksum = slowChecksum;
+	public long getSlowChecksum(DeploymentFile file) {
+		Checksums changedChecksum = changes.get(file);
 
-        changes.put(file, checksums);
-    }
+		if (changedChecksum != null) {
+			return changedChecksum.slowChecksum;
+		} else {
+			return checksumsPolicy.getSlowChecksum(file);
+		}
+	}
 
-    private VersionedContentId getLatestChecksumVersion()
-            throws CouldNotUpdateStateException {
-        try {
-            return
-                server.translateSymbolicContentId(
-                    new ExternalContentId(CHECKSUMS_SINGLETON_EXTERNAL_ID_NAME));
-        }
-        catch (EJBFinderException finderException) {
-            throw new CouldNotUpdateStateException(
-                "Could not find existing checksum policy singleton: " + finderException.getMessage());
-        }
-        catch (CMException cmException) {
-            throw new CouldNotUpdateStateException(
-                "Could not fetch existing checksum policy singleton: " + cmException.getMessage(), cmException);
-        }
-    }
+	public synchronized void deleteChecksums(DeploymentFile file) {
+		changes.put(file, new DeleteChecksums());
+	}
 
-    private void handleSingletonLocked(VersionedContentId checksumsId) throws CouldNotUpdateStateException {
-        try {
-            logger.log(Level.WARNING,
-                    "The checksum singleton " + checksumsId.getContentId().getContentIdString() + " was locked. Forcing an unlock.");
+	public synchronized void setChecksums(DeploymentFile file,
+			long quickChecksum, long slowChecksum) {
+		Checksums checksums = new Checksums();
+		checksums.quickChecksum = quickChecksum;
+		checksums.slowChecksum = slowChecksum;
 
-            Content checksumContent = (Content)
-                server.getContent(checksumsId);
+		changes.put(file, checksums);
+	}
 
-            checksumContent.forcedUnlock();
-        } catch (CMException unlockException) {
-            logger.log(Level.WARNING, "Unlocking failed.");
+	private VersionedContentId getLatestChecksumVersion()
+			throws CouldNotUpdateStateException {
+		try {
+			return server.translateSymbolicContentId(new ExternalContentId(
+					externalId));
+		} catch (EJBFinderException finderException) {
+			throw new CouldNotUpdateStateException(
+					"Could not find existing checksum policy singleton: "
+							+ finderException.getMessage());
+		} catch (CMException cmException) {
+			throw new CouldNotUpdateStateException(
+					"Could not fetch existing checksum policy singleton: "
+							+ cmException.getMessage(), cmException);
+		}
+	}
 
-            failPersisting(unlockException);
-        }
-    }
+	private void handleSingletonLocked(VersionedContentId checksumsId)
+			throws CouldNotUpdateStateException {
+		try {
+			logger.log(Level.WARNING, "The checksum singleton "
+					+ checksumsId.getContentId().getContentIdString()
+					+ " was locked. Forcing an unlock.");
 
-    public synchronized void persist() throws CouldNotUpdateStateException {
-        if (areAllChangesPersisted()) {
-            return;
-        }
+			Content checksumContent = (Content) server.getContent(checksumsId);
 
-        VersionedContentId checksumsId = getLatestChecksumVersion();
+			checksumContent.forcedUnlock();
+		} catch (CMException unlockException) {
+			logger.log(Level.WARNING, "Unlocking failed.");
 
-        try {
-            checksumsPolicy = new FileChecksumsPseudoPolicy(server.createContentVersion(checksumsId));
+			failPersisting(unlockException);
+		}
+	}
 
-            for (Map.Entry<DeploymentFile, Checksums> change : changes.entrySet()) {
-                DeploymentFile changedFile = change.getKey();
-                Checksums changedChecksums = change.getValue();
+	public synchronized void persist() throws CouldNotUpdateStateException {
+		if (areAllChangesPersisted()) {
+			return;
+		}
 
-                checksumsPolicy.setChecksums(changedFile,
-                    changedChecksums.quickChecksum, changedChecksums.slowChecksum);
-            }
+		VersionedContentId checksumsId = getLatestChecksumVersion();
 
-            changes.clear();
+		try {
+			checksumsPolicy = new FileChecksumsPseudoPolicy(
+					server.createContentVersion(checksumsId));
 
-            checksumsPolicy.commit();
-        }
-        catch (RuntimeException e) {
-            failPersisting(e);
-        }
-        catch (LockException e) {
-            handleSingletonLocked(checksumsId);
+			for (Map.Entry<DeploymentFile, Checksums> change : changes
+					.entrySet()) {
+				DeploymentFile changedFile = change.getKey();
+				Checksums changedChecksums = change.getValue();
 
-            // retry
-            persist();
-        }
-        catch (CMException e) {
-            failPersisting(e);
-        }
-    }
+				if (changedChecksums instanceof DeleteChecksums) {
+					checksumsPolicy.deleteChecksums(changedFile);
+				} else {
+					checksumsPolicy.setChecksums(changedFile,
+							changedChecksums.quickChecksum,
+							changedChecksums.slowChecksum);
+				}
+			}
 
-    private void failPersisting(Exception e) throws CouldNotUpdateStateException {
-        try {
-            server.abortContent(checksumsPolicy.getDelegatePolicy(), true);
-        } catch (CMException cmException) {
-            logger.log(Level.WARNING, "Failed aborting new version of checksums: " + cmException.getMessage(), cmException);
-        }
+			changes.clear();
 
-        throw new CouldNotUpdateStateException(e);
-    }
+			checksumsPolicy.commit();
+		} catch (RuntimeException e) {
+			failPersisting(e);
+		} catch (LockException e) {
+			handleSingletonLocked(checksumsId);
 
-    public boolean areAllChangesPersisted() {
-        return changes.isEmpty();
-    }
+			// retry
+			persist();
+		} catch (CMException e) {
+			failPersisting(e);
+		}
+	}
+
+	private void failPersisting(Exception e)
+			throws CouldNotUpdateStateException {
+		try {
+			server.abortContent(checksumsPolicy.getDelegatePolicy(), true);
+		} catch (CMException cmException) {
+			logger.log(
+					Level.WARNING,
+					"Failed aborting new version of checksums: "
+							+ cmException.getMessage(), cmException);
+		}
+
+		throw new CouldNotUpdateStateException(e);
+	}
+
+	public boolean areAllChangesPersisted() {
+		return changes.isEmpty();
+	}
+
+	@Override
+	public Iterator<DeploymentFile> iterator() {
+		return new FetchingIterator<DeploymentFile>() {
+			private Iterator<Entry<DeploymentFile, Checksums>> changeIterator = changes
+					.entrySet().iterator();
+			private Iterator<DeploymentFile> fileListIterator = checksumsPolicy
+					.iterator();
+
+			@Override
+			protected DeploymentFile fetch() {
+				while (changeIterator.hasNext()) {
+					Entry<DeploymentFile, Checksums> nextChange = changeIterator
+							.next();
+
+					if (!(nextChange.getValue() instanceof DeleteChecksums)) {
+						return nextChange.getKey();
+					}
+				}
+
+				while (fileListIterator.hasNext()) {
+					DeploymentFile file = fileListIterator.next();
+
+					if (!changes.containsKey(file)) {
+						return file;
+					}
+				}
+
+				return null;
+			}
+
+		};
+	}
 }

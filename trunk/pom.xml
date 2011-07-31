@@ -77,6 +77,12 @@
 	</repositories>
 	<dependencies>
 		<dependency>
+			<groupId>com.polopoly.ps</groupId>
+			<artifactId>testfirst</artifactId>
+			<version>${polopoly.version}${tool.version}</version>
+			<scope>tests</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.polopoly.assemblies</groupId>
 			<artifactId>polopoly-jar</artifactId>
 			<version>${polopoly.version}</version>

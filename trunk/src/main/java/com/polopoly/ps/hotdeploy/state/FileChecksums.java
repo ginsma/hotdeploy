@@ -2,16 +2,17 @@ package com.polopoly.ps.hotdeploy.state;
 
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 
-public interface FileChecksums {
+public interface FileChecksums extends Iterable<DeploymentFile> {
+	void deleteChecksums(DeploymentFile file);
 
-    void setChecksums(DeploymentFile file, long quickChecksum, long slowChecksum);
+	void setChecksums(DeploymentFile file, long quickChecksum, long slowChecksum);
 
-    void persist() throws CouldNotUpdateStateException;
+	void persist() throws CouldNotUpdateStateException;
 
-    long getQuickChecksum(DeploymentFile file);
+	long getQuickChecksum(DeploymentFile file);
 
-    long getSlowChecksum(DeploymentFile file);
+	long getSlowChecksum(DeploymentFile file);
 
-    boolean areAllChangesPersisted();
+	boolean areAllChangesPersisted();
 
 }

@@ -20,6 +20,8 @@ public interface DirectoryState {
      * return false.
      */
     void reset(DeploymentFile file, boolean failed);
+    
+//    void clear();
 
     void persist() throws CouldNotUpdateStateException;
 }

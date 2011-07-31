@@ -3,10 +3,11 @@ package com.polopoly.ps.hotdeploy.deployer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-import com.polopoly.ps.hotdeploy.deployer.FatalDeployException;
-import com.polopoly.ps.hotdeploy.deployer.MultipleFileDeployer;
+import junit.framework.TestCase;
+
 import com.polopoly.ps.hotdeploy.discovery.FileDiscoverer;
 import com.polopoly.ps.hotdeploy.discovery.NotApplicableException;
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
@@ -16,166 +17,182 @@ import com.polopoly.ps.hotdeploy.state.DummyDeploymentFile;
 import com.polopoly.ps.hotdeploy.state.FileChecksums;
 import com.polopoly.ps.hotdeploy.state.NonPersistedFileChecksums;
 
-import junit.framework.TestCase;
-
 public class TestMultipleFileDeployer extends TestCase {
-    private DefaultDirectoryState directoryState;
-    private DummySingleFileDeployer singleFileDeployer;
-    private MultipleFileDeployer multipleFileDeployer;
-    private NonPersistedFileChecksums fileChecksums;
-    private DummyDeploymentFile aFile;
-    private DummyDeploymentFile anotherFile;
+	private DefaultDirectoryState directoryState;
+	private DummySingleFileDeployer singleFileDeployer;
+	private MultipleFileDeployer multipleFileDeployer;
+	private NonPersistedFileChecksums fileChecksums;
+	private DummyDeploymentFile aFile;
+	private DummyDeploymentFile anotherFile;
 
-    public void testDeploy(Collection<DeploymentFile> filesToDeploy) throws FatalDeployException {
-        assertTrue(directoryState.areAllChangesPersisted());
+	public void testDeploy(Collection<DeploymentFile> filesToDeploy)
+			throws FatalDeployException {
+		assertTrue(directoryState.areAllChangesPersisted());
 
-        multipleFileDeployer.deploy(filesToDeploy);
+		multipleFileDeployer.deploy(filesToDeploy);
 
-        for (DeploymentFile fileToDeploy : filesToDeploy) {
-            assertFalse(directoryState.hasFileChanged(fileToDeploy));
+		for (DeploymentFile fileToDeploy : filesToDeploy) {
+			assertFalse(directoryState.hasFileChanged(fileToDeploy));
 
-            if (singleFileDeployer.isFileToFail(fileToDeploy)) {
-                singleFileDeployer.assertNotDeployed(fileToDeploy);
-                assertFalse(fileChecksums.contains(fileToDeploy));
-            }
-            else {
-                singleFileDeployer.assertDeployed(fileToDeploy);
-                assertTrue(fileChecksums.contains(fileToDeploy));
-            }
-        }
+			if (singleFileDeployer.isFileToFail(fileToDeploy)) {
+				singleFileDeployer.assertNotDeployed(fileToDeploy);
+				assertFalse(fileChecksums.contains(fileToDeploy));
+			} else {
+				singleFileDeployer.assertDeployed(fileToDeploy);
+				assertTrue(fileChecksums.contains(fileToDeploy));
+			}
+		}
 
-        assertTrue(directoryState.areAllChangesPersisted());
-    }
+		assertTrue(directoryState.areAllChangesPersisted());
+	}
 
-    public void testUnchangedFile() throws FatalDeployException, CouldNotUpdateStateException {
-        directoryState.reset(aFile, false);
+	public void testUnchangedFile() throws FatalDeployException,
+			CouldNotUpdateStateException {
+		directoryState.reset(aFile, false);
 
-        multipleFileDeployer.deploy(Collections.singleton((DeploymentFile) aFile));
+		multipleFileDeployer.deploy(Collections
+				.singleton((DeploymentFile) aFile));
 
-        singleFileDeployer.assertNotDeployed(aFile);
-    }
+		singleFileDeployer.assertNotDeployed(aFile);
+	}
 
-    public void testWorkingDeploySingleFile() throws FatalDeployException {
-        testDeploy(Collections.singleton((DeploymentFile) aFile));
-    }
+	public void testWorkingDeploySingleFile() throws FatalDeployException {
+		testDeploy(Collections.singleton((DeploymentFile) aFile));
+	}
 
-    public void testWorkingDeployMultipleFiles() throws FatalDeployException {
-        Collection<DeploymentFile> files = new ArrayList<DeploymentFile>();
+	public void testWorkingDeployMultipleFiles() throws FatalDeployException {
+		Collection<DeploymentFile> files = new ArrayList<DeploymentFile>();
 
-        files.add(aFile);
-        files.add(anotherFile);
+		files.add(aFile);
+		files.add(anotherFile);
 
-        testDeploy(files);
-    }
+		testDeploy(files);
+	}
 
-    public void testFailingDeploySingleFile() throws FatalDeployException {
-        singleFileDeployer.failThisFile(aFile);
-        testDeploy(Collections.singleton((DeploymentFile) aFile));
-    }
+	public void testFailingDeploySingleFile() throws FatalDeployException {
+		singleFileDeployer.failThisFile(aFile);
+		testDeploy(Collections.singleton((DeploymentFile) aFile));
+	}
 
-    public void testFailingDeployMultipleFiles() throws FatalDeployException {
-        Collection<DeploymentFile> files = new ArrayList<DeploymentFile>();
+	public void testFailingDeployMultipleFiles() throws FatalDeployException {
+		Collection<DeploymentFile> files = new ArrayList<DeploymentFile>();
 
-        files.add(aFile);
-        files.add(anotherFile);
+		files.add(aFile);
+		files.add(anotherFile);
 
-        singleFileDeployer.failThisFile(aFile);
+		singleFileDeployer.failThisFile(aFile);
 
-        testDeploy(Collections.singleton((DeploymentFile) aFile));
-    }
+		testDeploy(Collections.singleton((DeploymentFile) aFile));
+	}
 
-    public void testFastFailingDeployMultipleFiles() throws FatalDeployException {
-        Collection<DeploymentFile> filesToDeploy = new ArrayList<DeploymentFile>();
+	public void testFastFailingDeployMultipleFiles()
+			throws FatalDeployException {
+		Collection<DeploymentFile> filesToDeploy = new ArrayList<DeploymentFile>();
 
-        filesToDeploy.add(aFile);
-        filesToDeploy.add(anotherFile);
+		filesToDeploy.add(aFile);
+		filesToDeploy.add(anotherFile);
 
-        singleFileDeployer.failThisFile(aFile);
-        multipleFileDeployer.setFailFast(true);
+		singleFileDeployer.failThisFile(aFile);
+		multipleFileDeployer.setFailFast(true);
 
-        multipleFileDeployer.deploy(filesToDeploy);
+		multipleFileDeployer.deploy(filesToDeploy);
 
-        singleFileDeployer.assertNotDeployed(anotherFile);
-    }
+		singleFileDeployer.assertNotDeployed(anotherFile);
+	}
 
-    public void testFailedDeploy() throws FatalDeployException {
-        singleFileDeployer.failThisFile(aFile);
-        multipleFileDeployer.deploy(Collections.singleton((DeploymentFile) aFile));
+	public void testFailedDeploy() throws FatalDeployException {
+		singleFileDeployer.failThisFile(aFile);
+		multipleFileDeployer.deploy(Collections
+				.singleton((DeploymentFile) aFile));
 
-        assertFalse(directoryState.hasFileChanged(aFile));
+		assertFalse(directoryState.hasFileChanged(aFile));
 
-        singleFileDeployer.assertNotDeployed(aFile);
-    }
+		singleFileDeployer.assertNotDeployed(aFile);
+	}
 
-    public void testFailUpdatingState() {
-        directoryState.setFileChecksums(new FileChecksums() {
-            public long getQuickChecksum(DeploymentFile file) {
-                return 0;
-            }
+	public void testFailUpdatingState() {
+		directoryState.setFileChecksums(new FileChecksums() {
+			public long getQuickChecksum(DeploymentFile file) {
+				return 0;
+			}
 
-            public long getSlowChecksum(DeploymentFile file) {
-                return 0;
-            }
+			public long getSlowChecksum(DeploymentFile file) {
+				return 0;
+			}
 
-            public void setChecksums(DeploymentFile file, long quickChecksum, long slowChecksum)  {
-            }
+			public void setChecksums(DeploymentFile file, long quickChecksum,
+					long slowChecksum) {
+			}
 
-            public boolean areAllChangesPersisted() {
-                return false;
-            }
+			public boolean areAllChangesPersisted() {
+				return false;
+			}
 
-            public void persist() throws CouldNotUpdateStateException {
-                throw new CouldNotUpdateStateException("Message", null);
-            }});
+			public void persist() throws CouldNotUpdateStateException {
+				throw new CouldNotUpdateStateException("Message", null);
+			}
 
-        Collection<DeploymentFile> filesToDeploy = new ArrayList<DeploymentFile>();
+			@Override
+			public Iterator<DeploymentFile> iterator() {
+				List<DeploymentFile> emptyList = Collections.emptyList();
 
-        filesToDeploy.add(aFile);
-        filesToDeploy.add(anotherFile);
+				return emptyList.iterator();
+			}
 
-        try {
-            multipleFileDeployer.deploy(filesToDeploy);
+			@Override
+			public void deleteChecksums(DeploymentFile file) {
+				// TODO Auto-generated method stub
 
-            fail("Deployer did not throw fatal exception when state could not be updated.");
-        }
-        catch (FatalDeployException e) {
-            // expected
-        }
+			}
+		});
 
-        singleFileDeployer.assertDeployed(aFile);
-        singleFileDeployer.assertDeployed(anotherFile);
-    }
+		Collection<DeploymentFile> filesToDeploy = new ArrayList<DeploymentFile>();
 
-    public void testDiscoverAndDeploy() throws FatalDeployException {
-        FileDiscoverer aFileDiscoverer = new FileDiscoverer() {
-            public List<DeploymentFile> getFilesToImport()
-            throws NotApplicableException {
-                return Collections.singletonList((DeploymentFile) aFile);
-            }};
+		filesToDeploy.add(aFile);
+		filesToDeploy.add(anotherFile);
 
-        multipleFileDeployer.discoverAndDeploy(Collections.singletonList(aFileDiscoverer));
+		try {
+			multipleFileDeployer.deploy(filesToDeploy);
 
-        singleFileDeployer.assertDeployed(aFile);
-    }
+			fail("Deployer did not throw fatal exception when state could not be updated.");
+		} catch (FatalDeployException e) {
+			// expected
+		}
 
-    @Override
-    public void setUp() {
-        fileChecksums = new NonPersistedFileChecksums();
-        directoryState =
-            new DefaultDirectoryState(fileChecksums);
+		singleFileDeployer.assertDeployed(aFile);
+		singleFileDeployer.assertDeployed(anotherFile);
+	}
 
-        singleFileDeployer = new DummySingleFileDeployer();
+	public void testDiscoverAndDeploy() throws FatalDeployException {
+		FileDiscoverer aFileDiscoverer = new FileDiscoverer() {
+			public List<DeploymentFile> getFilesToImport()
+					throws NotApplicableException {
+				return Collections.singletonList((DeploymentFile) aFile);
+			}
+		};
 
-        aFile = new DummyDeploymentFile("afile");
-        aFile.setQuickChecksum(4711);
-        aFile.setSlowChecksum(4712);
+		multipleFileDeployer.discoverAndDeploy(Collections
+				.singletonList(aFileDiscoverer));
 
-        anotherFile = new DummyDeploymentFile("anotherfile");
-        anotherFile.setQuickChecksum(4713);
-        anotherFile.setSlowChecksum(4714);
+		singleFileDeployer.assertDeployed(aFile);
+	}
 
-        multipleFileDeployer = new MultipleFileDeployer(
-            singleFileDeployer,
-            directoryState);
-    }
+	@Override
+	public void setUp() {
+		fileChecksums = new NonPersistedFileChecksums();
+		directoryState = new DefaultDirectoryState(fileChecksums);
+
+		singleFileDeployer = new DummySingleFileDeployer();
+
+		aFile = new DummyDeploymentFile("afile");
+		aFile.setQuickChecksum(4711);
+		aFile.setSlowChecksum(4712);
+
+		anotherFile = new DummyDeploymentFile("anotherfile");
+		anotherFile.setQuickChecksum(4713);
+		anotherFile.setSlowChecksum(4714);
+
+		multipleFileDeployer = new MultipleFileDeployer(singleFileDeployer,
+				directoryState);
+	}
 }
