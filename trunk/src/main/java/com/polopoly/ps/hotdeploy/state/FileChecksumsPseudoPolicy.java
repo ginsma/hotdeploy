@@ -195,4 +195,32 @@ public class FileChecksumsPseudoPolicy {
 	public Iterator<DeploymentFile> iterator() {
 		return new FileListPseudoPolicy(delegatePolicy).iterator();
 	}
+
+	public String getAdditionalInformation(DeploymentFile file)
+			throws NoInformationStoredException {
+		String result = null;
+
+		try {
+			result = delegatePolicy.getContent().getComponent(
+					getAttributeGroup(file), QUICK_CHECKSUM_COMPONENT);
+		} catch (CMException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+		}
+
+		if (result == null) {
+			throw new NoInformationStoredException();
+		}
+
+		return result;
+	}
+
+	public void setAdditionalInformation(DeploymentFile file,
+			String additionalInformation) {
+		try {
+			delegatePolicy.getContent().setComponent(getAttributeGroup(file),
+					QUICK_CHECKSUM_COMPONENT, additionalInformation);
+		} catch (CMException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+		}
+	}
 }

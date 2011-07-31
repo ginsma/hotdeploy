@@ -15,6 +15,7 @@ import com.polopoly.ps.hotdeploy.state.CouldNotUpdateStateException;
 import com.polopoly.ps.hotdeploy.state.DefaultDirectoryState;
 import com.polopoly.ps.hotdeploy.state.DummyDeploymentFile;
 import com.polopoly.ps.hotdeploy.state.FileChecksums;
+import com.polopoly.ps.hotdeploy.state.NoInformationStoredException;
 import com.polopoly.ps.hotdeploy.state.NonPersistedFileChecksums;
 
 public class TestMultipleFileDeployer extends TestCase {
@@ -141,8 +142,19 @@ public class TestMultipleFileDeployer extends TestCase {
 
 			@Override
 			public void deleteChecksums(DeploymentFile file) {
-				// TODO Auto-generated method stub
+				throw new UnsupportedOperationException();
+			}
 
+			@Override
+			public String getAdditionalInformation(DeploymentFile file)
+					throws NoInformationStoredException {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public void setAdditionalInformation(DeploymentFile file,
+					String additionalInformation) {
+				throw new UnsupportedOperationException();
 			}
 		});
 

@@ -34,6 +34,7 @@ public class DefaultFileChecksums implements FileChecksums {
 	private class Checksums {
 		private long quickChecksum = -1;
 		private long slowChecksum = -1;
+		private String additionalInformation;
 	}
 
 	private class DeleteChecksums extends Checksums {
@@ -185,6 +186,11 @@ public class DefaultFileChecksums implements FileChecksums {
 							changedChecksums.quickChecksum,
 							changedChecksums.slowChecksum);
 				}
+
+				if (changedChecksums.additionalInformation != null) {
+					checksumsPolicy.setAdditionalInformation(changedFile,
+							changedChecksums.additionalInformation);
+				}
 			}
 
 			changes.clear();
@@ -251,5 +257,28 @@ public class DefaultFileChecksums implements FileChecksums {
 			}
 
 		};
+	}
+
+	@Override
+	public String getAdditionalInformation(DeploymentFile file)
+			throws NoInformationStoredException {
+		Checksums change = changes.get(file);
+
+		if (change != null && change.additionalInformation != null) {
+			return change.additionalInformation;
+		}
+
+		return checksumsPolicy.getAdditionalInformation(file);
+	}
+
+	@Override
+	public void setAdditionalInformation(DeploymentFile file,
+			String additionalInformation) {
+		Checksums checksums = new Checksums();
+		checksums.quickChecksum = getQuickChecksum(file);
+		checksums.slowChecksum = getSlowChecksum(file);
+		checksums.additionalInformation = additionalInformation;
+
+		changes.put(file, checksums);
 	}
 }

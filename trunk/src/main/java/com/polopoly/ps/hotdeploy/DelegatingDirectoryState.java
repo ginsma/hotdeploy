@@ -5,22 +5,27 @@ import com.polopoly.ps.hotdeploy.state.CouldNotUpdateStateException;
 import com.polopoly.ps.hotdeploy.state.DirectoryState;
 
 public class DelegatingDirectoryState implements DirectoryState {
-    private DirectoryState delegate;
+	private DirectoryState delegate;
 
-    public DelegatingDirectoryState(DirectoryState delegate) {
-        this.delegate = delegate;
-    }
+	public DelegatingDirectoryState(DirectoryState delegate) {
+		this.delegate = delegate;
+	}
 
-    public boolean hasFileChanged(DeploymentFile file) {
-        return delegate.hasFileChanged(file);
-    }
+	public boolean hasFileChanged(DeploymentFile file) {
+		return delegate.hasFileChanged(file);
+	}
 
-    public void reset(DeploymentFile file, boolean failed) {
-        delegate.reset(file, failed);
-    }
+	public void reset(DeploymentFile file, boolean failed) {
+		delegate.reset(file, failed);
+	}
 
-    public void persist() throws CouldNotUpdateStateException {
-        delegate.persist();
-    }
+	public void persist() throws CouldNotUpdateStateException {
+		delegate.persist();
+	}
+
+	@Override
+	public void forget(DeploymentFile file) {
+		delegate.forget(file);
+	}
 
 }

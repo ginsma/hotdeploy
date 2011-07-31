@@ -6,41 +6,44 @@ import java.util.Set;
 
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 
-
-
 /**
- * A {@link com.polopoly.cm.xml.hotdeploy.DirectoryState} that reports that
- * all files have been changed (until they are reset).
+ * A {@link com.polopoly.cm.xml.hotdeploy.DirectoryState} that reports that all
+ * files have been changed (until they are reset).
  */
 public class NoFilesImportedDirectoryState implements DirectoryState {
-    private Set<DeploymentFile> successfulResets = new HashSet<DeploymentFile>();
-    private Set<DeploymentFile> failedResets = new HashSet<DeploymentFile>();
+	private Set<DeploymentFile> successfulResets = new HashSet<DeploymentFile>();
+	private Set<DeploymentFile> failedResets = new HashSet<DeploymentFile>();
 
-    public boolean hasFileChanged(DeploymentFile file) {
-        if (successfulResets.contains(file) || failedResets.contains(file)) {
-            return false;
-        }
+	public boolean hasFileChanged(DeploymentFile file) {
+		if (successfulResets.contains(file) || failedResets.contains(file)) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    public boolean isFailedState(DeploymentFile file) {
-        return false;
-    }
+	public boolean isFailedState(DeploymentFile file) {
+		return false;
+	}
 
-    public void reset(DeploymentFile file, boolean failed) {
-        if (failed) {
-            failedResets.add(file);
-        }
-        else {
-            successfulResets.add(file);
-        }
-    }
+	public void reset(DeploymentFile file, boolean failed) {
+		if (failed) {
+			failedResets.add(file);
+		} else {
+			successfulResets.add(file);
+		}
+	}
 
-    public void persist() throws CouldNotUpdateStateException {
-    }
+	public void persist() throws CouldNotUpdateStateException {
+	}
 
-    public Collection<DeploymentFile> getSuccessfulResets() {
-        return successfulResets;
-    }
+	public Collection<DeploymentFile> getSuccessfulResets() {
+		return successfulResets;
+	}
+
+	@Override
+	public void forget(DeploymentFile file) {
+		successfulResets.remove(file);
+		failedResets.remove(file);
+	}
 }

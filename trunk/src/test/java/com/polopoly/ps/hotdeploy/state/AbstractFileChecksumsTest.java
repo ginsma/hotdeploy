@@ -99,6 +99,36 @@ public abstract class AbstractFileChecksumsTest extends AbstractIntegrationTest 
 	}
 
 	@Test
+	public void testAdditionalInformationBeforePersist() throws Exception {
+		DeploymentFile deploymentFile = createFileDeploymentFile();
+
+		try {
+			checksums.getAdditionalInformation(deploymentFile);
+
+			Assert.fail("Could get additional information that had never been stored.");
+		} catch (NoInformationStoredException e) {
+			// expected
+		}
+
+		checksums.setAdditionalInformation(deploymentFile, "foobar");
+
+		Assert.assertEquals("foobar",
+				checksums.getAdditionalInformation(deploymentFile));
+	}
+
+	@Test
+	public void testAdditionalInformationAfterPersist() throws Exception {
+		DeploymentFile deploymentFile = createFileDeploymentFile();
+
+		checksums.persist();
+
+		checksums.setAdditionalInformation(deploymentFile, "foobar");
+
+		Assert.assertEquals("foobar",
+				checksums.getAdditionalInformation(deploymentFile));
+	}
+
+	@Test
 	public void testIterator() throws Exception {
 		Set<DeploymentFile> fileSet = new HashSet<DeploymentFile>();
 

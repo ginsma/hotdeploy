@@ -15,4 +15,9 @@ public interface FileChecksums extends Iterable<DeploymentFile> {
 
 	boolean areAllChangesPersisted();
 
+	String getAdditionalInformation(DeploymentFile file)
+			throws NoInformationStoredException;
+
+	void setAdditionalInformation(DeploymentFile file,
+			String additionalInformation);
 }
