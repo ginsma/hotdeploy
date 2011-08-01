@@ -76,12 +76,14 @@
 		</repository>
 	</repositories>
 	<dependencies>
+<!-- This creates a circular dependency so we can't run integration test.
 		<dependency>
 			<groupId>com.polopoly.ps</groupId>
 			<artifactId>testfirst</artifactId>
 			<version>${polopoly.version}${tool.version}</version>
 			<scope>tests</scope>
 		</dependency>
+-->
 		<dependency>
 			<groupId>com.polopoly.assemblies</groupId>
 			<artifactId>polopoly-jar</artifactId>

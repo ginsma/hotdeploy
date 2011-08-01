@@ -11,9 +11,8 @@ import org.junit.Test;
 
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 import com.polopoly.ps.hotdeploy.file.FileDeploymentFile;
-import com.polopoly.ps.test.AbstractIntegrationTest;
 
-public abstract class AbstractFileChecksumsTest extends AbstractIntegrationTest {
+public abstract class AbstractFileChecksumsTest {
 	private FileChecksums checksums;
 
 	abstract FileChecksums createChecksums() throws Exception;
