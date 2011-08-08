@@ -124,6 +124,13 @@ public class DefaultFileChecksums implements FileChecksums {
 	public synchronized void setChecksums(DeploymentFile file,
 			long quickChecksum, long slowChecksum) {
 		Checksums checksums = new Checksums();
+
+		try {
+			checksums.additionalInformation = getAdditionalInformation(file);
+		} catch (NoInformationStoredException e) {
+			// fine. leave it empty.
+		}
+		
 		checksums.quickChecksum = quickChecksum;
 		checksums.slowChecksum = slowChecksum;
 

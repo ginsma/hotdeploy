@@ -98,6 +98,28 @@ public abstract class AbstractFileChecksumsTest {
 	}
 
 	@Test
+	public void testAdditionalInformationThenChecksums() throws Exception {
+		DeploymentFile deploymentFile = createFileDeploymentFile();
+
+		checksums.setAdditionalInformation(deploymentFile, "foobar");
+		checksums.setChecksums(deploymentFile, 123, 456);
+		
+		Assert.assertEquals("foobar",
+				checksums.getAdditionalInformation(deploymentFile));		
+	}
+
+	@Test
+	public void testChecksumsThenAdditionalInformation() throws Exception {
+		DeploymentFile deploymentFile = createFileDeploymentFile();
+
+		checksums.setChecksums(deploymentFile, 123, 456);
+		checksums.setAdditionalInformation(deploymentFile, "foobar");
+		
+		Assert.assertEquals(123,
+				checksums.getQuickChecksum(deploymentFile));		
+	}
+
+	@Test
 	public void testAdditionalInformationBeforePersist() throws Exception {
 		DeploymentFile deploymentFile = createFileDeploymentFile();
 
