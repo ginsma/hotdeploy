@@ -31,11 +31,9 @@ public class PluginFileDiscoverer implements FileDiscoverer {
 	public class NotAPluginException extends Exception {
 
 		public NotAPluginException(NoDeploymentFileException e) {
-			// TODO Auto-generated constructor stub
 		}
 
 		public NotAPluginException() {
-			// TODO Auto-generated constructor stub
 		}
 
 	}
