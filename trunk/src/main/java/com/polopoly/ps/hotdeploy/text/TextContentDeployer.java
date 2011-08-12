@@ -1,6 +1,7 @@
 package com.polopoly.ps.hotdeploy.text;
 
 import static com.polopoly.cm.VersionedContentId.LATEST_VERSION;
+import static com.polopoly.ps.hotdeploy.util.CheckedCast.cast;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,7 +33,6 @@ import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.ps.hotdeploy.client.Major;
 import com.polopoly.ps.hotdeploy.util.CheckedCast;
 import com.polopoly.ps.hotdeploy.util.CheckedClassCastException;
-
 
 public class TextContentDeployer {
 	private static final Logger logger = Logger
@@ -115,27 +115,27 @@ public class TextContentDeployer {
 				}
 			}
 
-			
-			
 			List<TextContent> commitPrioOrder = new ArrayList<TextContent>();
 			for (TextContent textContent : contentSet) {
-			    commitPrioOrder.add(textContent);
+				commitPrioOrder.add(textContent);
 			}
-			TextContent[] commitPrioOrderArray = commitPrioOrder.toArray(new TextContent[commitPrioOrder.size()]);
+			TextContent[] commitPrioOrderArray = commitPrioOrder
+					.toArray(new TextContent[commitPrioOrder.size()]);
 			Arrays.sort(commitPrioOrderArray, new Comparator<TextContent>() {
 
-                @Override
-                public int compare(TextContent o1, TextContent o2) {
-                  return new Integer(o2.getCommitPrio()).compareTo(o1.getCommitPrio());
-                }
-                
-            });
-						
+				@Override
+				public int compare(TextContent o1, TextContent o2) {
+					return new Integer(o2.getCommitPrio()).compareTo(o1
+							.getCommitPrio());
+				}
+
+			});
+
 			Collection<Policy> result = new ArrayList<Policy>();
 
 			for (TextContent textContent : commitPrioOrderArray) {
-			    Policy newVersion = newVersionById.get(textContent.getId());
-            	try {
+				Policy newVersion = newVersionById.get(textContent.getId());
+				try {
 					newVersion.getContent().commit();
 				} catch (CMException e) {
 					throw new DeployCommitException("While committing "
@@ -144,26 +144,26 @@ public class TextContentDeployer {
 					throw new DeployCommitException("While committing "
 							+ toString(newVersion) + ": " + e, e);
 				}
-				
+
 				newVersionById.remove(textContent.getId());
 				result.add(newVersion);
 			}
-			
-			//Commit remaining created versions if any
+
+			// Commit remaining created versions if any
 			Iterator<Policy> iterator = newVersionById.values().iterator();
-			while(iterator.hasNext()) {
-			    Policy newVersion = iterator.next();
-			    try {
-                    newVersion.getContent().commit();
-                } catch (CMException e) {
-                    throw new DeployCommitException("While committing "
-                            + toString(newVersion) + ": " + e, e);
-                } catch (Exception e) {
-                    throw new DeployCommitException("While committing "
-                            + toString(newVersion) + ": " + e, e);
-                }
+			while (iterator.hasNext()) {
+				Policy newVersion = iterator.next();
+				try {
+					newVersion.getContent().commit();
+				} catch (CMException e) {
+					throw new DeployCommitException("While committing "
+							+ toString(newVersion) + ": " + e, e);
+				} catch (Exception e) {
+					throw new DeployCommitException("While committing "
+							+ toString(newVersion) + ": " + e, e);
+				}
 			}
-			
+
 			success = true;
 
 			return result;
@@ -233,10 +233,14 @@ public class TextContentDeployer {
 					.getExternalId();
 
 			if (!newVersionById.containsKey(publishInExternalId)) {
-				Policy newPublishInVersion = createNewVersionOfExistingContent(publishIn
-						.resolveId(server));
-
-				newVersionById.put(publishInExternalId, newPublishInVersion);
+				try {
+					Policy newPublishInVersion = createNewVersionOfExistingContent(publishIn
+							.resolveId(server));
+					newVersionById
+							.put(publishInExternalId, newPublishInVersion);
+				} catch (ExistingContentCouldNotBeReusedException e) {
+					throw new CMException(e);
+				}
 			}
 		}
 	}
@@ -495,55 +499,113 @@ public class TextContentDeployer {
 		Policy newVersionPolicy;
 
 		if (contentId == null) {
-			InputTemplate inputTemplate = getInputTemplate(textContent);
-
-			Major major = textContent.getMajor();
-
-			TextContent atTemplate = textContent;
-
-			while (major == Major.UNKNOWN && atTemplate.getTemplateId() != null) {
-				atTemplate = contentSet.get(atTemplate.getTemplateId());
-
-				if (atTemplate != null) {
-					major = atTemplate.getMajor();
-				}
-			}
-
-			if (textContent.getMajor() == Major.UNKNOWN) {
-				major = getMajor(server, inputTemplate);
-			} else {
-				major = textContent.getMajor();
-			}
-
-			newVersionPolicy = server.createContent(major.getIntegerMajor(),
-					inputTemplate.getContentId());
-			newVersionPolicy.getContent().setExternalId(textContent.getId());
-			newVersionPolicy.getContent().setName(textContent.getId());
+			newVersionPolicy = createNewContent(textContent);
 		} else {
-			newVersionPolicy = createNewVersionOfExistingContent(contentId);
+			try {
+				newVersionPolicy = createNewVersionOfExistingContent(contentId);
+			} catch (ExistingContentCouldNotBeReusedException e) {
+				// createNewVersion will not work on this content. delete it and
+				// create it again.
+				logger.log(Level.WARNING, e.getMessage()
+						+ " Deleting it and recreating it.");
+
+				server.removeContent(contentId);
+
+				newVersionPolicy = createNewContent(textContent);
+			}
 		}
 
 		return newVersionPolicy;
 	}
 
+	private Policy createNewContent(TextContent textContent)
+			throws DeployException, CMException {
+		Policy newVersionPolicy;
+		InputTemplate inputTemplate = getInputTemplate(textContent);
+
+		Major major = textContent.getMajor();
+
+		TextContent atTemplate = textContent;
+
+		while (major == Major.UNKNOWN && atTemplate.getTemplateId() != null) {
+			atTemplate = contentSet.get(atTemplate.getTemplateId());
+
+			if (atTemplate != null) {
+				major = atTemplate.getMajor();
+			}
+		}
+
+		if (textContent.getMajor() == Major.UNKNOWN) {
+			major = getMajor(server, inputTemplate);
+		} else {
+			major = textContent.getMajor();
+		}
+
+		newVersionPolicy = server.createContent(major.getIntegerMajor(),
+				inputTemplate.getContentId());
+		newVersionPolicy.getContent().setExternalId(textContent.getId());
+		newVersionPolicy.getContent().setName(textContent.getId());
+
+		return newVersionPolicy;
+	}
+
 	private Policy createNewVersionOfExistingContent(ContentId contentId)
-			throws CMException {
+			throws CMException, ExistingContentCouldNotBeReusedException {
 		VersionedContentId latestVersion = new VersionedContentId(contentId,
 				LATEST_VERSION);
 
 		latestVersion = server.translateSymbolicContentId(latestVersion);
 
+		ContentRead content = server.getContent(latestVersion);
+
+		unlockIfLocked(content);
+
 		Policy newVersionPolicy;
-		LockInfo lockInfo = server.getContent(latestVersion).getLockInfo();
+
+		if (existingPolicyClassExists(content)) {
+			newVersionPolicy = server.createContentVersion(latestVersion);
+		} else {
+			// if the policy class does not exist, createNewVersion will throw
+			// an exception so we don't even try that.
+			throw new ExistingContentCouldNotBeReusedException(
+					"Could not use the existing "
+							+ contentId.getContentId().getContentIdString()
+							+ " because it had a policy class that does not exist in the classpath.");
+		}
+
+		return newVersionPolicy;
+	}
+
+	private void unlockIfLocked(ContentRead content) throws CMException {
+		LockInfo lockInfo = content.getLockInfo();
 
 		if (lockInfo != null
 				&& !lockInfo.getLocker().equals(server.getCurrentCaller())) {
-			((Content) server.getContent(contentId)).forcedUnlock();
+			((Content) content).forcedUnlock();
 		}
+	}
 
-		newVersionPolicy = server.createContentVersion(latestVersion);
+	private boolean existingPolicyClassExists(ContentRead content)
+			throws CMException {
+		try {
+			InputTemplate inputTemplate = (InputTemplate) cast(
+					server.getContent(content.getInputTemplateId()),
+					InputTemplate.class, content.getInputTemplateId()
+							.getContentId().getContentIdString());
 
-		return newVersionPolicy;
+			if (Policy.class.isAssignableFrom(Class.forName(inputTemplate
+					.getPolicyClassName()))) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (ClassNotFoundException e) {
+			return false;
+		} catch (CheckedClassCastException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+
+			return true;
+		}
 	}
 
 	private InputTemplate getInputTemplate(TextContent textContent)
