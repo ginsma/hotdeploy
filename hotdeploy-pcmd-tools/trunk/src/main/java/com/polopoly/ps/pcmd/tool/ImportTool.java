@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.polopoly.cm.ContentId;
+import com.polopoly.pcmd.tool.Tool;
 import com.polopoly.ps.hotdeploy.deployer.DefaultSingleFileDeployer;
 import com.polopoly.ps.hotdeploy.deployer.FatalDeployException;
 import com.polopoly.ps.hotdeploy.deployer.MultipleFileDeployer;
@@ -29,12 +30,11 @@ import com.polopoly.ps.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
 import com.polopoly.ps.hotdeploy.state.NoFilesImportedDirectoryState;
 import com.polopoly.ps.hotdeploy.xml.parser.ContentXmlParser;
 import com.polopoly.ps.hotdeploy.xml.parser.cache.CachingDeploymentFileParser;
+import com.polopoly.ps.pcmd.FatalToolException;
 import com.polopoly.ps.pcmd.bootstrap.BootstrapFileGenerator;
 import com.polopoly.ps.pcmd.field.content.AbstractContentIdField;
-import com.polopoly.pcmd.tool.Tool;
 import com.polopoly.ps.pcmd.tool.parameters.FilesToDeployParameters;
 import com.polopoly.util.client.PolopolyContext;
-
 
 public class ImportTool implements Tool<ImportParameters> {
 	private static final class LoggingSingleFileDeployer extends
@@ -198,6 +198,11 @@ public class ImportTool implements Tool<ImportParameters> {
 				deployer.deploy(files);
 
 				System.out.println(deployer.getResultMessage(files));
+
+				if (deployer.getFailedFiles().isEmpty()) {
+					// we throw this to get a non-null result code.
+					throw new FatalToolException("There were import failures.");
+				}
 			}
 		} catch (FatalDeployException e) {
 			System.err.println("Deployment could not be performed: "
@@ -218,8 +223,8 @@ public class ImportTool implements Tool<ImportParameters> {
 		return new MultipleFileDeployer(singleFileDeployer, directoryState);
 	}
 
-	private void deploy(PolopolyContext context,
-			ImportParameters parameters) throws FatalDeployException {
+	private void deploy(PolopolyContext context, ImportParameters parameters)
+			throws FatalDeployException {
 		List<FileDiscoverer> discoverers = new ArrayList<FileDiscoverer>();
 
 		if (parameters.isSearchResources()) {
@@ -230,7 +235,7 @@ public class ImportTool implements Tool<ImportParameters> {
 
 		for (File directory : parameters.getDirectories()) {
 			discoverers
-			.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
+					.add(new ImportOrderOrDirectoryFileDiscoverer(directory));
 		}
 
 		List<DeploymentFile> filesToDeploy = new ArrayList<DeploymentFile>();
@@ -248,10 +253,8 @@ public class ImportTool implements Tool<ImportParameters> {
 			return;
 		}
 
-		System.out
-		.println(filesToDeploy.size() + " content file"
-				+ plural(filesToDeploy.size())
-				+ " found in the classpath.");
+		System.out.println(filesToDeploy.size() + " content file"
+				+ plural(filesToDeploy.size()) + " found in the classpath.");
 
 		MultipleFileDeployer deployer = createDeployer(context, parameters,
 				filesToDeploy.size());
@@ -266,8 +269,7 @@ public class ImportTool implements Tool<ImportParameters> {
 		// we might have deployed the hotdeploy templates here. if that is
 		// the case we can now (and only now) fetch the directory state.
 		if (directoryStateFetcher != null) {
-			directoryState = directoryStateFetcher
-			.refreshAfterFailingToFetch();
+			directoryState = directoryStateFetcher.refreshAfterFailingToFetch();
 		}
 	}
 
