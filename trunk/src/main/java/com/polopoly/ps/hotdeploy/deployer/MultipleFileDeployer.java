@@ -19,7 +19,6 @@ import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 import com.polopoly.ps.hotdeploy.state.CouldNotUpdateStateException;
 import com.polopoly.ps.hotdeploy.state.DirectoryState;
 
-
 public class MultipleFileDeployer {
 	private static final Logger logger = Logger
 			.getLogger(MultipleFileDeployer.class.getName());
@@ -128,6 +127,10 @@ public class MultipleFileDeployer {
 
 	private void logResult(Collection<DeploymentFile> filesToImport) {
 		logger.log(Level.INFO, getResultMessage(filesToImport));
+	}
+
+	public Set<DeploymentFile> getFailedFiles() {
+		return failedFiles;
 	}
 
 	public String getResultMessage(Collection<DeploymentFile> filesToImport) {

@@ -4,14 +4,14 @@
   
   <groupId>com.polopoly.ps</groupId>
   <artifactId>hotdeploy</artifactId>
-  <version>10.2.0-fp2-r59227-2-SNAPSHOT</version>
+  <version>10.2.0-fp2-r59227-2</version>
   <packaging>jar</packaging>
   
   <name>Hotdeploy</name>
   
   <properties>
     <polopoly.version>10.2.0-fp2-r59227</polopoly.version>
-    <tool.version>-1</tool.version>
+    <tool.version>-2</tool.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
