@@ -26,8 +26,8 @@ public class FileChecksumsPseudoPolicy {
 	private static final int HALF_ATTRIB_GROUP_MAXLEN = ATTRIBGROUP_MAXLEN / 2;
 
 	private static final String QUICK_CHECKSUM_COMPONENT = "quick";
-
 	private static final String SLOW_CHECKSUM_COMPONENT = "slow";
+	private static final String ADDITIONAL_INFO_COMPONENT = "additional";
 
 	private Content content;
 
@@ -202,7 +202,7 @@ public class FileChecksumsPseudoPolicy {
 
 		try {
 			result = delegatePolicy.getContent().getComponent(
-					getAttributeGroup(file), QUICK_CHECKSUM_COMPONENT);
+					getAttributeGroup(file), ADDITIONAL_INFO_COMPONENT);
 		} catch (CMException e) {
 			logger.log(Level.WARNING, e.getMessage(), e);
 		}
@@ -218,7 +218,7 @@ public class FileChecksumsPseudoPolicy {
 			String additionalInformation) {
 		try {
 			delegatePolicy.getContent().setComponent(getAttributeGroup(file),
-					QUICK_CHECKSUM_COMPONENT, additionalInformation);
+					ADDITIONAL_INFO_COMPONENT, additionalInformation);
 		} catch (CMException e) {
 			logger.log(Level.WARNING, e.getMessage(), e);
 		}
