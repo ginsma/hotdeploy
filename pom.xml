@@ -6,12 +6,12 @@
   <name>Hotdeploy</name>
   <artifactId>hotdeploy</artifactId>
   <groupId>com.polopoly.ps</groupId>
-  <version>${polopoly.version}${tool.version}</version>
+  <version>${pstools.version}</version>
   <packaging>jar</packaging>
   <parent>
     <artifactId>pstools</artifactId>
     <groupId>com.polopoly.ps</groupId>
-    <version>${polopoly.version}${tool.version}</version>
+    <version>${pstools.version}</version>
     <relativePath>../parent-pom/pom.xml</relativePath>
   </parent>  
   <repositories>
@@ -22,19 +22,11 @@
     </repository>
   </repositories>
   <dependencies>
-<!-- This creates a circular dependency so we can't run integration test.
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>testfirst</artifactId>
-			<version>${polopoly.version}${tool.version}</version>
-			<scope>tests</scope>
-		</dependency>
--->
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-j2ee_1.4_spec</artifactId>
-      <version>1.1</version>
-      <scope>provided</scope>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>pcmd</artifactId>
+      <version>${pstools.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -46,14 +38,20 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <version>2.3</version>
+      <version>${project.servlet-api.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8</version>
+      <version>${project.junit.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-j2ee_1.4_spec</artifactId>
+      <version>1.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.polopoly.hotdeploy.test</groupId>
@@ -71,12 +69,6 @@
       <groupId>com.polopoly.hotdeploy.test</groupId>
       <artifactId>plugin-contentdata</artifactId>
       <version>1.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>pcmd</artifactId>
-      <version>${polopoly.version}${tool.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
