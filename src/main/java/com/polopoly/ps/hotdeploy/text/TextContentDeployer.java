@@ -593,8 +593,13 @@ public class TextContentDeployer {
 					InputTemplate.class, content.getInputTemplateId()
 							.getContentId().getContentIdString());
 
-			if (Policy.class.isAssignableFrom(Class.forName(inputTemplate
-					.getPolicyClassName()))) {
+			String policyClassName = inputTemplate.getPolicyClassName();
+
+			if (policyClassName == null) {
+				return true;
+			}
+
+			if (Policy.class.isAssignableFrom(Class.forName(policyClassName))) {
 				return true;
 			} else {
 				return false;
