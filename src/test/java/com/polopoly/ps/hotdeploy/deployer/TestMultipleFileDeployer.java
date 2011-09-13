@@ -6,6 +6,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.Test;
+
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import com.polopoly.ps.hotdeploy.discovery.FileDiscoverer;
@@ -188,6 +191,19 @@ public class TestMultipleFileDeployer extends TestCase {
 
 		singleFileDeployer.assertDeployed(aFile);
 	}
+	
+	@Test
+    public void testDryRun() throws Exception {
+	    Collection<DeploymentFile> files = new ArrayList<DeploymentFile>();
+
+        files.add(aFile);
+        files.add(anotherFile);
+        
+        MultipleFileDeployer dryRunInstance = MultipleFileDeployer.getDryRunInstance(singleFileDeployer, directoryState);
+        dryRunInstance.deploy(files);
+       
+        Assert.assertEquals(0, directoryState.getSuccessfulResets().size());
+    }
 
 	@Override
 	public void setUp() {
@@ -204,7 +220,7 @@ public class TestMultipleFileDeployer extends TestCase {
 		anotherFile.setQuickChecksum(4713);
 		anotherFile.setSlowChecksum(4714);
 
-		multipleFileDeployer = new MultipleFileDeployer(singleFileDeployer,
+		multipleFileDeployer = MultipleFileDeployer.getInstance(singleFileDeployer,
 				directoryState);
 	}
 }

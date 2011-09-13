@@ -53,6 +53,10 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 	public static boolean isImporting() {
 		return importing;
 	}
+	
+	protected final PolicyCMServer getCMServer(){
+	    return server;
+	}
 
 	public void prepare() throws ParserConfigurationException {
 		importer = new DispatchingDocumentImporter(server);

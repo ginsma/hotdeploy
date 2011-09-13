@@ -1,7 +1,9 @@
 package com.polopoly.ps.hotdeploy.xml.allcontent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,5 +30,16 @@ public class AllContent {
         }
 
         return result;
+    }
+    
+    public List<String> getAllExternalIds() {
+       List<String> externalIds = new ArrayList<String>(); 
+       List<Set<String>> listOfSet = new ArrayList<Set<String>>(externalIdsByMajor.values());
+       for (Set<String> set : listOfSet) {
+           for(String id : set) {
+               externalIds.add(id);
+           }
+       }
+        return externalIds;
     }
 }
