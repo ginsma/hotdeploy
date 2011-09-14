@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.ContentRead;
+import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
 
 public class PreserveExistingPrefixOthersExternalIdGenerator implements
@@ -16,31 +17,66 @@ public class PreserveExistingPrefixOthersExternalIdGenerator implements
 
 	private String prefix;
 
-	public PreserveExistingPrefixOthersExternalIdGenerator(String prefix) {
+	private PolicyCMServer server;
+
+	public PreserveExistingPrefixOthersExternalIdGenerator(
+			PolicyCMServer server, String prefix) {
 		this.prefix = prefix;
+		this.server = server;
 	}
 
 	@Override
 	public String generateExternalId(ContentRead content) {
-		ExternalContentId externalId;
 		try {
-			externalId = content.getExternalId();
+			ExternalContentId externalId = content.getExternalId();
+
+			if (externalId != null) {
+				return externalId.getExternalId();
+			}
 		} catch (CMException e) {
 			logger.log(Level.WARNING,
 					"Could not get external ID of "
 							+ content.getContentId().getContentIdString()
 							+ ": " + e.getMessage(), e);
-
-			externalId = null;
 		}
 
-		if (externalId != null) {
-			return externalId.getExternalId();
+		return generateExternalIdFromContentId(content);
+	}
+
+	private String generateExternalIdFromContentId(ContentRead content) {
+		String contentIdString = prefix
+				+ content.getContentId().getContentId().getContentIdString();
+
+		if (!externalIdExists(contentIdString)) {
+			return contentIdString;
 		} else {
-			return prefix
-					+ content.getContentId().getContentId()
-							.getContentIdString();
+			return addSuffixToFindUnusedId(contentIdString);
 		}
 	}
 
+	private String addSuffixToFindUnusedId(String contentIdString) {
+		int count = 0;
+
+		do {
+			String tryId = contentIdString + '.' + Integer.toString(count);
+
+			if (!externalIdExists(tryId)) {
+				return tryId;
+			}
+
+			count++;
+		} while (true);
+	}
+
+	private boolean externalIdExists(String externalId) {
+		try {
+			return server.findContentIdByExternalId(new ExternalContentId(
+					externalId)) != null;
+		} catch (CMException e) {
+			logger.log(Level.WARNING, "While resolving external ID \""
+					+ externalId + "\": " + e.getMessage(), e);
+
+			return true;
+		}
+	}
 }

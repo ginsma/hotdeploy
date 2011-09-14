@@ -11,7 +11,6 @@ import com.polopoly.cm.xml.util.export.ExternalIdGenerator;
 import com.polopoly.ps.hotdeploy.client.Major;
 import com.polopoly.ps.hotdeploy.xml.export.PreserveExistingPrefixOthersExternalIdGenerator;
 
-
 public class DefaultNormalizationNamingStrategy implements
 		NormalizationNamingStrategy {
 	public static final String CONTENT_DIRECTORY = "content";
@@ -42,7 +41,7 @@ public class DefaultNormalizationNamingStrategy implements
 	public DefaultNormalizationNamingStrategy(PolicyCMServer server,
 			File directory, String extension) {
 		this(server, new PreserveExistingPrefixOthersExternalIdGenerator(
-				"export."), directory, extension);
+				server, "export."), directory, extension);
 	}
 
 	private static void mkdir(File directory) {

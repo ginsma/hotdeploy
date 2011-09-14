@@ -19,10 +19,8 @@ import com.polopoly.ps.hotdeploy.xml.export.contentlistentry.OnlyContentInSetCon
 import com.polopoly.ps.hotdeploy.xml.export.contentlistentry.OrContentReferenceFilter;
 import com.polopoly.user.server.UserServer;
 
-
 public class ContentsExporterFactory {
-	private ExternalIdGenerator externalIdGenerator = new PreserveExistingPrefixOthersExternalIdGenerator(
-			"export.");
+	private ExternalIdGenerator externalIdGenerator;
 
 	private ContentReferenceFilter contentReferenceFilter;
 
@@ -35,6 +33,9 @@ public class ContentsExporterFactory {
 
 		this.cmServer = cmServer;
 		this.userServer = userServer;
+
+		externalIdGenerator = new PreserveExistingPrefixOthersExternalIdGenerator(
+				cmServer, "export.");
 	}
 
 	public DefaultContentContentsExporter createContentsExporter(
