@@ -109,7 +109,7 @@ public class Deploy extends DiscovererMainClass {
 			singleFileDeployer
 					.setIgnoreContentListAddFailures(ignoreContentListAddFailures);
 
-			MultipleFileDeployer deployer = MultipleFileDeployer.getInstance(
+			MultipleFileDeployer deployer = new MultipleFileDeployer(
 					singleFileDeployer, directoryState);
 
 			Set<DeploymentFile> failingFiles = deployer

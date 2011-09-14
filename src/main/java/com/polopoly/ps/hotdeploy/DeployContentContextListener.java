@@ -64,7 +64,7 @@ public class DeployContentContextListener implements ServletContextListener {
         SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(
                 server);
 
-        return MultipleFileDeployer.getInstance(singleFileDeployer,
+        return new MultipleFileDeployer(singleFileDeployer,
                 new DirectoryStateFetcher(server).getDirectoryState());
     }
 

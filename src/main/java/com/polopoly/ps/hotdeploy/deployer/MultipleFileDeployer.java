@@ -1,6 +1,7 @@
 package com.polopoly.ps.hotdeploy.deployer;
 
 import static com.polopoly.ps.hotdeploy.util.Plural.count;
+import static com.polopoly.ps.hotdeploy.util.Plural.plural;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +21,8 @@ import com.polopoly.ps.hotdeploy.state.CouldNotUpdateStateException;
 import com.polopoly.ps.hotdeploy.state.DirectoryState;
 
 public class MultipleFileDeployer {
-    private static final Logger logger = Logger.getLogger(MultipleFileDeployer.class.getName());
+    private static final Logger logger = Logger
+            .getLogger(MultipleFileDeployer.class.getName());
     private boolean failFast;
     private DirectoryState directoryState;
     private ClassLoader oldClassLoader;
@@ -28,35 +30,28 @@ public class MultipleFileDeployer {
     private Set<DeploymentFile> failedFiles = new HashSet<DeploymentFile>();
     private Set<DeploymentFile> successfulFiles = new HashSet<DeploymentFile>();
     private SingleFileDeployer deployer;
-    private boolean dryrun = false;
-    
-    
-    public static MultipleFileDeployer getInstance(SingleFileDeployer deployer, DirectoryState directoryState) {
-        return new MultipleFileDeployer(deployer, directoryState, false, false);
-    }
-    
-    public static MultipleFileDeployer getFailFastInstance(SingleFileDeployer deployer, DirectoryState directoryState) {
-        return new MultipleFileDeployer(deployer, directoryState, true, false);
-    }
-    
-    public static MultipleFileDeployer getDryRunInstance(SingleFileDeployer deployer, DirectoryState directoryState) {
-        return new MultipleFileDeployer(deployer, directoryState, false, true);
+
+    public MultipleFileDeployer(SingleFileDeployer deployer,
+            DirectoryState directoryState) {
+        this(deployer, directoryState, false);
     }
 
-    private MultipleFileDeployer(SingleFileDeployer deployer, DirectoryState directoryState, boolean failFast, boolean dryrun) {
+    public MultipleFileDeployer(SingleFileDeployer deployer,
+            DirectoryState directoryState, boolean failFast) {
         this.failFast = failFast;
         this.deployer = deployer;
         this.directoryState = directoryState;
-        this.dryrun = dryrun;
     }
 
     private void logFileChanged(DeploymentFile fileToImport) {
-        logger.log(Level.INFO, fileToImport + " had changed on disk. Importing it.");
+        logger.log(Level.INFO, fileToImport
+                + " had changed on disk. Importing it.");
     }
 
     private void logFiledUnchanged(DeploymentFile fileToImport) {
         if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, fileToImport + " had not changed. Skipping it.");
+            logger.log(Level.FINEST, fileToImport
+                    + " had not changed. Skipping it.");
         }
     }
 
@@ -65,7 +60,8 @@ public class MultipleFileDeployer {
 
         oldClassLoader = currentThread.getContextClassLoader();
 
-        currentThread.setContextClassLoader(MultipleFileDeployer.class.getClassLoader());
+        currentThread.setContextClassLoader(MultipleFileDeployer.class
+                .getClassLoader());
     }
 
     private void restoreClassLoader() {
@@ -74,9 +70,13 @@ public class MultipleFileDeployer {
         }
     }
 
-    public Set<DeploymentFile> deploy(Collection<DeploymentFile> filesToImport) throws FatalDeployException {
-        logger.log(Level.INFO, "Found " + filesToImport.size()
-                + " content file(s) in total. Importing those that have been modified...");
+    public Set<DeploymentFile> deploy(Collection<DeploymentFile> filesToImport)
+            throws FatalDeployException {
+        logger.log(
+                Level.INFO,
+                "Found "
+                        + filesToImport.size()
+                        + " content file(s) in total. Importing those that have been modified...");
 
         try {
             deployer.prepare();
@@ -84,15 +84,15 @@ public class MultipleFileDeployer {
             swapClassLoader();
 
             for (DeploymentFile fileToImport : filesToImport) {
-                
                 if (!directoryState.hasFileChanged(fileToImport)) {
                     logFiledUnchanged(fileToImport);
                     continue;
                 }
 
                 logFileChanged(fileToImport);
-                
-                boolean success = deployer.importAndHandleException(fileToImport);
+
+                boolean success = deployer
+                        .importAndHandleException(fileToImport);
 
                 if (success) {
                     successfulFiles.add(fileToImport);
@@ -100,26 +100,25 @@ public class MultipleFileDeployer {
                     failedFiles.add(fileToImport);
                 }
 
-                if (!dryrun) {
-                    directoryState.reset(fileToImport, !success);
-                }
+                directoryState.reset(fileToImport, !success);
 
                 if (!success && failFast) {
                     break;
                 }
             }
         } catch (ParserConfigurationException e) {
-            throw new FatalDeployException("Failed to create importer: " + e.getMessage(), e);
+            throw new FatalDeployException("Failed to create importer: "
+                    + e.getMessage(), e);
         } finally {
             restoreClassLoader();
         }
 
         try {
-
             directoryState.persist();
-
         } catch (CouldNotUpdateStateException e) {
-            throw new FatalDeployException("Could not record deployment state after deploy: " + e.getMessage(), e);
+            throw new FatalDeployException(
+                    "Could not record deployment state after deploy: "
+                            + e.getMessage(), e);
         }
 
         logResult(filesToImport);
@@ -135,24 +134,22 @@ public class MultipleFileDeployer {
         return failedFiles;
     }
 
-    public void printResultMessage(String prefix, Collection<DeploymentFile> filesToImport) {
-        if (!dryrun) {
-            System.out.println(prefix + " " + getResultMessage(filesToImport));
-        }
-    }
-
     public String getResultMessage(Collection<DeploymentFile> filesToImport) {
-        int unmodifiedFiles = filesToImport.size() - successfulFiles.size() - failedFiles.size();
+        int unmodifiedFiles = filesToImport.size() - successfulFiles.size()
+                - failedFiles.size();
 
         StringBuffer result = new StringBuffer(100);
 
         if (!successfulFiles.isEmpty()) {
-            result.append(count(successfulFiles, "file") + " imported successfully. ");
+            result.append(count(successfulFiles, "file")
+                    + " imported successfully. ");
         }
 
         if (unmodifiedFiles > 0) {
-            result.append(count(unmodifiedFiles, "file") + " had not been modified and "
-                    + (unmodifiedFiles == 1 ? "was" : "were") + " not imported. ");
+            result.append(count(unmodifiedFiles, "file")
+                    + " had not been modified and "
+                    + (unmodifiedFiles == 1 ? "was" : "were")
+                    + " not imported. ");
         }
 
         if (!failedFiles.isEmpty()) {
@@ -162,19 +159,22 @@ public class MultipleFileDeployer {
         return result.toString();
     }
 
-    public Set<DeploymentFile> discoverAndDeploy(Iterable<FileDiscoverer> discoverers) throws FatalDeployException {
+    public Set<DeploymentFile> discoverAndDeploy(
+            Iterable<FileDiscoverer> discoverers) throws FatalDeployException {
         List<DeploymentFile> files = new ArrayList<DeploymentFile>();
 
         for (FileDiscoverer discoverer : discoverers) {
             try {
                 files.addAll(discoverer.getFilesToImport());
             } catch (NotApplicableException e) {
-                logger.log(Level.INFO, "Cannot apply discovery strategy " + discoverer + ": " + e.getMessage());
+                logger.log(Level.INFO, "Cannot apply discovery strategy "
+                        + discoverer + ": " + e.getMessage());
             }
         }
 
         if (files.isEmpty()) {
-            logger.log(Level.INFO, "Could not find any content files to import.");
+            logger.log(Level.INFO,
+                    "Could not find any content files to import.");
 
             return Collections.emptySet();
         }
@@ -188,5 +188,13 @@ public class MultipleFileDeployer {
 
     public boolean isAllFilesUnchanged() {
         return successfulFiles.isEmpty() && failedFiles.isEmpty();
+    }
+    
+    public void printStartMessage(List<DeploymentFile> filesToDeploy) {
+        System.out.println(filesToDeploy.size() + " content file" + plural(filesToDeploy.size()) + " found in the classpath.");
+    }
+
+    public void printResultMessage(String string, List<DeploymentFile> files) {
+        System.out.println(string + getResultMessage(files));
     }
 }
