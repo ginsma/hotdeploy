@@ -199,7 +199,7 @@ public class TextContentParser {
 		} else if (prefix.equals(TEMPLATE_PREFIX)) {
 			assertFields(2, fields);
 
-			currentContent.setTemplateId(fields[1]);
+            currentContent.setTemplateId(expandId(fields[1]));
 		} else if (prefix.equals(MAJOR_PREFIX)) {
 			assertFields(2, fields);
 
@@ -263,8 +263,8 @@ public class TextContentParser {
 			fail("Line should start with " + ID_PREFIX + ", "
 					+ INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "
 					+ SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", "
-					+ MAJOR_PREFIX + ", " + REFERENCE_PREFIX + ", " + COMMITPRIO_PREFIX + " or "
-					+ LIST_PREFIX + ".");
+					+ MAJOR_PREFIX + ", " + REFERENCE_PREFIX + ", " + TEMPLATE_PREFIX + ", "
+					+ PUBLISH_PREFIX + ", " + COMMITPRIO_PREFIX + " or " + LIST_PREFIX + ".");
 		}
 	}
 
@@ -274,7 +274,9 @@ public class TextContentParser {
 			return null;
 		}
 
-		if (externalId.startsWith(".")) {
+        if (externalId.equals(".")) {
+            return fileName;
+        } else if (externalId.startsWith(".")) {
 			return fileName + externalId;
 		} else {
 			return externalId;
