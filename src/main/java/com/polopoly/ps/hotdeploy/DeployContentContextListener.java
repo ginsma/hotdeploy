@@ -15,12 +15,12 @@ import com.polopoly.cm.client.EjbCmClient;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.ps.hotdeploy.client.DeployContentUser;
 import com.polopoly.ps.hotdeploy.deployer.DefaultSingleFileDeployer;
+import com.polopoly.ps.hotdeploy.deployer.DeploymentResult;
 import com.polopoly.ps.hotdeploy.deployer.MultipleFileDeployer;
 import com.polopoly.ps.hotdeploy.deployer.SingleFileDeployer;
 import com.polopoly.ps.hotdeploy.discovery.FileDiscoverer;
 import com.polopoly.ps.hotdeploy.state.DirectoryStateFetcher;
 import com.polopoly.user.server.UserServer;
-
 
 /**
  * A {@link javax.servlet.ServletContextListener} that deploys all content in
@@ -30,45 +30,49 @@ import com.polopoly.user.server.UserServer;
  */
 public class DeployContentContextListener implements ServletContextListener {
 
-    private static final Logger logger = Logger
-            .getLogger(DeployContentContextListener.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(DeployContentContextListener.class.getName());
 
-    public void contextInitialized(ServletContextEvent event) {
-        try {
-        	Application application = ApplicationServletUtil
-            	.getApplication(event.getServletContext());
-    
-        	EjbCmClient client = (EjbCmClient) application
-            	.getApplicationComponent(EjbCmClient.DEFAULT_COMPOUND_NAME);
-        	PolicyCMServer server = client.getPolicyCMServer();
-            UserServer userServer = client.getUserServer();
+	private DeploymentResult result = new DeploymentResult();
 
-            DeployContentUser.login(server, userServer);
+	public void contextInitialized(ServletContextEvent event) {
+		try {
+			Application application = ApplicationServletUtil
+					.getApplication(event.getServletContext());
 
-            List<FileDiscoverer> discoverers = WebApplicationDiscoverers
-                    .getWebAppDiscoverers(event.getServletContext());
+			EjbCmClient client = (EjbCmClient) application
+					.getApplicationComponent(EjbCmClient.DEFAULT_COMPOUND_NAME);
+			PolicyCMServer server = client.getPolicyCMServer();
+			UserServer userServer = client.getUserServer();
 
-            MultipleFileDeployer deployer = getContentDeployer(server, event
-                    .getServletContext());
-            deployer.discoverAndDeploy(discoverers);
-        }
-        // don't ever throw an exception since it stops the deploy process.
-        catch (Throwable t) {
-            logger.logp(Level.WARNING, "DeployContentContextListener",
-                    "contextInitialized", t.getMessage(), t);
-        }
-    }
+			DeployContentUser.login(server, userServer);
 
-    protected MultipleFileDeployer getContentDeployer(PolicyCMServer server,
-            ServletContext servletContext) throws CMException {
-        SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(
-                server);
+			List<FileDiscoverer> discoverers = WebApplicationDiscoverers
+					.getWebAppDiscoverers(event.getServletContext());
 
-        return new MultipleFileDeployer(singleFileDeployer,
-                new DirectoryStateFetcher(server).getDirectoryState());
-    }
+			MultipleFileDeployer deployer = getContentDeployer(server,
+					event.getServletContext());
+			deployer.discoverAndDeploy(discoverers, result);
 
-    public void contextDestroyed(ServletContextEvent event) {
-    }
+			result.logResults();
+		}
+		// don't ever throw an exception since it stops the deploy process.
+		catch (Throwable t) {
+			logger.logp(Level.WARNING, "DeployContentContextListener",
+					"contextInitialized", t.getMessage(), t);
+		}
+	}
+
+	protected MultipleFileDeployer getContentDeployer(PolicyCMServer server,
+			ServletContext servletContext) throws CMException {
+		SingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(
+				server, result);
+
+		return new MultipleFileDeployer(singleFileDeployer,
+				new DirectoryStateFetcher(server).getDirectoryState());
+	}
+
+	public void contextDestroyed(ServletContextEvent event) {
+	}
 
 }

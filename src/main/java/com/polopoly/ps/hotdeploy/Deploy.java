@@ -12,13 +12,13 @@ import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.ps.hotdeploy.client.ConnectException;
 import com.polopoly.ps.hotdeploy.client.PolopolyClient;
 import com.polopoly.ps.hotdeploy.deployer.DefaultSingleFileDeployer;
+import com.polopoly.ps.hotdeploy.deployer.DeploymentResult;
 import com.polopoly.ps.hotdeploy.deployer.MultipleFileDeployer;
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 import com.polopoly.ps.hotdeploy.file.FileDeploymentDirectory;
 import com.polopoly.ps.hotdeploy.state.DirectoryState;
 import com.polopoly.ps.hotdeploy.state.DirectoryStateFetcher;
 import com.polopoly.ps.hotdeploy.state.DirectoryWillBecomeJarDirectoryState;
-
 
 /**
  * A deploy client with a main method that connects to Polopoly and does a
@@ -84,6 +84,7 @@ public class Deploy extends DiscovererMainClass {
 
 		PolicyCMServer server = polopolyClient.getPolicyCMServer();
 
+		DeploymentResult result = new DeploymentResult();
 		boolean success;
 
 		try {
@@ -104,7 +105,7 @@ public class Deploy extends DiscovererMainClass {
 			}
 
 			DefaultSingleFileDeployer singleFileDeployer = new DefaultSingleFileDeployer(
-					server);
+					server, result);
 
 			singleFileDeployer
 					.setIgnoreContentListAddFailures(ignoreContentListAddFailures);
@@ -112,8 +113,8 @@ public class Deploy extends DiscovererMainClass {
 			MultipleFileDeployer deployer = new MultipleFileDeployer(
 					singleFileDeployer, directoryState);
 
-			Set<DeploymentFile> failingFiles = deployer
-					.discoverAndDeploy(getDiscoverers());
+			Set<DeploymentFile> failingFiles = deployer.discoverAndDeploy(
+					getDiscoverers(), result);
 
 			success = failingFiles.isEmpty();
 		} catch (Exception e) {

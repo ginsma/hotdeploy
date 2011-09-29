@@ -1,7 +1,9 @@
-package com.polopoly.ps.hotdeploy.text;
+package com.polopoly.ps.hotdeploy.validation;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import com.polopoly.ps.hotdeploy.text.TextContent;
 
 public class StandAloneValidationContext implements ValidationContext {
     private Set<String> added = new HashSet<String>();

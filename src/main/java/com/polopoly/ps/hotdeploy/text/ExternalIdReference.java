@@ -8,6 +8,8 @@ import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.VersionedContentId;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.policy.PolicyCMServer;
+import com.polopoly.ps.hotdeploy.validation.ValidationContext;
+import com.polopoly.ps.hotdeploy.validation.ValidationException;
 
 public class ExternalIdReference implements Reference {
 	private static final Logger LOGGER = Logger
@@ -17,14 +19,6 @@ public class ExternalIdReference implements Reference {
 
 	private String metadataExternalId;
 
-	public String getExternalId() {
-		return externalId;
-	}
-
-	public void setExternalId(String externalId) {
-		this.externalId = externalId;
-	}
-
 	public ExternalIdReference(String externalId, String metadataExternalId) {
 		this(externalId);
 
@@ -33,6 +27,18 @@ public class ExternalIdReference implements Reference {
 
 	public ExternalIdReference(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+
+	public String getMetadataExternalId() {
+		return metadataExternalId;
 	}
 
 	public void validate(ValidationContext context) throws ValidationException {
@@ -91,4 +97,27 @@ public class ExternalIdReference implements Reference {
 
 		return referredId;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof ExternalIdReference
+				&& notNull(metadataExternalId).equals(
+						((ExternalIdReference) obj).metadataExternalId)
+				&& ((ExternalIdReference) obj).externalId.equals(externalId);
+	}
+
+	private String notNull(String string) {
+		if (string == null) {
+			return "";
+		} else {
+			return string;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return notNull(metadataExternalId).hashCode() * 13
+				+ externalId.hashCode();
+	}
+
 }

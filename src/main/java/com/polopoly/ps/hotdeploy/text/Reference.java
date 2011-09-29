@@ -4,6 +4,8 @@ import com.polopoly.cm.ContentId;
 import com.polopoly.cm.ContentReference;
 import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.policy.PolicyCMServer;
+import com.polopoly.ps.hotdeploy.validation.ValidationContext;
+import com.polopoly.ps.hotdeploy.validation.ValidationException;
 
 public interface Reference {
 

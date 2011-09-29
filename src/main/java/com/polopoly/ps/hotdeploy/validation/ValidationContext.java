@@ -1,4 +1,6 @@
-package com.polopoly.ps.hotdeploy.text;
+package com.polopoly.ps.hotdeploy.validation;
+
+import com.polopoly.ps.hotdeploy.text.TextContent;
 
 public interface ValidationContext {
 

@@ -12,10 +12,10 @@ import com.polopoly.application.servlet.ApplicationServletUtil;
 import com.polopoly.cm.client.EjbCmClient;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.ps.hotdeploy.client.DeployContentUser;
+import com.polopoly.ps.hotdeploy.deployer.DeploymentResult;
 import com.polopoly.ps.hotdeploy.deployer.MultipleFileDeployer;
 import com.polopoly.ps.hotdeploy.discovery.FileDiscoverer;
 import com.polopoly.user.server.UserServer;
-
 
 /**
  * A {@link javax.servlet.ServletContextListener} that starts a thread
@@ -25,72 +25,72 @@ import com.polopoly.user.server.UserServer;
  * @author AndreasE
  */
 public class HotDeployContentContextListener extends
-        DeployContentContextListener {
-    private HotDeployContentThread thread;
+		DeployContentContextListener {
+	private HotDeployContentThread thread;
 
-    private static final Logger logger = Logger
-            .getLogger(HotDeployContentContextListener.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(HotDeployContentContextListener.class.getName());
 
-    @Override
-    public void contextInitialized(ServletContextEvent event) {
-        try {
-            boolean logout = false;
-            try {
-            	Application application = ApplicationServletUtil
-            	.getApplication(event.getServletContext());
-    
-            	EjbCmClient client = (EjbCmClient) application
-            		.getApplicationComponent(EjbCmClient.DEFAULT_COMPOUND_NAME);
-            	PolicyCMServer server = client.getPolicyCMServer();
-            	UserServer userServer = client.getUserServer();
+	@Override
+	public void contextInitialized(ServletContextEvent event) {
+		try {
+			boolean logout = false;
+			try {
+				Application application = ApplicationServletUtil
+						.getApplication(event.getServletContext());
 
-                logout = DeployContentUser.login(server, userServer);
+				EjbCmClient client = (EjbCmClient) application
+						.getApplicationComponent(EjbCmClient.DEFAULT_COMPOUND_NAME);
+				PolicyCMServer server = client.getPolicyCMServer();
+				UserServer userServer = client.getUserServer();
 
-                MultipleFileDeployer contentDeployer = getContentDeployer(
-                        server, event.getServletContext());
+				logout = DeployContentUser.login(server, userServer);
 
-                ServletContext servletContext = event.getServletContext();
+				MultipleFileDeployer contentDeployer = getContentDeployer(
+						server, event.getServletContext());
 
-                List<FileDiscoverer> discoverers = WebApplicationDiscoverers
-                        .getWebAppDiscoverers(servletContext);
-                contentDeployer.discoverAndDeploy(discoverers);
+				ServletContext servletContext = event.getServletContext();
 
-                thread = new HotDeployContentThread(server, userServer,
-                        contentDeployer, discoverers);
-            } finally {
-                if (logout) {
-                    DeployContentUser.logout();
-                }
-            }
+				List<FileDiscoverer> discoverers = WebApplicationDiscoverers
+						.getWebAppDiscoverers(servletContext);
+				contentDeployer.discoverAndDeploy(discoverers,
+						new DeploymentResult());
 
-            thread.start();
-        }
-        // don't ever throw an exception since it stops the web application
-        // deployment.
-        catch (Throwable t) {
-            logger.log(Level.WARNING, t.getMessage(), t);
-        }
-    }
+				thread = new HotDeployContentThread(server, userServer,
+						contentDeployer, discoverers);
+			} finally {
+				if (logout) {
+					DeployContentUser.logout();
+				}
+			}
 
-    @Override
-    public void contextDestroyed(ServletContextEvent event) {
-        try {
-            if (thread != null) {
-                thread.interrupt();
-                // Wait up to 5 seconds for thread to finish. We really do not
-                // want thread to remain running after we left
-                // contextDestroyed().
-                thread.join(5000);
-                if (thread.isAlive()) {
-                    logger
-                            .warning("HotDeployContentThread could not be stopped");
-                }
-                thread = null;
-            }
-        }
-        // don't ever throw an exception since it stops the undeploy process.
-        catch (Throwable t) {
-            logger.log(Level.WARNING, t.getMessage(), t);
-        }
-    }
+			thread.start();
+		}
+		// don't ever throw an exception since it stops the web application
+		// deployment.
+		catch (Throwable t) {
+			logger.log(Level.WARNING, t.getMessage(), t);
+		}
+	}
+
+	@Override
+	public void contextDestroyed(ServletContextEvent event) {
+		try {
+			if (thread != null) {
+				thread.interrupt();
+				// Wait up to 5 seconds for thread to finish. We really do not
+				// want thread to remain running after we left
+				// contextDestroyed().
+				thread.join(5000);
+				if (thread.isAlive()) {
+					logger.warning("HotDeployContentThread could not be stopped");
+				}
+				thread = null;
+			}
+		}
+		// don't ever throw an exception since it stops the undeploy process.
+		catch (Throwable t) {
+			logger.log(Level.WARNING, t.getMessage(), t);
+		}
+	}
 }

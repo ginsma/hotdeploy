@@ -24,12 +24,13 @@ import com.polopoly.common.xml.DOMUtil;
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 import com.polopoly.ps.hotdeploy.file.FileDeploymentFile;
 import com.polopoly.ps.hotdeploy.file.JarDeploymentFile;
-import com.polopoly.ps.hotdeploy.text.CMServerValidationContext;
 import com.polopoly.ps.hotdeploy.text.DeployCommitException;
+import com.polopoly.ps.hotdeploy.text.DeployException;
 import com.polopoly.ps.hotdeploy.text.TextContentDeployer;
 import com.polopoly.ps.hotdeploy.text.TextContentParser;
 import com.polopoly.ps.hotdeploy.text.TextContentSet;
-
+import com.polopoly.ps.hotdeploy.validation.CMServerValidationContext;
+import com.polopoly.ps.hotdeploy.validation.ValidationResult;
 
 public class DefaultSingleFileDeployer implements SingleFileDeployer {
 	private static final Logger logger = Logger
@@ -44,18 +45,24 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 	 */
 	private boolean ignoreContentListAddFailures;
 
+	private DeploymentResult result;
+
+	private boolean skipBrokenReferences;
+
 	private static boolean importing;
 
-	public DefaultSingleFileDeployer(PolicyCMServer server) {
+	public DefaultSingleFileDeployer(PolicyCMServer server,
+			DeploymentResult result) {
 		this.server = server;
+		this.result = result;
 	}
 
 	public static boolean isImporting() {
 		return importing;
 	}
-	
-	protected final PolicyCMServer getCMServer(){
-	    return server;
+
+	protected final PolicyCMServer getCMServer() {
+		return server;
 	}
 
 	public void prepare() throws ParserConfigurationException {
@@ -84,54 +91,83 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 		try {
 			if (fileToImport.getName().endsWith(
 					'.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
-				TextContentSet textContent = new TextContentParser(
-						fileToImport.getInputStream(),
-						fileToImport.getBaseUrl(), fileToImport.getName())
-						.parse();
-
-				textContent.validate(new CMServerValidationContext(server));
-
-				TextContentDeployer textContentDeployer = new TextContentDeployer(
-						textContent, server);
-
-				textContentDeployer
-						.setIgnoreContentListAddFailures(ignoreContentListAddFailures);
-
-				for (Policy createdPolicy : textContentDeployer.deploy()) {
-					contentCommitted(createdPolicy.getContentId());
-				}
-
-				return;
-			}
-
-			setImporterBaseUrl(importer, fileToImport);
-
-			DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
-			Document xmlDocument = documentBuilder.parse(fileToImport
-					.getInputStream());
-
-			if (fileToImport instanceof JarDeploymentFile) {
-				importer.importXML(xmlDocument,
-						((JarDeploymentFile) fileToImport).getJarFile(), 
-						getDirNameForFileElementHandler(fileToImport));
+				importTextContentFile(fileToImport);
 			} else {
-				importer.importXML(xmlDocument, null,
-						((FileDeploymentFile) fileToImport).getDirectory());
+				importContentXmlFile(fileToImport);
 			}
 		} finally {
+
 			importing = false;
 		}
 	}
 
-    private String getDirNameForFileElementHandler(DeploymentFile fileToImport)
-    {
-        String dirName = ((JarDeploymentFile) fileToImport).getNameOfDirectoryWithinJar();
-        
-        if ("/".equals(dirName)) {
-            dirName = null;
-        }
-        return dirName;
-    }
+	private void importContentXmlFile(DeploymentFile fileToImport)
+			throws Exception {
+		setImporterBaseUrl(importer, fileToImport);
+
+		DocumentBuilder documentBuilder = DOMUtil.newDocumentBuilder();
+		Document xmlDocument = documentBuilder.parse(fileToImport
+				.getInputStream());
+
+		if (fileToImport instanceof JarDeploymentFile) {
+			importer.importXML(xmlDocument,
+					((JarDeploymentFile) fileToImport).getJarFile(),
+					getDirNameForFileElementHandler(fileToImport));
+		} else {
+			importer.importXML(xmlDocument, null,
+					((FileDeploymentFile) fileToImport).getDirectory());
+		}
+	}
+
+	private void importTextContentFile(DeploymentFile fileToImport)
+			throws Exception {
+		TextContentSet textContent = new TextContentParser(
+				fileToImport.getInputStream(), fileToImport.getBaseUrl(),
+				fileToImport.getName()).parse();
+
+		ValidationResult validationResult = textContent
+				.validate(new CMServerValidationContext(server));
+
+		if (validationResult.isFailed()) {
+			handleValidationFailure(fileToImport, textContent, validationResult);
+		}
+
+		TextContentDeployer textContentDeployer = new TextContentDeployer(
+				textContent, server);
+
+		textContentDeployer
+				.setIgnoreContentListAddFailures(ignoreContentListAddFailures);
+
+		for (Policy createdPolicy : textContentDeployer.deploy()) {
+			contentCommitted(createdPolicy.getContentId());
+		}
+	}
+
+	protected void handleValidationFailure(DeploymentFile fileToImport,
+			TextContentSet textContent, ValidationResult validationResult)
+			throws DeployException {
+		String validationMessage = validationResult.getMessage();
+
+		if (skipBrokenReferences) {
+			textContent.removeNonValidatingReferences(validationResult);
+		}
+
+		if (validationResult.isFailed()) {
+			throw new DeployException(validationMessage);
+		} else {
+			result.reportPartial(fileToImport, validationMessage);
+		}
+	}
+
+	private String getDirNameForFileElementHandler(DeploymentFile fileToImport) {
+		String dirName = ((JarDeploymentFile) fileToImport)
+				.getNameOfDirectoryWithinJar();
+
+		if ("/".equals(dirName)) {
+			dirName = null;
+		}
+		return dirName;
+	}
 
 	protected void contentCommitted(ContentId createdId) {
 	}
@@ -158,6 +194,7 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 		try {
 			importFile(fileToImport);
 
+			result.reportSuccessful(fileToImport);
 			logger.log(Level.INFO, "Import of " + fileToImport + " done.");
 
 			return true;
@@ -206,6 +243,8 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 					logger.log(Level.WARNING, "Import of " + fileToImport
 							+ " failed: " + e.getMessage());
 
+					result.reportFailed(fileToImport, e.getMessage());
+
 					return false;
 				}
 
@@ -228,6 +267,8 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 					logger.log(Level.WARNING, "Import of " + fileToImport
 							+ " failed: " + e.getMessage());
 
+					result.reportFailed(fileToImport, e.getMessage());
+
 					return false;
 				}
 
@@ -248,6 +289,8 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 			logger.log(Level.WARNING, "Import of " + fileToImport + " failed: "
 					+ message, (printStackTrace ? e : null));
 
+			result.reportFailed(fileToImport, e.getMessage());
+
 			return false;
 		}
 	}
@@ -259,5 +302,9 @@ public class DefaultSingleFileDeployer implements SingleFileDeployer {
 	public void setIgnoreContentListAddFailures(
 			boolean ignoreContentListAddFailures) {
 		this.ignoreContentListAddFailures = ignoreContentListAddFailures;
+	}
+
+	public void setSkipBrokenReferences(boolean skipBrokenReferences) {
+		this.skipBrokenReferences = skipBrokenReferences;
 	}
 }

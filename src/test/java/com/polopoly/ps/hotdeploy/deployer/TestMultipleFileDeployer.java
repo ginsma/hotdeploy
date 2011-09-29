@@ -30,7 +30,7 @@ public class TestMultipleFileDeployer extends TestCase {
 			throws FatalDeployException {
 		assertTrue(directoryState.areAllChangesPersisted());
 
-		multipleFileDeployer.deploy(filesToDeploy);
+		multipleFileDeployer.deploy(filesToDeploy, new DeploymentResult());
 
 		for (DeploymentFile fileToDeploy : filesToDeploy) {
 			assertFalse(directoryState.hasFileChanged(fileToDeploy));
@@ -51,8 +51,9 @@ public class TestMultipleFileDeployer extends TestCase {
 			CouldNotUpdateStateException {
 		directoryState.reset(aFile, false);
 
-		multipleFileDeployer.deploy(Collections
-				.singleton((DeploymentFile) aFile));
+		multipleFileDeployer.deploy(
+				Collections.singleton((DeploymentFile) aFile),
+				new DeploymentResult());
 
 		singleFileDeployer.assertNotDeployed(aFile);
 	}
@@ -96,15 +97,16 @@ public class TestMultipleFileDeployer extends TestCase {
 		singleFileDeployer.failThisFile(aFile);
 		multipleFileDeployer.setFailFast(true);
 
-		multipleFileDeployer.deploy(filesToDeploy);
+		multipleFileDeployer.deploy(filesToDeploy, new DeploymentResult());
 
 		singleFileDeployer.assertNotDeployed(anotherFile);
 	}
 
 	public void testFailedDeploy() throws FatalDeployException {
 		singleFileDeployer.failThisFile(aFile);
-		multipleFileDeployer.deploy(Collections
-				.singleton((DeploymentFile) aFile));
+		multipleFileDeployer.deploy(
+				Collections.singleton((DeploymentFile) aFile),
+				new DeploymentResult());
 
 		assertFalse(directoryState.hasFileChanged(aFile));
 
@@ -164,7 +166,7 @@ public class TestMultipleFileDeployer extends TestCase {
 		filesToDeploy.add(anotherFile);
 
 		try {
-			multipleFileDeployer.deploy(filesToDeploy);
+			multipleFileDeployer.deploy(filesToDeploy, new DeploymentResult());
 
 			fail("Deployer did not throw fatal exception when state could not be updated.");
 		} catch (FatalDeployException e) {
@@ -183,12 +185,13 @@ public class TestMultipleFileDeployer extends TestCase {
 			}
 		};
 
-		multipleFileDeployer.discoverAndDeploy(Collections
-				.singletonList(aFileDiscoverer));
+		multipleFileDeployer.discoverAndDeploy(
+				Collections.singletonList(aFileDiscoverer),
+				new DeploymentResult());
 
 		singleFileDeployer.assertDeployed(aFile);
 	}
-	
+
 	@Override
 	public void setUp() {
 		fileChecksums = new NonPersistedFileChecksums();

@@ -1,4 +1,4 @@
-package com.polopoly.ps.hotdeploy.text;
+package com.polopoly.ps.hotdeploy.validation;
 
 import com.polopoly.cm.ExternalContentId;
 import com.polopoly.cm.client.CMException;

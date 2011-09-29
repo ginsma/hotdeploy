@@ -6,9 +6,7 @@ import static com.polopoly.ps.hotdeploy.util.CheckedCast.cast;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -115,25 +113,9 @@ public class TextContentDeployer {
 				}
 			}
 
-			List<TextContent> commitPrioOrder = new ArrayList<TextContent>();
-			for (TextContent textContent : contentSet) {
-				commitPrioOrder.add(textContent);
-			}
-			TextContent[] commitPrioOrderArray = commitPrioOrder
-					.toArray(new TextContent[commitPrioOrder.size()]);
-			Arrays.sort(commitPrioOrderArray, new Comparator<TextContent>() {
-
-				@Override
-				public int compare(TextContent o1, TextContent o2) {
-					return new Integer(o2.getCommitPrio()).compareTo(o1
-							.getCommitPrio());
-				}
-
-			});
-
 			Collection<Policy> result = new ArrayList<Policy>();
 
-			for (TextContent textContent : commitPrioOrderArray) {
+			for (TextContent textContent : contentSet) {
 				Policy newVersion = newVersionById.get(textContent.getId());
 				try {
 					newVersion.getContent().commit();

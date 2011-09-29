@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 import com.polopoly.cm.server.ServerNames;
 import com.polopoly.ps.hotdeploy.client.Major;
 
-
 public class TextContentParser {
 	private static final Logger LOGGER = Logger
 			.getLogger(TextContentParser.class.getName());
@@ -48,8 +47,6 @@ public class TextContentParser {
 
 	public static final String FILE_PREFIX = "file";
 
-    public static final String COMMITPRIO_PREFIX = "commitprio";
-
 	private BufferedReader reader;
 
 	private TextContentSet parsed = new TextContentSet();
@@ -70,12 +67,12 @@ public class TextContentParser {
 		this.contentUrl = contentUrl;
 
 		int i = fileName.lastIndexOf('/');
-		
-		if (i == -1){
+
+		if (i == -1) {
 			// We have a windows user
 			i = fileName.lastIndexOf('\\');
 		}
-		
+
 		if (i != -1) {
 			fileName = fileName.substring(i + 1);
 		}
@@ -96,6 +93,8 @@ public class TextContentParser {
 			atLine++;
 			parseLine(line);
 		}
+
+		parsed.sortTopologically();
 
 		return parsed;
 	}
@@ -199,7 +198,7 @@ public class TextContentParser {
 		} else if (prefix.equals(TEMPLATE_PREFIX)) {
 			assertFields(2, fields);
 
-            currentContent.setTemplateId(expandId(fields[1]));
+			currentContent.setTemplateId(expandId(fields[1]));
 		} else if (prefix.equals(MAJOR_PREFIX)) {
 			assertFields(2, fields);
 
@@ -247,24 +246,12 @@ public class TextContentParser {
 					expandId(publishIn), expandId(metadata)), group);
 
 			currentContent.addPublishing(publishing);
-			
-		} else if(prefix.equals(COMMITPRIO_PREFIX)) {
-		    assertFields(2, fields);
-
-            String prioString = fields[1].trim();
-
-            try {
-                int commitPrio = Integer.parseInt(prioString);
-                currentContent.setCommitPrio(commitPrio);
-            } catch (NumberFormatException e) {
-                fail(COMMITPRIO_PREFIX + ":" + prioString + " is not an integer!");
-            }
 		} else {
 			fail("Line should start with " + ID_PREFIX + ", "
 					+ INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "
 					+ SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", "
-					+ MAJOR_PREFIX + ", " + REFERENCE_PREFIX + ", " + TEMPLATE_PREFIX + ", "
-					+ PUBLISH_PREFIX + ", " + COMMITPRIO_PREFIX + " or " + LIST_PREFIX + ".");
+					+ PUBLISH_PREFIX + ", " + MAJOR_PREFIX + ", "
+					+ REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
 		}
 	}
 
@@ -274,9 +261,9 @@ public class TextContentParser {
 			return null;
 		}
 
-        if (externalId.equals(".")) {
-            return fileName;
-        } else if (externalId.startsWith(".")) {
+		if (externalId.equals(".")) {
+			return fileName;
+		} else if (externalId.startsWith(".")) {
 			return fileName + externalId;
 		} else {
 			return externalId;
