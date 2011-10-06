@@ -371,3 +371,7 @@ poll.ResultDefinitions
 poll.SinglePoll
 poll.WeightedAnswerOption
 poll.WeightedQuestion
+p.UGCSettings
+p.siteengine.MyDesktopTemplates.d
+p.siteengine.LandingPage
+p.InternalSolrSearchSettings
