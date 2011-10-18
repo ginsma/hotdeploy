@@ -11,8 +11,8 @@ import java.util.zip.ZipEntry;
 
 public class JarDeploymentFile extends AbstractDeploymentObject implements
 		DeploymentFile {
-		
-    protected JarFile file;
+
+	protected JarFile file;
 	protected ZipEntry entry;
 
 	public JarDeploymentFile(JarFile file, ZipEntry entry) {
@@ -76,7 +76,7 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 	}
 
 	public URL getBaseUrl() throws MalformedURLException {
-		String name = getNameOfDirectoryWithinJar();
+		String name = appendSlashInFront(getNameOfDirectoryWithinJar());
 
 		return new URL("jar:file:"
 				+ (new File(file.getName())).getAbsolutePath() + "!" + name);
@@ -92,11 +92,14 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 		} else {
 			name = "/";
 		}
-
-		if (!name.startsWith("/")) {
-			name = "/" + name;
-		}
 		return name;
+	}
+
+	private String appendSlashInFront(String orig){
+		if (!orig.startsWith("/")) {
+			orig = "/" + orig;
+		}
+		return orig;
 	}
 
 	public JarFile getJarFile() {
