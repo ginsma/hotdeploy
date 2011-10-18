@@ -77,7 +77,6 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 
 	public URL getBaseUrl() throws MalformedURLException {
 		String name = appendSlashInFront(getNameOfDirectoryWithinJar());
-
 		return new URL("jar:file:"
 				+ (new File(file.getName())).getAbsolutePath() + "!" + name);
 	}
