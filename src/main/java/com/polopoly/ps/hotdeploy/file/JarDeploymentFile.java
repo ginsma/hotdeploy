@@ -9,8 +9,10 @@ import java.net.URL;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-public class JarDeploymentFile extends AbstractDeploymentObject implements
-		DeploymentFile {
+import com.polopoly.ps.hotdeploy.util.NotAJarException;
+import com.polopoly.ps.hotdeploy.util.VersionedJar;
+
+public class JarDeploymentFile extends AbstractDeploymentObject implements DeploymentFile {
 
 	protected JarFile file;
 	protected ZipEntry entry;
@@ -22,15 +24,13 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 
 	public InputStream getInputStream() throws FileNotFoundException {
 		if (entry == null) {
-			throw new FileNotFoundException("While reading " + this
-					+ ": file not found");
+			throw new FileNotFoundException("While reading " + this + ": file not found");
 		}
 
 		try {
 			return file.getInputStream(entry);
 		} catch (IOException e) {
-			throw new FileNotFoundException("While reading " + this + ": "
-					+ e.getMessage());
+			throw new FileNotFoundException("While reading " + this + ": " + e.getMessage());
 		}
 	}
 
@@ -45,19 +45,23 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 			}
 		}
 
-		String fileName = file.getName();
+		// for equality we don't consider the path or version of a JAR file,
+		// only its name,
+		// since it is likely to be found in multiple places such as the maven
+		// repository and
+		// web-inf/lib. Also, it shouldn't be reimported just because there is a
+		// new version if the content itself has not changed.
 
-		// for equality we don't consider the path of a JAR file, only its name,
-		// since it is likely to
-		// be found in multiple places such as the maven repository and
-		// web-inf/lib.
-		int fileSlash = fileName.lastIndexOf(File.separatorChar);
+		File iofile = new File(file.getName());
+		String jarWithoutVersion;
 
-		if (fileSlash != -1) {
-			fileName = fileName.substring(fileSlash + 1);
+		try {
+			jarWithoutVersion = new VersionedJar(iofile).getJarWithoutVersion();
+		} catch (NotAJarException e) {
+			jarWithoutVersion = iofile.getName();
 		}
 
-		return fileName + "!" + (entryName != null ? entryName : "n/a");
+		return jarWithoutVersion + "!" + (entryName != null ? entryName : "n/a");
 	}
 
 	@Override
@@ -77,8 +81,7 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 
 	public URL getBaseUrl() throws MalformedURLException {
 		String name = appendSlashInFront(getNameOfDirectoryWithinJar());
-		return new URL("jar:file:"
-				+ (new File(file.getName())).getAbsolutePath() + "!" + name);
+		return new URL("jar:file:" + (new File(file.getName())).getAbsolutePath() + "!" + name);
 	}
 
 	public String getNameOfDirectoryWithinJar() {
@@ -94,7 +97,7 @@ public class JarDeploymentFile extends AbstractDeploymentObject implements
 		return name;
 	}
 
-	private String appendSlashInFront(String orig){
+	private String appendSlashInFront(String orig) {
 		if (!orig.startsWith("/")) {
 			orig = "/" + orig;
 		}
