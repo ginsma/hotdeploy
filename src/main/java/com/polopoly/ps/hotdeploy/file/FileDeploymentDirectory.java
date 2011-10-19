@@ -8,110 +8,112 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FileDeploymentDirectory extends AbstractDeploymentObject implements DeploymentDirectory {
-    private static final Logger logger =
-        Logger.getLogger(FileDeploymentDirectory.class.getName());
-    private File file;
+	private static final Logger logger = Logger.getLogger(FileDeploymentDirectory.class.getName());
+	private File file;
 
-    public FileDeploymentDirectory(File file) {
-        this.file = file;
-    }
+	public FileDeploymentDirectory(File file) {
+		this.file = file;
+	}
 
-    public boolean exists() {
-        return file.exists() && file.canRead();
-    }
+	public boolean exists() {
+		return file.exists() && file.canRead();
+	}
 
-    public DeploymentObject getFile(String fileName) throws FileNotFoundException {
-        File newFile;
+	public DeploymentObject getFile(String fileName) throws FileNotFoundException {
+		File newFile;
 
-        if (fileName.equals(".")) {
-            return this;
-        }
+		if (fileName.equals(".")) {
+			return this;
+		}
 
-        // we always support forward slashes, even on windows
-        if (File.separatorChar != '/') {
-            fileName = fileName.replace('/', File.separatorChar);
-        }
+		// we always support forward slashes, even on windows
+		if (File.separatorChar != '/') {
+			fileName = fileName.replace('/', File.separatorChar);
+		}
 
-        if (new File(fileName).isAbsolute()) {
-            newFile = new File(fileName);
-        }
-        else {
-            newFile = new File(file, fileName);
-        }
+		if (new File(fileName).isAbsolute()) {
+			newFile = new File(fileName);
+		} else {
+			newFile = new File(file, fileName);
+		}
 
-        if (!newFile.exists()) {
-            throw new FileNotFoundException("File " + newFile.getAbsolutePath() + " does not exist.");
-        }
+		if (!newFile.exists()) {
+			throw new FileNotFoundException("File " + newFile.getAbsolutePath() + " does not exist.");
+		}
 
-        if (newFile.isDirectory()) {
-            return new FileDeploymentDirectory(newFile);
-        }
-        else {
-            return new FileDeploymentFile(newFile);
-        }
+		if (newFile.isDirectory()) {
+			return new FileDeploymentDirectory(newFile);
+		} else {
+			return new FileDeploymentFile(newFile);
+		}
 
-    }
+	}
 
-    public DeploymentObject[] listFiles() {
-        File[] files = file.listFiles();
-        List<DeploymentObject> result = new ArrayList<DeploymentObject>(files.length);
+	public DeploymentObject[] listFiles() {
+		File[] files = file.listFiles();
 
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().startsWith(".")) {
-                continue;
-            }
+		// happens if the file is not a directory.
+		if (files == null) {
+			return new DeploymentObject[0];
+		}
 
-            try {
-                result.add(getFile(files[i].getName()));
-            } catch (FileNotFoundException e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
-            }
-        }
+		List<DeploymentObject> result = new ArrayList<DeploymentObject>(files.length);
 
-        return result.toArray(new DeploymentObject[result.size()]);
-    }
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].getName().startsWith(".")) {
+				continue;
+			}
 
-    public File getFile() {
-        return file;
-    }
+			try {
+				result.add(getFile(files[i].getName()));
+			} catch (FileNotFoundException e) {
+				logger.log(Level.WARNING, e.getMessage(), e);
+			}
+		}
 
-    public String getName() {
-        return file.getAbsolutePath();
-    }
+		return result.toArray(new DeploymentObject[result.size()]);
+	}
 
-    public String getRelativeName(DeploymentObject deploymentObject) {
-        if (deploymentObject instanceof FileDeploymentFile ||
-                deploymentObject instanceof FileDeploymentDirectory) {
-            String fileName = deploymentObject.getName();
-            String directoryName = getName();
+	public File getFile() {
+		return file;
+	}
 
-            if (fileName.startsWith(directoryName + File.separator)) {
-                String result = fileName.substring(directoryName.length() + 1);
-                
-                // the canonical form is using forward slashes. 
-                // the import order will have slashes in the wrong direction otherwise.
-                if (File.separatorChar != '/') {
-                    result = result.replace(File.separatorChar, '/');
-                }
+	public String getName() {
+		return file.getAbsolutePath();
+	}
 
-                return result;
-            }
+	public String getRelativeName(DeploymentObject deploymentObject) {
+		if (deploymentObject instanceof FileDeploymentFile
+				|| deploymentObject instanceof FileDeploymentDirectory) {
+			String fileName = deploymentObject.getName();
+			String directoryName = getName();
 
-            if (deploymentObject.equals(this)) {
-                return ".";
-            }
-        }
+			if (fileName.startsWith(directoryName + File.separator)) {
+				String result = fileName.substring(directoryName.length() + 1);
 
-        return deploymentObject.getName();
-    }
+				// the canonical form is using forward slashes.
+				// the import order will have slashes in the wrong direction
+				// otherwise.
+				if (File.separatorChar != '/') {
+					result = result.replace(File.separatorChar, '/');
+				}
 
-    public boolean imports(DeploymentObject object) {
-        if (object instanceof FileDeploymentDirectory ||
-                object instanceof FileDeploymentFile) {
-            return object.equals(this) ||
-                object.getName().startsWith(getName() + File.separator);
-        }
+				return result;
+			}
 
-        return false;
-    }
+			if (deploymentObject.equals(this)) {
+				return ".";
+			}
+		}
+
+		return deploymentObject.getName();
+	}
+
+	public boolean imports(DeploymentObject object) {
+		if (object instanceof FileDeploymentDirectory || object instanceof FileDeploymentFile) {
+			return object.equals(this) || object.getName().startsWith(getName() + File.separator);
+		}
+
+		return false;
+	}
 }
