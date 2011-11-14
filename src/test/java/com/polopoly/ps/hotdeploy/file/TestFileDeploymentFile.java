@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import com.polopoly.ps.hotdeploy.discovery.PlatformNeutralPath;
 import com.polopoly.ps.hotdeploy.file.FileDeploymentDirectory;
 import com.polopoly.ps.hotdeploy.file.FileDeploymentFile;
+import com.polopoly.util.OsUtils;
 
 import junit.framework.TestCase;
 
@@ -49,8 +50,13 @@ public class TestFileDeploymentFile extends TestCase {
     }
 
     public void testGetBaseURL() throws MalformedURLException {
-        assertEquals("file:" + new File("foo").getAbsoluteFile().
-            getParentFile().getAbsolutePath() + "/", file2.getBaseUrl().toString());
+    	if (OsUtils.isWindowsOS()){
+		    assertEquals("file:/" + new File("foo").getAbsoluteFile().
+		        getParentFile().getAbsolutePath().replace('\\', '/') + "/", file2.getBaseUrl().toString());
+    	}else{
+            assertEquals("file:" + new File("foo").getAbsoluteFile().
+                    getParentFile().getAbsolutePath() + "/", file2.getBaseUrl().toString());
+    	}
     }
 
     public void testRelativePath() {

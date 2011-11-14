@@ -12,6 +12,7 @@ import com.polopoly.ps.hotdeploy.discovery.importorder.ImportOrderFileParser;
 import com.polopoly.ps.hotdeploy.discovery.importorder.ImportOrderFileWriter;
 import com.polopoly.ps.hotdeploy.file.DeploymentObject;
 import com.polopoly.ps.hotdeploy.state.DummyDeploymentFile;
+import com.polopoly.util.OsUtils;
 
 import junit.framework.TestCase;
 
@@ -40,8 +41,12 @@ public class TestImportOrderFileParser extends TestCase {
         StringWriter stringWriter = new StringWriter();
 
         writer.write(stringWriter);
-
-        assertEquals(CANONICAL_FILE_CONTENT, stringWriter.getBuffer().toString());
+        
+        if (OsUtils.isWindowsOS()){
+        	assertEquals(CANONICAL_FILE_CONTENT.replace("\n", "\r\n"), stringWriter.getBuffer().toString());
+        }else{
+        	assertEquals(CANONICAL_FILE_CONTENT, stringWriter.getBuffer().toString());
+        }
     }
 
     public void testParseModifyAndWriteBack() {
@@ -53,7 +58,11 @@ public class TestImportOrderFileParser extends TestCase {
 
         writer.write(stringWriter);
 
-        assertEquals(CANONICAL_FILE_CONTENT_WITH_ADDED_FILE, stringWriter.getBuffer().toString());
+        if (OsUtils.isWindowsOS()){
+        	assertEquals(CANONICAL_FILE_CONTENT_WITH_ADDED_FILE.replace("\n", "\r\n"), stringWriter.getBuffer().toString());
+        }else{
+        	assertEquals(CANONICAL_FILE_CONTENT_WITH_ADDED_FILE, stringWriter.getBuffer().toString());
+        }
     }
 
     @Override
