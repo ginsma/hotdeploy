@@ -29,6 +29,7 @@ import com.polopoly.cm.collections.ContentList;
 import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
 import com.polopoly.ps.hotdeploy.client.Major;
+import com.polopoly.ps.hotdeploy.deployer.WorkflowAwarePolicyWrapper;
 import com.polopoly.ps.hotdeploy.util.CheckedCast;
 import com.polopoly.ps.hotdeploy.util.CheckedClassCastException;
 
@@ -131,6 +132,14 @@ public class TextContentDeployer {
                 }
             }
 
+            for (TextContent textContent : contentSet) {
+                try {
+                    performWorkflowActions(textContent, server.getPolicy(new ExternalContentId(textContent.getId())));
+                } catch (CMException e) {
+                    throw new DeployException(e.getMessage());
+                }
+            }
+
             success = true;
 
             return result;
@@ -146,6 +155,15 @@ public class TextContentDeployer {
                         logger.log(Level.WARNING, "While aborting " + id + " after failure: " + e.getMessage(), e);
                     }
                 }
+            }
+        }
+    }
+
+    private void performWorkflowActions(TextContent textContent, Policy contentPolicy) throws CMException {
+        if (!textContent.getWorkflowActions().isEmpty()) {
+            WorkflowAwarePolicyWrapper workflowAware = WorkflowAwarePolicyWrapper.wrap(contentPolicy); 
+            for (String action : textContent.getWorkflowActions()) {
+                workflowAware.peformWorkflowAction(action);
             }
         }
     }

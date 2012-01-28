@@ -30,9 +30,10 @@ public class TextContent {
     private Map<String, Map<String, Reference>> references = new HashMap<String, Map<String, Reference>>();
     private Map<String, List<Reference>> lists = new HashMap<String, List<Reference>>();
     private Map<String, byte[]> files = new HashMap<String, byte[]>();
-
+    
     private List<Publishing> publishings = new ArrayList<Publishing>();
-
+    private List<String> workflowActions = new ArrayList<String>();
+    
     private String templateId;
 
     public Map<String, List<Reference>> getLists() {
@@ -321,5 +322,13 @@ public class TextContent {
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    public void addWorkflowAction(String workflowAction) {
+        this.workflowActions.add(workflowAction);
+    }
+    
+    public List<String> getWorkflowActions() {
+        return workflowActions;
     }
 }

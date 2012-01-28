@@ -46,6 +46,8 @@ public class TextContentParser {
 
     public static final String FILE_PREFIX = "file";
 
+    public static final String WORKFLOW_ACTION_PREFIX = "action";
+
     private BufferedReader reader;
 
     private TextContentSet parsed = new TextContentSet();
@@ -230,6 +232,9 @@ public class TextContentParser {
                 new Publishing(new ExternalIdReference(expandId(publishIn), expandId(metadata)), group);
 
             currentContent.addPublishing(publishing);
+        } else if (prefix.equals(WORKFLOW_ACTION_PREFIX)) {
+            assertFields(2, fields);
+            currentContent.addWorkflowAction(fields[1]);
         } else {
             fail("Line should start with " + ID_PREFIX + ", " + INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "
                  + SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", " + PUBLISH_PREFIX + ", " + MAJOR_PREFIX

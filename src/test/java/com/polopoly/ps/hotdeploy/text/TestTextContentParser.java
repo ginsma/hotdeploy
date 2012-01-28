@@ -43,6 +43,10 @@ public class TestTextContentParser extends TestCase {
 
         assertEquals("line1\nline2", article.getComponent("group", "name"));
 
+        assertEquals(2, article.getWorkflowActions().size());
+        assertEquals("first action", article.getWorkflowActions().get(0));
+        assertEquals("second action", article.getWorkflowActions().get(1));
+
         article = parsed.get("textcontent.simplecontenttest");
 
         assertEquals("textcontent.simplecontenttest", article.getId());
