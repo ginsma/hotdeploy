@@ -1,5 +1,7 @@
 id:textcontent.simplearticle
 inputtemplate:p.siteengine.Page
+action:first action
+action:second action
 name:Test Page\: name
 component:group:name:line1\nline2
 
