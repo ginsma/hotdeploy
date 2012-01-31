@@ -159,7 +159,19 @@ public class TextContentParser {
 			try {
 				URL fileUrl = new URL(contentUrl, fields[2]);
 
-				currentContent.addFile(fields[1], fileUrl.openStream());
+				InputStream stream = fileUrl.openStream();
+				
+				try {
+				currentContent.addFile(fields[1], stream);
+				}
+				finally {
+					try {
+						stream.close();
+					}
+					catch (Exception e) {
+						LOGGER.log(Level.WARNING, "While closing input stream " + contentUrl + ": " + e.getMessage(), e);
+					}
+				}
 			} catch (MalformedURLException e) {
 				fail("Could not read file " + fields[2] + " relative to "
 						+ contentUrl + ".");
