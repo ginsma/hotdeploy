@@ -14,11 +14,12 @@ public enum Major implements Comparable<Major> {
     OUTPUT_TEMPLATE(15, "outputtemplate"),
     APP_CONFIG(17, "appconfig"),
     USER(18, "userdata"),
-    COMMUNITY(19, "community");
+    COMMUNITY(19, "community"),
+    DISK_FILE_STORAGE(19, "diskfilestorage");
 
     static {
         ALL_MAJORS = new Major[] {MAJOR_CONFIG, ARTICLE, DEPARTMENT, CONTENT, LAYOUT_ELEMENT, WORKFLOW,
-                WORKFLOW_TYPE, REFERENCE_METADATA, INPUT_TEMPLATE, OUTPUT_TEMPLATE, APP_CONFIG, USER, COMMUNITY};
+                WORKFLOW_TYPE, REFERENCE_METADATA, INPUT_TEMPLATE, OUTPUT_TEMPLATE, APP_CONFIG, USER, COMMUNITY, DISK_FILE_STORAGE};
     }
 
     private static Major[] ALL_MAJORS;
