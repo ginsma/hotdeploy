@@ -47,6 +47,8 @@ public class TextContentParser {
 
 	public static final String FILE_PREFIX = "file";
 
+	private static final Object WORKFLOW_ACTION_PREFIX = "action";
+
 	private BufferedReader reader;
 
 	private TextContentSet parsed = new TextContentSet();
@@ -160,16 +162,15 @@ public class TextContentParser {
 				URL fileUrl = new URL(contentUrl, fields[2]);
 
 				InputStream stream = fileUrl.openStream();
-				
+
 				try {
-				currentContent.addFile(fields[1], stream);
-				}
-				finally {
+					currentContent.addFile(fields[1], stream);
+				} finally {
 					try {
 						stream.close();
-					}
-					catch (Exception e) {
-						LOGGER.log(Level.WARNING, "While closing input stream " + contentUrl + ": " + e.getMessage(), e);
+					} catch (Exception e) {
+						LOGGER.log(Level.WARNING, "While closing input stream "
+								+ contentUrl + ": " + e.getMessage(), e);
 					}
 				}
 			} catch (MalformedURLException e) {
@@ -258,6 +259,9 @@ public class TextContentParser {
 					expandId(publishIn), expandId(metadata)), group);
 
 			currentContent.addPublishing(publishing);
+		} else if (prefix.equals(WORKFLOW_ACTION_PREFIX)) {
+			assertFields(2, fields);
+			currentContent.addWorkflowAction(fields[1]);
 		} else {
 			fail("Line should start with " + ID_PREFIX + ", "
 					+ INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "

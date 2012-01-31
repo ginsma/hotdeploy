@@ -6,6 +6,7 @@ import static com.polopoly.ps.hotdeploy.util.CheckedCast.cast;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,10 +25,12 @@ import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.Content;
 import com.polopoly.cm.client.ContentRead;
 import com.polopoly.cm.client.InputTemplate;
+import com.polopoly.cm.client.WorkflowAware;
 import com.polopoly.cm.client.impl.exceptions.EJBFinderException;
 import com.polopoly.cm.collections.ContentList;
 import com.polopoly.cm.policy.Policy;
 import com.polopoly.cm.policy.PolicyCMServer;
+import com.polopoly.cm.workflow.WorkflowAction;
 import com.polopoly.ps.hotdeploy.client.Major;
 import com.polopoly.ps.hotdeploy.util.CheckedCast;
 import com.polopoly.ps.hotdeploy.util.CheckedClassCastException;
@@ -133,8 +136,10 @@ public class TextContentDeployer {
 
 			// Commit remaining created versions if any
 			Iterator<Policy> iterator = newVersionById.values().iterator();
+
 			while (iterator.hasNext()) {
 				Policy newVersion = iterator.next();
+
 				try {
 					newVersion.getContent().commit();
 				} catch (CMException e) {
@@ -143,6 +148,18 @@ public class TextContentDeployer {
 				} catch (Exception e) {
 					throw new DeployCommitException("While committing "
 							+ toString(newVersion) + ": " + e, e);
+				}
+			}
+
+			for (TextContent textContent : contentSet) {
+				try {
+					Policy newVersion = newVersionById.get(textContent.getId());
+
+					performWorkflowActions(textContent, newVersion);
+				} catch (CMException e) {
+					throw new DeployCommitException(
+							"While attempting to perform workflow actions on "
+									+ textContent + ": " + e, e);
 				}
 			}
 
@@ -164,6 +181,54 @@ public class TextContentDeployer {
 					}
 				}
 			}
+		}
+	}
+
+	private void performWorkflowActions(TextContent textContent,
+			Policy contentPolicy) throws DeployException, CMException {
+		if (textContent.getWorkflowActions().isEmpty()) {
+			return;
+		}
+
+		Content content = contentPolicy.getContent();
+
+		if (!(content instanceof WorkflowAware)) {
+			throw new DeployException(
+					"The object "
+							+ textContent
+							+ " had a major that did not allow workflow (but workflow actions were specified).");
+		}
+
+		WorkflowAware workflow = (WorkflowAware) content;
+
+		if (workflow.getWorkflowId() == null) {
+			throw new DeployException(
+					"The object "
+							+ textContent
+							+ " did not have a workflow associated with it (but workflow actions were specified).");
+		}
+
+		for (String actionName : textContent.getWorkflowActions()) {
+			for (WorkflowAction action : workflow.getWorkflowActions()) {
+				if (action.getName().equals(actionName)) {
+					try {
+						workflow.doWorkflowAction(action);
+					} catch (CMException e) {
+						throw new DeployException(
+								"While performing workflow action "
+										+ actionName + " on " + textContent
+										+ ": " + e.getMessage(), e);
+					}
+
+					continue;
+				}
+			}
+
+			throw new DeployException("Could not perform workflow action '"
+					+ actionName + "' in state '"
+					+ workflow.getWorkflowState().getName() + "' on "
+					+ textContent + ", possible values: "
+					+ Arrays.toString(workflow.getWorkflowActions()));
 		}
 	}
 
