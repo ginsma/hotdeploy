@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import com.polopoly.ps.hotdeploy.client.Major;
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.text.TextContentSet;
 import com.polopoly.ps.hotdeploy.util.SingleObjectHolder;
 import com.polopoly.ps.hotdeploy.xml.parser.ParseCallback;
 import com.polopoly.ps.hotdeploy.xml.parser.ParseContext;
@@ -17,6 +18,7 @@ public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCall
 
     private DeploymentFile file;
     private List<SingleCallMemento> mementos;
+    private TextContentSet contentSet;
 
     public FileParseCallbackMemento(DeploymentFile file) {
         super(new ArrayList<SingleCallMemento>());
@@ -46,12 +48,14 @@ public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCall
         }
     }
 
-    public void replay(ParseCallback parseCallback) {
+    public TextContentSet replay(ParseCallback parseCallback) {
         ParseContext context = new ParseContext(file);
 
         for (SingleCallMemento memento : mementos) {
             memento.replay(context, memento, parseCallback);
         }
+        
+        return contentSet;
     }
 
     public List<SingleCallMemento> getMementos() {
@@ -72,4 +76,8 @@ public class FileParseCallbackMemento extends SingleObjectHolder<List<SingleCall
 
         return result.toString();
     }
+
+	public void setResult(TextContentSet contentSet) {
+		this.contentSet = contentSet;
+	}
 }

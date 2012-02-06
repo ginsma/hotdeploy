@@ -18,12 +18,13 @@ abstract class AbstractParser {
     private static final Logger logger =
         Logger.getLogger(AbstractParser.class.getName());
 
-    protected ParseCallback callback;
     protected DeploymentFile file;
 
+	protected ParseCallback callback;
+
     protected AbstractParser(DeploymentFile file, ParseCallback callback) {
-        this.callback = callback;
         this.file = file;
+        this.callback = callback;
     }
 
     protected ParsedContentId parseContentId(Element contentIdElement) {

@@ -161,4 +161,14 @@ public class TextContentSet implements Iterable<TextContent> {
 			}
 		}
 	}
+
+	public int size() {
+		return contents.size();
+	}
+
+	public void addAll(TextContentSet set) {
+		for (TextContent content : set) {
+			add(content); 
+		}
+	}
 }

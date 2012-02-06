@@ -19,10 +19,15 @@ import com.polopoly.ps.hotdeploy.util.CheckedClassCastException;
 class TemplateDefinitionParser extends AbstractParser {
     private static final Logger logger =
         Logger.getLogger(TemplateDefinitionParser.class.getName());
+	private Element root;
 
     TemplateDefinitionParser(DeploymentFile file, Element root, ParseCallback callback) {
         super(file, callback);
-
+        
+        this.root = root;
+    }
+    
+    public void parse() {
         for (Element inputTemplate : children(root)) {
             if (inputTemplate.getNodeName().equals("input-template")) {
                 parseInputTemplate(inputTemplate);

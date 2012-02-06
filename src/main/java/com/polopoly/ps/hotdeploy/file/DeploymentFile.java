@@ -12,6 +12,9 @@ import java.net.URL;
 public interface DeploymentFile extends DeploymentObject {
 	InputStream getInputStream() throws FileNotFoundException;
 
+	/**
+	 * Returns the parent URL (relative to which relative file names / URLs can be resolved). 
+	 */
 	URL getBaseUrl() throws MalformedURLException;
 
 	long getQuickChecksum();

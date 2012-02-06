@@ -63,6 +63,8 @@ public class TextContentParser {
 
 	private String fileName;
 
+	private boolean readFiles = true;
+
 	public TextContentParser(InputStream inputStream, URL contentUrl,
 			String fileName) throws IOException {
 		reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
@@ -158,27 +160,11 @@ public class TextContentParser {
 		} else if (prefix.equals(FILE_PREFIX)) {
 			assertFields(3, fields);
 
-			try {
-				URL fileUrl = new URL(contentUrl, fields[2]);
-
-				InputStream stream = fileUrl.openStream();
-
-				try {
-					currentContent.addFile(fields[1], stream);
-				} finally {
-					try {
-						stream.close();
-					} catch (Exception e) {
-						LOGGER.log(Level.WARNING, "While closing input stream "
-								+ contentUrl + ": " + e.getMessage(), e);
-					}
-				}
-			} catch (MalformedURLException e) {
-				fail("Could not read file " + fields[2] + " relative to "
-						+ contentUrl + ".");
-			} catch (IOException e) {
-				fail("Could not read file " + fields[2] + " relative to "
-						+ contentUrl + ".");
+			if (readFiles) {
+				String fileToImport = fields[2];
+				String importAsName = fields[1];
+				
+				importFile(fileToImport, importAsName);
 			}
 		} else if (prefix.equals(LIST_PREFIX)) {
 			String group = null;
@@ -271,6 +257,32 @@ public class TextContentParser {
 		}
 	}
 
+	private void importFile(String fileToImport, String importAsName)
+			throws ParseException {
+		try {
+			URL fileUrl = new URL(contentUrl, fileToImport);
+
+			InputStream stream = fileUrl.openStream();
+
+			try {
+				currentContent.addFile(importAsName, stream);
+			} finally {
+				try {
+					stream.close();
+				} catch (Exception e) {
+					LOGGER.log(Level.WARNING, "While closing input stream "
+							+ contentUrl + ": " + e.getMessage(), e);
+				}
+			}
+		} catch (MalformedURLException e) {
+			fail("Could not read file " + fileToImport + " relative to "
+					+ contentUrl + ".");
+		} catch (IOException e) {
+			fail("Could not read file " + fileToImport + " relative to "
+					+ contentUrl + ".");
+		}
+	}
+
 	private String expandId(String externalId) {
 		// reference metadata may be null.
 		if (externalId == null) {
@@ -331,6 +343,10 @@ public class TextContentParser {
 
 	public String getFileName() {
 		return fileName;
+	}
+
+	public void setReadFiles(boolean readFiles) {
+		this.readFiles = readFiles;
 	}
 
 }

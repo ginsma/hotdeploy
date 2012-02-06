@@ -33,8 +33,13 @@ public class ContentXmlParser implements DeploymentFileParser {
 				"While parsing " + file + ": " + e.getMessage(), e);
 	}
 
-	public void parse(DeploymentFile file, ParseCallback callback) {
+	public TextContentSet parse(DeploymentFile file, ParseCallback callback) {
+		return parse(file, callback, false);
+	}
+	
+	public TextContentSet parse(DeploymentFile file, ParseCallback callback, boolean readFiles) {
 		InputStream inputStream = null;
+		TextContentSet result = new TextContentSet();
 
 		try {
 			inputStream = file.getInputStream();
@@ -42,9 +47,15 @@ public class ContentXmlParser implements DeploymentFileParser {
 			if (file.getName().endsWith(
 					'.' + TextContentParser.TEXT_CONTENT_FILE_EXTENSION)) {
 				ParseContext parseContext = new ParseContext(file);
-				TextContentSet contentSet = new TextContentParser(inputStream,
-						file.getBaseUrl(), file.getName()).parse();
-				new TextContentParseCallbackAdapter(contentSet).callback(
+				
+				TextContentParser parser = new TextContentParser(inputStream,
+						file.getBaseUrl(), file.getName());
+				
+				parser.setReadFiles(readFiles);
+				
+				result = parser.parse();
+
+				new TextContentParseCallbackAdapter(result).callback(
 						callback, parseContext);
 			} else {
 				DocumentBuilderFactory factory = DocumentBuilderFactory
@@ -57,9 +68,13 @@ public class ContentXmlParser implements DeploymentFileParser {
 				String rootName = root.getNodeName();
 
 				if (rootName.equals("template-definition")) {
-					new TemplateDefinitionParser(file, root, callback);
+					new TemplateDefinitionParser(file, root, callback).parse();
 				} else if (rootName.equals("batch")) {
-					new XmlIoParser(file, root, callback);
+					XmlIoParser parser = new XmlIoParser(file, root, callback);
+					
+					parser.setReadFiles(readFiles);
+					
+					result = parser.parse();
 				} else {
 					logger.log(Level.WARNING, "File " + file
 							+ " was of unknown type.");
@@ -84,5 +99,7 @@ public class ContentXmlParser implements DeploymentFileParser {
 				}
 			}
 		}
+		
+		return result;
 	}
 }

@@ -2,16 +2,14 @@ package com.polopoly.ps.hotdeploy.xml.parser.cache;
 
 import static com.polopoly.ps.hotdeploy.client.Major.ARTICLE;
 import static com.polopoly.ps.hotdeploy.client.Major.INPUT_TEMPLATE;
+import junit.framework.TestCase;
 
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 import com.polopoly.ps.hotdeploy.state.DummyDeploymentFile;
+import com.polopoly.ps.hotdeploy.text.TextContentSet;
 import com.polopoly.ps.hotdeploy.xml.parser.DeploymentFileParser;
 import com.polopoly.ps.hotdeploy.xml.parser.ParseCallback;
 import com.polopoly.ps.hotdeploy.xml.parser.ParseContext;
-import com.polopoly.ps.hotdeploy.xml.parser.cache.FileParseCallbackMemento;
-import com.polopoly.ps.hotdeploy.xml.parser.cache.ParsedFilesCache;
-
-import junit.framework.TestCase;
 
 public class TestParsedFilesCache extends TestCase {
     protected static final String CONTENT = "content";
@@ -32,14 +30,17 @@ public class TestParsedFilesCache extends TestCase {
         DeploymentFileParser parser = new DeploymentFileParser() {
             boolean called = false;
 
-            public void parse(DeploymentFile file, ParseCallback callback) {
+            public TextContentSet parse(DeploymentFile file, ParseCallback callback) {
                 if (called) {
                     fail("Parser called though parse result should have been cached.");
                 }
 
-                originalMemento.replay(callback);
-
-                called = true;
+                try {
+                	return originalMemento.replay(callback);
+                } 
+                finally {
+                	called = true;
+                }
             }
         };
 

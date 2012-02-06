@@ -265,7 +265,7 @@ public class TextContent {
         return publishings;
     }
 
-    void addFile(String fileName, InputStream fileData) throws IOException {
+    public void addFile(String fileName, InputStream fileData) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
 
         int ch;
@@ -281,6 +281,16 @@ public class TextContent {
         return files;
     }
 
+    public byte[] getFile(String fileName) throws NoSuchFileException {
+    	byte[] result = files.get(fileName);
+    	
+    	if (result == null) {
+    		throw new NoSuchFileException("The file " + fileName + " was not defined in " + this + ".");
+    	}
+    	
+		return result;
+    }
+    
     public void addPublishing(Publishing publishing) {
         publishings.add(publishing);
     }

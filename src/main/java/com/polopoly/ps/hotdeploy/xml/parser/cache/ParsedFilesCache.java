@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
+import com.polopoly.ps.hotdeploy.text.TextContentSet;
 import com.polopoly.ps.hotdeploy.xml.parser.DeploymentFileParser;
 import com.polopoly.ps.hotdeploy.xml.parser.ParseCallback;
 
@@ -17,17 +18,21 @@ public class ParsedFilesCache {
         this.parser = parser;
     }
 
-    public void parse(DeploymentFile file,
+    public TextContentSet parse(DeploymentFile file,
             ParseCallback parseCallback) {
         FileParseCallbackMemento cachedMemento = mementoByFile.get(file);
 
         if (cachedMemento != null) {
-            cachedMemento.replay(parseCallback);
+            return cachedMemento.replay(parseCallback);
         }
         else {
             FileParseCallbackMemento newMemento = getFileMemento(file);
 
-            parser.parse(file, new ParseCallbackMultiplexer(parseCallback, newMemento));
+            TextContentSet contentSet = parser.parse(file, new ParseCallbackMultiplexer(parseCallback, newMemento));
+
+            newMemento.setResult(contentSet);
+            
+			return contentSet;
         }
     }
 

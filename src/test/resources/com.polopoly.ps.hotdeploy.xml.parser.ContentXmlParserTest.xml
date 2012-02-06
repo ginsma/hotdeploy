@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This XML was derived from actual XML exported from Hermes in a project which is why it sometimes
+	 looks strange but it represents the actual XML the code was forced to parse. -->
+<batch xmlns="http://www.polopoly.com/polopoly/cm/xmlio" username="xmlioadmin"
+       password="xmlioadmin">
+   <content>
+      <metadata>
+         <contentid>
+            <major>Article</major>
+            <externalid>externalId</externalid>
+         </contentid>
+         <input-template>
+            <externalid>inputtemplate</externalid>
+         </input-template>
+         <security-parent>
+            <externalid>securityparent</externalid>
+         </security-parent>
+      </metadata>
+      <component name="name" group="polopoly.Content">Name</component>
+      <component name="value" group="description">Description</component>
+      <component group="categorization[department.categorydimension.tag.Tag]" name="text">Category</component>
+      <file name="image/file.txt" encoding="relative">com.polopoly.ps.hotdeploy.xml.parser.ContentXmlParserTest.file.txt</file>
+
+	  <!-- See comment above. -->
+      <contentref group="categorization[department.categorydimension.subject]" name="0"
+                  clear="true"/>
+      <contentref group="categorization[department.categorydimension.subject]" name="256"
+                  clear="true"/>
+      <contentref group="categorization[department.categorydimension.subject]" name="1">
+         <contentid>
+            <externalid>category.mycategory</externalid>
+         </contentid>
+      </contentref>
+	
+      <contentref group="images" name="107">
+         <contentid>
+            <major>Article</major>
+            <externalid>image1</externalid>
+         </contentid>
+      </contentref>
+      <contentref group="images" name="108">
+         <contentid>
+            <major>Article</major>
+            <externalid>image2</externalid>
+         </contentid>
+      </contentref>
+	
+   </content>
+</batch>

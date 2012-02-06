@@ -9,17 +9,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 import com.polopoly.ps.hotdeploy.client.Major;
 import com.polopoly.ps.hotdeploy.file.DeploymentFile;
 import com.polopoly.ps.hotdeploy.state.DummyDeploymentFile;
-import com.polopoly.ps.hotdeploy.xml.bootstrap.Bootstrap;
-import com.polopoly.ps.hotdeploy.xml.bootstrap.BootstrapContent;
-import com.polopoly.ps.hotdeploy.xml.bootstrap.BootstrapGenerator;
+import com.polopoly.ps.hotdeploy.text.TextContentSet;
 import com.polopoly.ps.hotdeploy.xml.parser.DeploymentFileParser;
 import com.polopoly.ps.hotdeploy.xml.parser.ParseCallback;
 import com.polopoly.ps.hotdeploy.xml.parser.cache.FileParseCallbackMemento;
-
-import junit.framework.TestCase;
 
 public class TestBootstrapGenerator extends TestCase {
     private static final String CONTENT1 = "content1";
@@ -94,8 +92,8 @@ public class TestBootstrapGenerator extends TestCase {
 
     private void generateBootstrap(DeploymentFile... files) {
         DeploymentFileParser parser = new DeploymentFileParser() {
-            public void parse(DeploymentFile file, ParseCallback callback) {
-                mementosByFile.get(file).replay(callback);
+            public TextContentSet parse(DeploymentFile file, ParseCallback callback) {
+                return mementosByFile.get(file).replay(callback);
             }};
 
         bootstrap = new BootstrapGenerator(parser).generateBootstrap(Arrays.asList(files));

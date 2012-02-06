@@ -13,7 +13,17 @@ public class ResourceFile extends AbstractDeploymentObject implements Deployment
     }
 
     public URL getBaseUrl() throws MalformedURLException {
-        throw new IllegalStateException("Not implemented.");
+		URL resourceUrl = getClass().getResource(resourceName);
+
+		String path = resourceUrl.getPath();
+		
+		int i = path.lastIndexOf('/');
+		
+		if (i != -1) {
+			return new URL(resourceUrl.getProtocol(), resourceUrl.getHost(), path.substring(0, i) + "/");
+		}
+
+    	throw new IllegalStateException("Expected the resource " + resourceName + " to be a file, not the root.");
     }
 
     public InputStream getInputStream() throws FileNotFoundException {
