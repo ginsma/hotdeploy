@@ -19,326 +19,330 @@ import com.polopoly.ps.hotdeploy.validation.ValidationException;
 import com.polopoly.ps.hotdeploy.validation.ValidationResult;
 
 public class TextContent {
-    private static final Logger logger = Logger.getLogger(TextContent.class.getName());
+	private static final Logger logger = Logger.getLogger(TextContent.class.getName());
 
-    private Major major = Major.UNKNOWN;
-    private String id;
-    private Reference securityParent;
-    private Reference inputTemplate;
+	private Major major = Major.UNKNOWN;
+	private String id;
+	private Reference securityParent;
+	private Reference inputTemplate;
 
-    private Map<String, Map<String, String>> components = new HashMap<String, Map<String, String>>();
-    private Map<String, Map<String, Reference>> references = new HashMap<String, Map<String, Reference>>();
-    private Map<String, List<Reference>> lists = new HashMap<String, List<Reference>>();
-    private Map<String, byte[]> files = new HashMap<String, byte[]>();
-    
-    private List<Publishing> publishings = new ArrayList<Publishing>();
-    private List<String> workflowActions = new ArrayList<String>();
-    
-    private String templateId;
+	private Map<String, Map<String, String>> components = new HashMap<String, Map<String, String>>();
+	private Map<String, Map<String, Reference>> references = new HashMap<String, Map<String, Reference>>();
+	private Map<String, List<Reference>> lists = new HashMap<String, List<Reference>>();
+	private Map<String, byte[]> files = new HashMap<String, byte[]>();
 
-    public Map<String, List<Reference>> getLists() {
-        return lists;
-    }
+	private List<Publishing> publishings = new ArrayList<Publishing>();
+	private List<String> workflowActions = new ArrayList<String>();
 
-    public Map<String, Map<String, String>> getComponents() {
-        return components;
-    }
+	private String templateId;
 
-    public Map<String, Map<String, Reference>> getReferences() {
-        return references;
-    }
+	public Map<String, List<Reference>> getLists() {
+		return lists;
+	}
 
-    public void setComponent(String group, String name, String value) {
-        Map<String, String> groupMap = components.get(group);
+	public Map<String, Map<String, String>> getComponents() {
+		return components;
+	}
 
-        if (groupMap == null) {
-            groupMap = new HashMap<String, String>();
-            components.put(group, groupMap);
-        }
+	public Map<String, Map<String, Reference>> getReferences() {
+		return references;
+	}
 
-        groupMap.put(name, value);
-    }
+	public void setComponent(String group, String name, String value) {
+		Map<String, String> groupMap = components.get(group);
 
-    public String getComponent(String group, String name) {
-        Map<String, String> groupMap = components.get(group);
+		if (groupMap == null) {
+			groupMap = new HashMap<String, String>();
+			components.put(group, groupMap);
+		}
 
-        if (groupMap == null) {
-            return null;
-        }
+		groupMap.put(name, value);
+	}
 
-        return groupMap.get(name);
-    }
+	public String getComponent(String group, String name) {
+		Map<String, String> groupMap = components.get(group);
 
-    public void setReference(String group, String name, Reference reference) {
-        Map<String, Reference> groupMap = references.get(group);
+		if (groupMap == null) {
+			return null;
+		}
 
-        if (groupMap == null) {
-            groupMap = new HashMap<String, Reference>();
-            references.put(group, groupMap);
-        }
+		return groupMap.get(name);
+	}
 
-        groupMap.put(name, reference);
-    }
+	public void setReference(String group, String name, Reference reference) {
+		Map<String, Reference> groupMap = references.get(group);
 
-    public Reference getReference(String group, String name) {
-        Map<String, Reference> groupMap = references.get(group);
+		if (groupMap == null) {
+			groupMap = new HashMap<String, Reference>();
+			references.put(group, groupMap);
+		}
 
-        if (groupMap == null) {
-            return null;
-        }
+		groupMap.put(name, reference);
+	}
 
-        return groupMap.get(name);
-    }
+	public Reference getReference(String group, String name) {
+		Map<String, Reference> groupMap = references.get(group);
 
-    public void setSecurityParent(Reference securityParent) {
-        this.securityParent = securityParent;
-    }
+		if (groupMap == null) {
+			return null;
+		}
 
-    public Reference getSecurityParent() {
-        return securityParent;
-    }
+		return groupMap.get(name);
+	}
 
-    public void setInputTemplate(Reference inputTemplate) {
-        this.inputTemplate = inputTemplate;
-    }
+	public void setSecurityParent(Reference securityParent) {
+		this.securityParent = securityParent;
+	}
 
-    public Reference getInputTemplate() {
-        return inputTemplate;
-    }
+	public Reference getSecurityParent() {
+		return securityParent;
+	}
 
-    public List<Reference> getList(String group) {
-        List<Reference> list = lists.get(group);
+	public void setInputTemplate(Reference inputTemplate) {
+		this.inputTemplate = inputTemplate;
+	}
 
-        if (list == null) {
-            list = new ArrayList<Reference>();
-            lists.put(group, list);
-        }
+	public Reference getInputTemplate() {
+		return inputTemplate;
+	}
 
-        return list;
-    }
+	public List<Reference> getList(String group) {
+		List<Reference> list = lists.get(group);
 
-    public void setId(String id) {
-        this.id = id;
-    }
+		if (list == null) {
+			list = new ArrayList<Reference>();
+			lists.put(group, list);
+		}
 
-    public String getId() {
-        return id;
-    }
+		return list;
+	}
 
-    public void removeNonValidatingReferences(ValidationResult validationResult) {
-        for (Entry<String, Map<String, Reference>> groupEntry : references.entrySet()) {
-            Iterator<Entry<String, Reference>> referenceEntryIt = groupEntry.getValue().entrySet().iterator();
+	public void setId(String id) {
+		this.id = id;
+	}
 
-            while (referenceEntryIt.hasNext()) {
-                Entry<String, Reference> referenceEntry = referenceEntryIt.next();
+	public String getId() {
+		return id;
+	}
 
-                try {
-                    validationResult.validate(referenceEntry.getValue());
-                } catch (ReferenceValidationException e) {
-                    warnInvalidReference(e);
+	public void removeNonValidatingReferences(ValidationResult validationResult) {
+		for (Entry<String, Map<String, Reference>> groupEntry : references.entrySet()) {
+			Iterator<Entry<String, Reference>> referenceEntryIt = groupEntry.getValue().entrySet().iterator();
 
-                    referenceEntryIt.remove();
-                }
-            }
-        }
+			while (referenceEntryIt.hasNext()) {
+				Entry<String, Reference> referenceEntry = referenceEntryIt.next();
 
-        for (Entry<String, List<Reference>> listEntry : lists.entrySet()) {
-            Iterator<Reference> referenceIt = listEntry.getValue().iterator();
+				try {
+					validationResult.validate(referenceEntry.getValue());
+				} catch (ReferenceValidationException e) {
+					warnInvalidReference(e);
 
-            while (referenceIt.hasNext()) {
-                Reference reference = referenceIt.next();
+					referenceEntryIt.remove();
+				}
+			}
+		}
 
-                try {
-                    validationResult.validate(reference);
-                } catch (ReferenceValidationException e) {
-                    warnInvalidReference(e);
-                    referenceIt.remove();
-                    validationResult.wasFixed(reference);
-                }
-            }
-        }
+		for (Entry<String, List<Reference>> listEntry : lists.entrySet()) {
+			Iterator<Reference> referenceIt = listEntry.getValue().iterator();
 
-        if (securityParent != null) {
-            try {
-                validationResult.validate(securityParent);
-            } catch (ReferenceValidationException e) {
-                warnInvalidReference(e);
+			while (referenceIt.hasNext()) {
+				Reference reference = referenceIt.next();
 
-                securityParent = null;
+				try {
+					validationResult.validate(reference);
+				} catch (ReferenceValidationException e) {
+					warnInvalidReference(e);
+					referenceIt.remove();
+					validationResult.wasFixed(reference);
+				}
+			}
+		}
 
-                validationResult.wasFixed(securityParent);
-            }
-        }
-    }
+		if (securityParent != null) {
+			try {
+				validationResult.validate(securityParent);
+			} catch (ReferenceValidationException e) {
+				warnInvalidReference(e);
 
-    private void warnInvalidReference(ReferenceValidationException e) {
-        logger.log(Level.WARNING, "The reference " + e.getFailure().getReference() + " in " + this
-                                  + " failed to validate (" + e.getMessage() + "). Removing the reference.");
-    }
+				securityParent = null;
 
-    public void validate(ValidationContext context, ValidationResult result) {
-        if (id == null) {
-            result.addFailure(this, "Content without ID specified.");
-        }
+				validationResult.wasFixed(securityParent);
+			}
+		}
+	}
 
-        if (inputTemplate == null && templateId == null) {
-            result.addFailure(this, "No input template or content template.");
-        }
+	private void warnInvalidReference(ReferenceValidationException e) {
+		logger.log(Level.WARNING, "The reference " + e.getFailure().getReference() + " in " + this
+				+ " failed to validate (" + e.getMessage() + "). Removing the reference.");
+	}
 
-        if (inputTemplate != null) {
-            try {
-                inputTemplate.validateTemplate(context);
-            } catch (ValidationException v) {
-                result.addFailure(this, inputTemplate, "Input template: " + v.getMessage());
-            }
-        }
+	public void validate(ValidationContext context, ValidationResult result) {
+		if (id == null) {
+			result.addFailure(this, "Content without ID specified.");
+		}
 
-        if (templateId != null) {
-            try {
-                context.validateTextContentExistence(templateId);
-            } catch (ValidationException e) {
-                result.addFailure(this, "Template: " + e.getMessage());
-            }
-        }
+		if (inputTemplate == null && templateId == null) {
+			result.addFailure(this, "No input template or content template.");
+		}
 
-        for (Entry<String, Map<String, Reference>> groupEntry : references.entrySet()) {
-            String group = groupEntry.getKey();
+		if (inputTemplate != null) {
+			try {
+				inputTemplate.validateTemplate(context);
+			} catch (ValidationException v) {
+				result.addFailure(this, inputTemplate, "Input template: " + v.getMessage());
+			}
+		}
 
-            Iterator<Entry<String, Reference>> referenceEntryIt = groupEntry.getValue().entrySet().iterator();
+		if (templateId != null) {
+			try {
+				context.validateTextContentExistence(templateId);
+			} catch (ValidationException e) {
+				result.addFailure(this, "Template: " + e.getMessage());
+			}
+		}
 
-            while (referenceEntryIt.hasNext()) {
-                Entry<String, Reference> referenceEntry = referenceEntryIt.next();
+		for (Entry<String, Map<String, Reference>> groupEntry : references.entrySet()) {
+			String group = groupEntry.getKey();
 
-                String name = referenceEntry.getKey();
-                Reference reference = referenceEntry.getValue();
+			Iterator<Entry<String, Reference>> referenceEntryIt = groupEntry.getValue().entrySet().iterator();
 
-                try {
-                    reference.validate(context);
-                } catch (ValidationException v) {
-                    result.addFailure(this, reference, "Reference " + group + ":" + name + " to " + reference + ": "
-                                                       + v.getMessage());
-                }
-            }
-        }
+			while (referenceEntryIt.hasNext()) {
+				Entry<String, Reference> referenceEntry = referenceEntryIt.next();
 
-        for (Entry<String, List<Reference>> listEntry : lists.entrySet()) {
-            Iterator<Reference> referenceIt = listEntry.getValue().iterator();
+				String name = referenceEntry.getKey();
+				Reference reference = referenceEntry.getValue();
 
-            while (referenceIt.hasNext()) {
-                Reference reference = referenceIt.next();
+				try {
+					reference.validate(context);
+				} catch (ValidationException v) {
+					result.addFailure(this, reference, "Reference " + group + ":" + name + " to " + reference
+							+ ": " + v.getMessage());
+				}
+			}
+		}
 
-                try {
-                    reference.validate(context);
-                } catch (ValidationException v) {
-                    result.addFailure(this, reference, "Reference in list " + listEntry.getKey() + " to " + reference
-                                                       + ": " + v.getMessage());
-                }
-            }
-        }
+		for (Entry<String, List<Reference>> listEntry : lists.entrySet()) {
+			Iterator<Reference> referenceIt = listEntry.getValue().iterator();
 
-        if (securityParent != null) {
-            try {
-                securityParent.validate(context);
-            } catch (ValidationException v) {
-                result.addFailure(this, securityParent, "security parent: " + v.getMessage());
-            }
-        }
+			while (referenceIt.hasNext()) {
+				Reference reference = referenceIt.next();
 
-        for (Publishing publishing : publishings) {
-            try {
-                publishing.getPublishIn().validate(context);
-            } catch (ValidationException v) {
-                result.addFailure(this, publishing.getPublishIn(), "Content to publish in: " + v.getMessage());
-            }
-        }
-    }
+				try {
+					reference.validate(context);
+				} catch (ValidationException v) {
+					result.addFailure(this, reference, "Reference in list " + listEntry.getKey() + " to "
+							+ reference + ": " + v.getMessage());
+				}
+			}
+		}
 
-    public String getTemplateId() {
-        return templateId;
-    }
+		if (securityParent != null) {
+			try {
+				securityParent.validate(context);
+			} catch (ValidationException v) {
+				result.addFailure(this, securityParent, "security parent: " + v.getMessage());
+			}
+		}
 
-    public void setTemplateId(String templateId) {
-        this.templateId = templateId;
-    }
+		for (Publishing publishing : publishings) {
+			try {
+				publishing.getPublishIn().validate(context);
+			} catch (ValidationException v) {
+				result.addFailure(this, publishing.getPublishIn(), "Content to publish in: " + v.getMessage());
+			}
+		}
+	}
 
-    public List<Publishing> getPublishings() {
-        return publishings;
-    }
+	public String getTemplateId() {
+		return templateId;
+	}
 
-    public void addFile(String fileName, InputStream fileData) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
+	public void setTemplateId(String templateId) {
+		this.templateId = templateId;
+	}
 
-        int ch;
+	public List<Publishing> getPublishings() {
+		return publishings;
+	}
 
-        while ((ch = fileData.read()) != -1) {
-            baos.write(ch);
-        }
+	public void addFile(String fileName, InputStream fileData) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
 
-        files.put(fileName, baos.toByteArray());
-    }
+		int ch;
 
-    Map<String, byte[]> getFiles() {
-        return files;
-    }
+		while ((ch = fileData.read()) != -1) {
+			baos.write(ch);
+		}
 
-    public byte[] getFile(String fileName) throws NoSuchFileException {
-    	byte[] result = files.get(fileName);
-    	
-    	if (result == null) {
-    		throw new NoSuchFileException("The file " + fileName + " was not defined in " + this + ".");
-    	}
-    	
+		files.put(fileName, baos.toByteArray());
+	}
+
+	Map<String, byte[]> getFiles() {
+		return files;
+	}
+
+	public Iterator<String> getFileNames() {
+		return files.keySet().iterator();
+	}
+
+	public byte[] getFile(String fileName) throws NoSuchFileException {
+		byte[] result = files.get(fileName);
+
+		if (result == null) {
+			throw new NoSuchFileException("The file " + fileName + " was not defined in " + this + ".");
+		}
+
 		return result;
-    }
-    
-    public void addPublishing(Publishing publishing) {
-        publishings.add(publishing);
-    }
+	}
 
-    public Major getMajor() {
-        return major;
-    }
+	public void addPublishing(Publishing publishing) {
+		publishings.add(publishing);
+	}
 
-    public void setMajor(Major major) {
-        this.major = major;
-    }
+	public Major getMajor() {
+		return major;
+	}
 
-    @Override
-    public String toString() {
-        if (id == null) {
-            return "<no ID specified>";
-        } else {
-            return id;
-        }
-    }
+	public void setMajor(Major major) {
+		this.major = major;
+	}
 
-    @Override
-    public int hashCode() {
-        return ((id == null) ? 0 : id.hashCode());
-    }
+	@Override
+	public String toString() {
+		if (id == null) {
+			return "<no ID specified>";
+		} else {
+			return id;
+		}
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        TextContent other = (TextContent) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        return true;
-    }
+	@Override
+	public int hashCode() {
+		return ((id == null) ? 0 : id.hashCode());
+	}
 
-    public void addWorkflowAction(String workflowAction) {
-        this.workflowActions.add(workflowAction);
-    }
-    
-    public List<String> getWorkflowActions() {
-        return workflowActions;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TextContent other = (TextContent) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	public void addWorkflowAction(String workflowAction) {
+		this.workflowActions.add(workflowAction);
+	}
+
+	public List<String> getWorkflowActions() {
+		return workflowActions;
+	}
 }
