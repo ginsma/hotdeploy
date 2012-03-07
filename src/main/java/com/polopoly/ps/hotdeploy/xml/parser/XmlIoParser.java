@@ -61,8 +61,7 @@ class XmlIoParser extends AbstractParser {
 		ParsedContentId contentReference = parseContentId(content);
 
 		if (contentReference != null) {
-			callback.contentReferenceFound(context, contentReference.getMajor(),
-					contentReference.getExternalId());
+			callback.contentReferenceFound(context, contentReference.getMajor(), contentReference.getExternalId());
 		}
 	}
 
@@ -126,7 +125,13 @@ class XmlIoParser extends AbstractParser {
 		}
 
 		try {
-			URL fileUrl = new URL(baseUrl, readFromFileName);
+			URL fileUrl;
+
+			if (readFromFileName.startsWith("/")) {
+				fileUrl = new URL(baseUrl.getProtocol(), baseUrl.getHost(), baseUrl.getPort(), readFromFileName);
+			} else {
+				fileUrl = new URL(baseUrl, readFromFileName);
+			}
 
 			InputStream stream = fileUrl.openStream();
 
@@ -136,16 +141,13 @@ class XmlIoParser extends AbstractParser {
 				try {
 					stream.close();
 				} catch (Exception e) {
-					LOGGER.log(Level.WARNING,
-							"While closing input stream " + fileUrl + ": " + e.getMessage(), e);
+					LOGGER.log(Level.WARNING, "While closing input stream " + fileUrl + ": " + e.getMessage(), e);
 				}
 			}
 		} catch (MalformedURLException e) {
-			LOGGER.log(Level.WARNING, "Could not read file " + readFromFileName + " relative to " + baseUrl
-					+ ".");
+			LOGGER.log(Level.WARNING, "Could not read file " + readFromFileName + " relative to " + baseUrl + ".");
 		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, "Could not read file " + readFromFileName + " relative to " + baseUrl
-					+ ".");
+			LOGGER.log(Level.WARNING, "Could not read file " + readFromFileName + " relative to " + baseUrl + ".");
 		}
 	}
 
@@ -175,8 +177,7 @@ class XmlIoParser extends AbstractParser {
 				securityParentId = parseContentId(metadataChild);
 
 				if (securityParentId != null) {
-					parsedContent
-							.setSecurityParent(new ExternalIdReference(securityParentId.getExternalId()));
+					parsedContent.setSecurityParent(new ExternalIdReference(securityParentId.getExternalId()));
 				}
 			}
 		}
@@ -193,8 +194,7 @@ class XmlIoParser extends AbstractParser {
 		}
 
 		if (securityParentId != null) {
-			callback.contentReferenceFound(context, securityParentId.getMajor(),
-					securityParentId.getExternalId());
+			callback.contentReferenceFound(context, securityParentId.getMajor(), securityParentId.getExternalId());
 		}
 
 		if (inputTemplate != null) {
