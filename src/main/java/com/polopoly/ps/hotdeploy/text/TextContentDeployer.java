@@ -53,8 +53,10 @@ public class TextContentDeployer {
 	public Collection<Policy> deploy() throws DeployException {
 		boolean success = false;
 		Map<String, Policy> newVersionById = new HashMap<String, Policy>();
+        Map<String, Policy> committedContentById = new HashMap<String, Policy>();
 
-		try {
+
+        try {
 			for (TextContent textContent : contentSet) {
 				try {
 					Policy newVersionPolicy = createNewVersion(textContent);
@@ -130,18 +132,22 @@ public class TextContentDeployer {
 							+ toString(newVersion) + ": " + e, e);
 				}
 
+                committedContentById.put(textContent.getId(), newVersion);
 				newVersionById.remove(textContent.getId());
+                
 				result.add(newVersion);
 			}
 
 			// Commit remaining created versions if any
-			Iterator<Policy> iterator = newVersionById.values().iterator();
+			Iterator<String> iterator = newVersionById.keySet().iterator();
 
 			while (iterator.hasNext()) {
-				Policy newVersion = iterator.next();
+                String id = iterator.next();
+				Policy newVersion = newVersionById.get(id);
 
 				try {
 					newVersion.getContent().commit();
+                    committedContentById.put(id, newVersion);
 				} catch (CMException e) {
 					throw new DeployCommitException("While committing "
 							+ toString(newVersion) + ": " + e, e);
@@ -153,7 +159,7 @@ public class TextContentDeployer {
 
 			for (TextContent textContent : contentSet) {
 				try {
-					Policy newVersion = newVersionById.get(textContent.getId());
+					Policy newVersion = committedContentById.get(textContent.getId());
 
 					performWorkflowActions(textContent, newVersion);
 				} catch (CMException e) {
@@ -190,16 +196,16 @@ public class TextContentDeployer {
 			return;
 		}
 
-		Content content = contentPolicy.getContent();
-
-		if (!(content instanceof WorkflowAware)) {
+        ContentRead contentRead = server.getContent(contentPolicy.getContentId());
+        
+		if (!(contentRead instanceof WorkflowAware)) {
 			throw new DeployException(
 					"The object "
 							+ textContent
 							+ " had a major that did not allow workflow (but workflow actions were specified).");
 		}
 
-		WorkflowAware workflow = (WorkflowAware) content;
+		WorkflowAware workflow = (WorkflowAware) contentRead;
 
 		if (workflow.getWorkflowId() == null) {
 			throw new DeployException(
@@ -209,10 +215,8 @@ public class TextContentDeployer {
 		}
 
 		for (String actionName : textContent.getWorkflowActions()) {
-			for (WorkflowAction action : workflow.getWorkflowActions()) {
-				if (action.getName().equals(actionName)) {
 					try {
-						workflow.doWorkflowAction(action);
+						workflow.doWorkflowAction(new WorkflowAction(actionName, ""));
 					} catch (CMException e) {
 						throw new DeployException(
 								"While performing workflow action "
@@ -220,17 +224,9 @@ public class TextContentDeployer {
 										+ ": " + e.getMessage(), e);
 					}
 
-					continue;
-				}
-			}
 
-			throw new DeployException("Could not perform workflow action '"
-					+ actionName + "' in state '"
-					+ workflow.getWorkflowState().getName() + "' on "
-					+ textContent + ", possible values: "
-					+ Arrays.toString(workflow.getWorkflowActions()));
-		}
-	}
+	    }
+    }
 
 	private String toString(Policy policy) {
 		try {
