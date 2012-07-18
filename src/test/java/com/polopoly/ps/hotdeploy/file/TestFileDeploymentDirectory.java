@@ -36,7 +36,8 @@ public class TestFileDeploymentDirectory extends TestCase {
         boolean foundMain = false;
 
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().contains(File.separator + ".")) {
+        	String[] fileNames = files[i].getName().split(File.separator);
+            if (fileNames[fileNames.length-1].contains(File.separator + ".")) {
                 fail("Hidden file " + files[i] + " is returned.");
             }
 
