@@ -82,8 +82,8 @@ public class TextContentParser {
 		if (fileName.endsWith('.' + TEXT_CONTENT_FILE_EXTENSION)) {
 			fileName = fileName.substring(0, fileName.length() - TEXT_CONTENT_FILE_EXTENSION.length() - 1);
 		} else {
-			LOGGER.log(Level.WARNING, "Expected file name " + fileName + " to end with ." + TEXT_CONTENT_FILE_EXTENSION
-					+ ".");
+			LOGGER.log(Level.WARNING, "Expected file name " + fileName + " to end with ."
+					+ TEXT_CONTENT_FILE_EXTENSION + ".");
 		}
 
 		this.fileName = fileName;
@@ -146,11 +146,33 @@ public class TextContentParser {
 		} else if (prefix.equals(COMPONENT_PREFIX)) {
 			assertFields(4, fields);
 
-			currentContent.setComponent(fields[1], fields[2], fields[3]);
+			String group = fields[1];
+			String name = fields[2];
+			String value = fields[3];
+
+			String oldValue = currentContent.getComponent(group, name);
+
+			if (oldValue != null) {
+				LOGGER.log(Level.WARNING, "In " + currentContent + ": the component " + group + ":" + name
+						+ " is declared twice (with values " + oldValue + " and " + value + ".");
+			}
+
+			currentContent.setComponent(group, name, value);
 		} else if (prefix.equals(REFERENCE_PREFIX)) {
 			assertFields(4, fields);
 
-			currentContent.setReference(fields[1], fields[2], new ExternalIdReference(expandId(fields[3])));
+			String group = fields[1];
+			String name = fields[2];
+			Reference reference = new ExternalIdReference(expandId(fields[3]));
+
+			Reference existingValue = currentContent.getReference(group, name);
+
+			if (existingValue != null) {
+				LOGGER.log(Level.WARNING, "In " + currentContent + ": the reference " + group + ":" + name
+						+ " is declared twice (pointing to " + existingValue + " and " + reference + ")");
+			}
+
+			currentContent.setReference(group, name, reference);
 		} else if (prefix.equals(FILE_PREFIX)) {
 			assertFields(3, fields);
 
@@ -176,13 +198,14 @@ public class TextContentParser {
 				referredId = fields[2];
 				metadata = fields[3];
 			} else {
-				fail("Expected one, two or three parameters for operation " + fields[0] + " (rather than the provided "
-						+ (fields.length - 1) + "). "
+				fail("Expected one, two or three parameters for operation " + fields[0]
+						+ " (rather than the provided " + (fields.length - 1) + "). "
 						+ "The parameters are: group (optionalunless reference metadata is provided), "
 						+ "referred object, reference metadata (optional).");
 			}
 
-			currentContent.getList(group).add(new ExternalIdReference(expandId(referredId), expandId(metadata)));
+			currentContent.getList(group).add(
+					new ExternalIdReference(expandId(referredId), expandId(metadata)));
 		} else if (prefix.equals(TEMPLATE_PREFIX)) {
 			assertFields(2, fields);
 
@@ -221,23 +244,23 @@ public class TextContentParser {
 				publishIn = fields[2];
 				metadata = fields[3];
 			} else {
-				fail("Expected one, two or three parameters for operation " + fields[0] + " (rather than the provided "
-						+ (fields.length - 1) + "). The parameters are: "
+				fail("Expected one, two or three parameters for operation " + fields[0]
+						+ " (rather than the provided " + (fields.length - 1) + "). The parameters are: "
 						+ "group (optional unless reference metadata is provided), object to publish in, "
 						+ "reference metadata (optional).");
 			}
 
-			Publishing publishing = new Publishing(new ExternalIdReference(expandId(publishIn), expandId(metadata)),
-					group);
+			Publishing publishing = new Publishing(new ExternalIdReference(expandId(publishIn),
+					expandId(metadata)), group);
 
 			currentContent.addPublishing(publishing);
 		} else if (prefix.equals(WORKFLOW_ACTION_PREFIX)) {
 			assertFields(2, fields);
 			currentContent.addWorkflowAction(fields[1]);
 		} else {
-			fail("Line should start with " + ID_PREFIX + ", " + INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX + ", "
-					+ SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", " + PUBLISH_PREFIX + ", " + MAJOR_PREFIX
-					+ ", " + REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
+			fail("Line should start with " + ID_PREFIX + ", " + INPUT_TEMPLATE_PREFIX + ", " + NAME_PREFIX
+					+ ", " + SECURITY_PARENT_PREFIX + ", " + COMPONENT_PREFIX + ", " + PUBLISH_PREFIX + ", "
+					+ MAJOR_PREFIX + ", " + REFERENCE_PREFIX + " or " + LIST_PREFIX + ".");
 		}
 	}
 
@@ -253,7 +276,8 @@ public class TextContentParser {
 				try {
 					stream.close();
 				} catch (Exception e) {
-					LOGGER.log(Level.WARNING, "While closing input stream " + contentUrl + ": " + e.getMessage(), e);
+					LOGGER.log(Level.WARNING,
+							"While closing input stream " + contentUrl + ": " + e.getMessage(), e);
 				}
 			}
 		} catch (MalformedURLException e) {
