@@ -2,17 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
+  
+  <groupId>com.polopoly.ps.tools</groupId>
   <artifactId>hotdeploy</artifactId>
+  <version>2.0</version>
   <packaging>jar</packaging>
 
   <name>Hotdeploy</name>
-
-  <parent>
-    <artifactId>pstools-parent</artifactId>
-    <groupId>com.polopoly.ps.tools</groupId>
-    <version>10.5-DR3-SNAPSHOT-2</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
   
   <repositories>
     <repository>
@@ -39,11 +35,12 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <scope>provided</scope>
+      <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <version>4.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
