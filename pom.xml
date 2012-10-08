@@ -10,6 +10,10 @@
 
   <name>Hotdeploy</name>
   
+  <properties>
+    <polopoly.version>10.4.1-fp5-08450ca</polopoly.version>
+  </properties>
+  
   <repositories>
     <repository>
       <id>discoverytest</id>
@@ -19,6 +23,12 @@
   </repositories>
   
   <dependencies>
+    <dependency>
+      <groupId>com.polopoly</groupId>
+      <artifactId>polopoly</artifactId>
+      <version>${polopoly.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>pcmd</artifactId>
