@@ -107,7 +107,7 @@
     <dependency>
       <groupId>com.polopoly</groupId>
       <artifactId>polopoly</artifactId>
-      <version>10.3-DR2-r59409</version>
+      <version>${polopoly.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
