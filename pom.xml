@@ -5,13 +5,14 @@
   
   <groupId>com.polopoly.ps.tools</groupId>
   <artifactId>hotdeploy</artifactId>
-  <version>2.0</version>
+  <version>2.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Hotdeploy</name>
   
   <properties>
     <polopoly.version>10.4.1-fp5-08450ca</polopoly.version>
+    <pcmd.version>2.1-SNAPSHOT</pcmd.version>
   </properties>
   
   <repositories>
@@ -49,15 +50,8 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>pcmd</artifactId>
-      <version>${project.version}</version>
+      <version>${pcmd.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.polopoly.ps</groupId>
-      <artifactId>polopoly-jboss-deps</artifactId>
-      <version>1.0.1</version>
-      <type>pom</type>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -103,12 +97,6 @@
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
       <version>2.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.polopoly</groupId>
-      <artifactId>polopoly</artifactId>
-      <version>${polopoly.version}</version>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
   
